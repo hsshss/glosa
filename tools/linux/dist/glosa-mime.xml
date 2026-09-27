@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The file types glosa opens that the system's shared-mime-info does not know; MIDI files
+  (audio/midi) it already does. Installed by install.sh into the user's own MIME database.
+-->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="audio/x-rmi">
+    <comment>RIFF MIDI file</comment>
+    <comment xml:lang="ja">RIFF MIDI ファイル</comment>
+    <glob pattern="*.rmi"/>
+  </mime-type>
+  <mime-type type="application/x-recomposer">
+    <comment>RCP song</comment>
+    <comment xml:lang="ja">レコンポーザの曲</comment>
+    <glob pattern="*.rcp"/>
+    <glob pattern="*.r36"/>
+    <glob pattern="*.g18"/>
+    <glob pattern="*.g36"/>
+  </mime-type>
+</mime-info>

@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Glosa.App"
+             xmlns:vm="using:Glosa.App.ViewModels"
+             x:Class="Glosa.App.Views.DebugView"
+             x:DataType="vm:MainViewModel">
+    <Border Classes="card" Padding="4">
+        <!-- The log is read after the fact, so its lines can be selected and copied. -->
+        <ListBox Classes="plain" ItemsSource="{Binding Messages}"
+                 AutomationProperties.Name="{x:Static l:Strings.PaneDebug}"
+                 FontFamily="Consolas, monospace" FontSize="12"
+                 SelectionMode="Multiple"
+                 KeyDown="OnListKeyDown"
+                 ContextRequested="OnListContextRequested">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Name="Copy" Header="{x:Static l:Strings.DebugCopy}" Click="OnCopy"
+                              InputGesture="{OnPlatform Ctrl+C, macOS=Cmd+C}" Icon="{StaticResource IconCopy}" />
+                    <MenuItem Header="{x:Static l:Strings.DebugSelectAll}" Click="OnSelectAll" InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}"
+                              Icon="{StaticResource IconSelectAll}" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
+        </ListBox>
+    </Border>
+</UserControl>

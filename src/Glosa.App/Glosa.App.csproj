@@ -1,0 +1,126 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The .exe's own icon, for Explorer and shortcuts. Windows get theirs from Dark.axaml. -->
+    <ApplicationIcon>Assets\glosa.ico</ApplicationIcon>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>glosa</AssemblyName>
+    <!-- The media keys call the system's media controls through their vtables. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- What the executable's properties say about it. -->
+  <PropertyGroup>
+    <Product>Glosa</Product>
+    <Authors>hsshss</Authors>
+    <Company>hsshss</Company>
+    <Copyright>Copyright (c) 2026 hsshss</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glosa.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <!--
+    Strings.resx is English; each translation is a Strings.<culture>.resx beside it and goes
+    out as a satellite assembly. GenerateStrings writes Strings.Designer.cs outside an IDE.
+  -->
+  <PropertyGroup>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" Generator="PublicResXFileCodeGenerator"
+                      LastGenOutput="Strings.Designer.cs" />
+    <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="True"
+             DependentUpon="Strings.resx" />
+  </ItemGroup>
+  <Target Name="GenerateStrings">
+    <!-- In-process, as the build's own resx step runs it: there is no ResGen.exe here. -->
+    <GenerateResource Sources="Strings.resx" ExecuteAsTool="false"
+                      OutputResources="$(IntermediateOutputPath)GenerateStrings.resources"
+                      StronglyTypedLanguage="CSharp" StronglyTypedNamespace="Glosa.App"
+                      StronglyTypedClassName="Strings" StronglyTypedFileName="Strings.Designer.cs"
+                      PublicClass="true" />
+  </Target>
+
+  <!--
+    The module definition is read from beside the executable, so it goes there as a file of
+    its own, even in a single-file publish; the description of its format goes in docs/.
+  -->
+  <ItemGroup>
+    <None Update="define.yaml;docs\*.md" CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+  <!-- Published for a system, the app carries the .NET runtime. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <!-- No debug symbols in a published app. -->
+  <PropertyGroup>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+  <Target Name="LeaveOutSymbols" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+
+  <!-- A published app carries its license and the notices of what it ships with. -->
+  <ItemGroup>
+    <None Include="..\..\LICENSE;..\..\THIRD_PARTY_NOTICES.md" Link="%(Filename)%(Extension)"
+          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Include="..\..\licenses\*.txt" Link="licenses\%(Filename)%(Extension)"
+          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+  <!-- The runtime's own notices, from the runtime pack the app was published with. -->
+  <Target Name="CopyRuntimeNotices" AfterTargets="Publish" Condition="'$(SelfContained)' == 'true'">
+    <ItemGroup>
+      <_RuntimeNotices Include="@(ResolvedRuntimePack->'%(PackageDirectory)\THIRD-PARTY-NOTICES.TXT')"
+                       Condition="'%(ResolvedRuntimePack.FrameworkName)' == 'Microsoft.NETCore.App'" />
+    </ItemGroup>
+    <Error Condition="'@(_RuntimeNotices)' == '' or !Exists('@(_RuntimeNotices)')"
+           Text="The .NET runtime's THIRD-PARTY-NOTICES.TXT was not found in its runtime pack." />
+    <Copy SourceFiles="@(_RuntimeNotices)"
+          DestinationFiles="$(PublishDir)licenses\dotnet-runtime-THIRD-PARTY-NOTICES.txt" />
+  </Target>
+
+  <!-- Published, the libraries go in libs/; these stay beside the executable with it. -->
+  <PropertyGroup>
+    <MoveToLibsKeep>define.yaml;docs;LICENSE;THIRD_PARTY_NOTICES.md;licenses</MoveToLibsKeep>
+  </PropertyGroup>
+  <Import Project="MoveToLibs.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\Glosa.Core\Glosa.Core.csproj" />
+    <ProjectReference Include="..\Glosa.Midi\Glosa.Midi.csproj" />
+    <!-- Each backend goes only into its own system's build (Directory.Build.props). -->
+    <ProjectReference Include="..\Glosa.Midi.Windows\Glosa.Midi.Windows.csproj"
+                      Condition="'$(IsWindowsBuild)' == 'true'" />
+    <ProjectReference Include="..\Glosa.Midi.MacOS\Glosa.Midi.MacOS.csproj"
+                      Condition="'$(IsMacOSBuild)' == 'true'" />
+    <ProjectReference Include="..\Glosa.Midi.Linux\Glosa.Midi.Linux.csproj"
+                      Condition="'$(IsLinuxBuild)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+</Project>

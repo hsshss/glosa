@@ -1,0 +1,12 @@
+# Build output
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+*.user
+
+# The macOS app and the Linux archive, built by tools/macos/build-app.sh and
+# tools/linux/package.sh.
+publish/

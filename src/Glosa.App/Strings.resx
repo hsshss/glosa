@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The player's words: menus, windows, and the messages in the status bar.
+
+  This file is English, the neutral language: what is shown when there is no
+  Strings.<culture>.resx for the language in use, and what a translation leaves out.
+  A translation is a Strings.<culture>.resx beside it with the same names, as
+  Strings.ja.resx is.
+
+  {0}, {1} ... are filled in with string.Format, in whatever order the language wants
+  them. The class the code reads them through (Strings) is generated from this file at
+  build time, so a new name goes here first.
+-->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AboutLicense" xml:space="preserve">
+    <value>Released under the MIT License.</value>
+  </data>
+  <data name="AboutPostOnX" xml:space="preserve">
+    <value>Post about Glosa on X</value>
+  </data>
+  <data name="AboutTitle" xml:space="preserve">
+    <value>About Glosa</value>
+  </data>
+  <data name="AboutVersion" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="AutoDetect" xml:space="preserve">
+    <value>Auto-detect</value>
+  </data>
+  <data name="CannotCloseUnsaved" xml:space="preserve">
+    <value>Could not save {0}, so the tab was left open to keep its changes.
+
+{1}</value>
+  </data>
+  <data name="CannotLoadDef" xml:space="preserve">
+    <value>Could not load {0}.
+
+{1}</value>
+  </data>
+  <data name="CannotLoadDefTitle" xml:space="preserve">
+    <value>Could not load the TMIDI definition file</value>
+  </data>
+  <data name="CannotOpenOutputs" xml:space="preserve">
+    <value>Could not open the following outputs. Playback has stopped.</value>
+  </data>
+  <data name="CannotOpenTitle" xml:space="preserve">
+    <value>Could not open outputs</value>
+  </data>
+  <data name="CannotOpenPlaylist" xml:space="preserve">
+    <value>Could not open {0}.
+
+{1}</value>
+  </data>
+  <data name="CannotOpenPlaylistTitle" xml:space="preserve">
+    <value>Could not open the playlist</value>
+  </data>
+  <data name="CannotReadSettings" xml:space="preserve">
+    <value>Could not read {0}, so Glosa started with the default settings.
+
+{1}
+
+The file has been kept as {2}.</value>
+  </data>
+  <data name="CannotReadSettingsKept" xml:space="preserve">
+    <value>Could not read {0}, so Glosa started with the default settings.
+
+{1}
+
+The file will be left as it is when Glosa exits.</value>
+  </data>
+  <data name="CannotReadSettingsTitle" xml:space="preserve">
+    <value>Could not read the settings</value>
+  </data>
+  <data name="CannotReadOverride" xml:space="preserve">
+    <value>Could not read {0}.
+
+{1}
+
+Fix or delete define.override.yaml, and restart Glosa.</value>
+  </data>
+  <data name="CannotReadOverrideTitle" xml:space="preserve">
+    <value>Could not read the target module definitions</value>
+  </data>
+  <data name="CannotSavePlaylist" xml:space="preserve">
+    <value>Could not save {0}.
+
+{1}</value>
+  </data>
+  <data name="CannotSavePlaylistTitle" xml:space="preserve">
+    <value>Could not save the playlist</value>
+  </data>
+  <data name="CannotSendInit" xml:space="preserve">
+    <value>Could not send the module initialization data. Playback has stopped.</value>
+  </data>
+  <data name="CannotSendTitle" xml:space="preserve">
+    <value>Could not send to output</value>
+  </data>
+  <data name="DebugCopy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="DebugSelectAll" xml:space="preserve">
+    <value>Select All</value>
+  </data>
+  <data name="DefaultPortMapName" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="DetectionData" xml:space="preserve">
+    <value>Song data</value>
+  </data>
+  <data name="DetectionDocument" xml:space="preserve">
+    <value>Attached text</value>
+  </data>
+  <data name="DetectionFileName" xml:space="preserve">
+    <value>File name</value>
+  </data>
+  <data name="DetectionFirst" xml:space="preserve">
+    <value>Named first</value>
+  </data>
+  <data name="DetectionFolderPath" xml:space="preserve">
+    <value>Folder path</value>
+  </data>
+  <data name="DetectionLast" xml:space="preserve">
+    <value>Named last</value>
+  </data>
+  <data name="DetectionTitle" xml:space="preserve">
+    <value>Song title</value>
+  </data>
+  <data name="DeviceMissing" xml:space="preserve">
+    <value>{0} (not found)</value>
+  </data>
+  <data name="ExportM3u" xml:space="preserve">
+    <value>Export as M3U</value>
+  </data>
+  <data name="FileTypeDefinitions" xml:space="preserve">
+    <value>TMIDI definition files</value>
+  </data>
+  <data name="FileTypeM3u" xml:space="preserve">
+    <value>M3U playlists</value>
+  </data>
+  <data name="FileTypePlaylists" xml:space="preserve">
+    <value>Playlists</value>
+  </data>
+  <data name="FileTypeSongs" xml:space="preserve">
+    <value>MIDI and archive files</value>
+  </data>
+  <data name="LanguageSystem" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="LcdEnlarge" xml:space="preserve">
+    <value>Enlarge</value>
+  </data>
+  <data name="MenuAbout" xml:space="preserve">
+    <value>About Glosa...</value>
+  </data>
+  <data name="MenuAddFolder" xml:space="preserve">
+    <value>Add Folder...</value>
+  </data>
+  <data name="MenuAddSongs" xml:space="preserve">
+    <value>Add Songs...</value>
+  </data>
+  <data name="MenuCloseDefinition" xml:space="preserve">
+    <value>Close TMIDI Definition File</value>
+  </data>
+  <data name="MenuDebug" xml:space="preserve">
+    <value>Debug...</value>
+  </data>
+  <data name="MenuExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="MenuFile" xml:space="preserve">
+    <value>_File</value>
+  </data>
+  <data name="MenuHelp" xml:space="preserve">
+    <value>_Help</value>
+  </data>
+  <data name="MenuMonitor" xml:space="preserve">
+    <value>Monitor...</value>
+  </data>
+  <data name="MenuOpenConfigFolder" xml:space="preserve">
+    <value>Open Settings Folder</value>
+  </data>
+  <data name="MenuOpenDefinition" xml:space="preserve">
+    <value>Open TMIDI Definition File...</value>
+  </data>
+  <data name="MenuOpenPlaylist" xml:space="preserve">
+    <value>Open Playlist...</value>
+  </data>
+  <data name="MenuOrder" xml:space="preserve">
+    <value>Play Order</value>
+  </data>
+  <data name="MenuPortMap" xml:space="preserve">
+    <value>Port Map</value>
+  </data>
+  <data name="MenuPortMapSettings" xml:space="preserve">
+    <value>Port Map Settings...</value>
+  </data>
+  <data name="MenuPreferences" xml:space="preserve">
+    <value>Preferences...</value>
+  </data>
+  <data name="MenuRepeat" xml:space="preserve">
+    <value>Repeat</value>
+  </data>
+  <data name="MenuSettings" xml:space="preserve">
+    <value>_Settings</value>
+  </data>
+  <data name="MenuWindow" xml:space="preserve">
+    <value>_Window</value>
+  </data>
+  <data name="MonitorChord" xml:space="preserve">
+    <value>Chord</value>
+  </data>
+  <data name="MonitorKeys" xml:space="preserve">
+    <value>Keys</value>
+  </data>
+  <data name="MonitorNotes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="MonitorPan" xml:space="preserve">
+    <value>Pan</value>
+  </data>
+  <data name="MonitorPart" xml:space="preserve">
+    <value>Part</value>
+  </data>
+  <data name="MonitorTone" xml:space="preserve">
+    <value>Tone</value>
+  </data>
+  <data name="MonitorVoices" xml:space="preserve">
+    <value>Voices</value>
+  </data>
+  <data name="MonitorVolume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="NewPlaylistName" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
+  <data name="NewPortMapName" xml:space="preserve">
+    <value>Map {0}</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>(none)</value>
+  </data>
+  <data name="NoteBadArgument" xml:space="preserve">
+    <value>Unrecognized argument: {0}</value>
+  </data>
+  <data name="NoteBadConfig" xml:space="preserve">
+    <value>--config {0}: {1} The usual settings folder is used instead.</value>
+  </data>
+  <data name="NoteCannotLoad" xml:space="preserve">
+    <value>Could not load: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadDef" xml:space="preserve">
+    <value>Could not load the TMIDI definition file: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadDefine" xml:space="preserve">
+    <value>Could not load the target module definitions: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadPlaylist" xml:space="preserve">
+    <value>Could not load playlist: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotOpenConfigFolder" xml:space="preserve">
+    <value>Could not open the settings folder: {0}</value>
+  </data>
+  <data name="NoteCannotOpenOutput" xml:space="preserve">
+    <value>Could not open output: {0}</value>
+  </data>
+  <data name="NoteCannotSavePlaylist" xml:space="preserve">
+    <value>Could not save playlist: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotSaveSettings" xml:space="preserve">
+    <value>Could not save the settings: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotSendInit" xml:space="preserve">
+    <value>Could not send the module initialization: {0}</value>
+  </data>
+  <data name="NoteCannotShowFile" xml:space="preserve">
+    <value>Could not open in the file manager: {0}</value>
+  </data>
+  <data name="NoteCannotWriteDefineSample" xml:space="preserve">
+    <value>Could not write the sample target module definitions: {0} — {1}</value>
+  </data>
+  <data name="NoteClosingOutput" xml:space="preserve">
+    <value>Error while closing output: {0}</value>
+  </data>
+  <data name="NoteDefineOverride" xml:space="preserve">
+    <value>Target module definitions read from {0} in place of the shipped ones</value>
+  </data>
+  <data name="NoteDefineProblem" xml:space="preserve">
+    <value>Target module definitions: {0}</value>
+  </data>
+  <data name="NoteDetectFailed" xml:space="preserve">
+    <value>Detection gave up: {0}</value>
+  </data>
+  <data name="NoteDetected" xml:space="preserve">
+    <value>Target module detected: {0}</value>
+  </data>
+  <data name="NoteDetectedPlaysAs" xml:space="preserve">
+    <value>Target module detected: {0}, played as {1}</value>
+  </data>
+  <data name="NoteDeviceLost" xml:space="preserve">
+    <value>Output stopped responding: {0}</value>
+  </data>
+  <data name="NoteEmulation" xml:space="preserve">
+    <value>Emulation: {0} ← {1}  {2}</value>
+  </data>
+  <data name="NoteFallbackTables" xml:space="preserve">
+    <value>Capital Tone Fallback: {0} tone tables</value>
+  </data>
+  <data name="NoteFaulted" xml:space="preserve">
+    <value>Stopped by a safety limit: {0}</value>
+  </data>
+  <data name="NoteInitCut" xml:space="preserve">
+    <value>The initialization in the TMIDI definition file is too long and was cut short</value>
+  </data>
+  <data name="NoteInitialize" xml:space="preserve">
+    <value>Initialization: {0} ({1})</value>
+  </data>
+  <data name="NoteLengthsScanned" xml:space="preserve">
+    <value>Song lengths measured: {0}</value>
+  </data>
+  <data name="NoteNoDefine" xml:space="preserve">
+    <value>Target module definitions not found: {0}</value>
+  </data>
+  <data name="NoteNothingPlayable" xml:space="preserve">
+    <value>No playable files found</value>
+  </data>
+  <data name="NoteOutputNotFound" xml:space="preserve">
+    <value>Output not found: {0}</value>
+  </data>
+  <data name="NoteOutputSilenced" xml:space="preserve">
+    <value>Turned every note off: the output may have lost messages it was sent: {0}</value>
+  </data>
+  <data name="NoteOutputs" xml:space="preserve">
+    <value>Outputs: {0}</value>
+  </data>
+  <data name="NoteOutputsNextSong" xml:space="preserve">
+    <value>Output changes take effect from the next song</value>
+  </data>
+  <data name="NotePlaylistDuplicated" xml:space="preserve">
+    <value>Duplicated “{0}”</value>
+  </data>
+  <data name="NotePlaylistExported" xml:space="preserve">
+    <value>Exported playlist: {0}</value>
+  </data>
+  <data name="NotePlaylistLoaded" xml:space="preserve">
+    <value>Loaded playlist: {0}</value>
+  </data>
+  <data name="NotePlaylistSaved" xml:space="preserve">
+    <value>Saved playlist: {0}</value>
+  </data>
+  <data name="NotePortMap" xml:space="preserve">
+    <value>Port map: {0} ({1})</value>
+  </data>
+  <data name="NotePortMapNextSong" xml:space="preserve">
+    <value>Port map: {0} (takes effect from the next song)</value>
+  </data>
+  <data name="NotePortMapVia" xml:space="preserve">
+    <value>Port map: {0} ({1} → {2})</value>
+  </data>
+  <data name="NoteScanFailed" xml:space="preserve">
+    <value>Measuring song lengths gave up: {0}</value>
+  </data>
+  <data name="NoteSongsAdded" xml:space="preserve">
+    <value>Songs added to “{1}”: {0}</value>
+  </data>
+  <data name="NoteSongsAddedPlaying" xml:space="preserve">
+    <value>Songs added to “{1}”: {0} (playback continues)</value>
+  </data>
+  <data name="NoteSongsCopied" xml:space="preserve">
+    <value>Songs copied to “{1}”: {0}</value>
+  </data>
+  <data name="NoteSongsMoved" xml:space="preserve">
+    <value>Songs moved to “{1}”: {0}</value>
+  </data>
+  <data name="NoteSongsRemoved" xml:space="preserve">
+    <value>Songs removed from “{1}”: {0}</value>
+  </data>
+  <data name="NoteSongsTargetCleared" xml:space="preserve">
+    <value>Songs set back to auto-detect: {0}</value>
+  </data>
+  <data name="NoteSongsTargetSet" xml:space="preserve">
+    <value>Songs set to target module {1}: {0}</value>
+  </data>
+  <data name="NoteSwitchFailed" xml:space="preserve">
+    <value>Could not switch songs: {0}</value>
+  </data>
+  <data name="NoteTargetModule" xml:space="preserve">
+    <value>Target module: {0}</value>
+  </data>
+  <data name="NoteUnexpected" xml:space="preserve">
+    <value>Unexpected error: {0}</value>
+  </data>
+  <data name="NoteUnknownUseModule" xml:space="preserve">
+    <value>Output module not in the list, used as given: {0}</value>
+  </data>
+  <data name="NoteUseModuleNextSong" xml:space="preserve">
+    <value>Module: {0} (takes effect from the next song)</value>
+  </data>
+  <data name="OrderFileName" xml:space="preserve">
+    <value>By File Name</value>
+  </data>
+  <data name="OrderRandom" xml:space="preserve">
+    <value>Random</value>
+  </data>
+  <data name="OrderRegistered" xml:space="preserve">
+    <value>List Order</value>
+  </data>
+  <data name="OrderTitle" xml:space="preserve">
+    <value>By Title</value>
+  </data>
+  <data name="OverrideWrongVersion" xml:space="preserve">
+    <value>Its format version does not match: the file is version {0}, and this Glosa reads version {1}. Make it again from define.override.yaml.sample.</value>
+  </data>
+  <data name="PaneDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="PaneMonitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="PickDefinition" xml:space="preserve">
+    <value>Open TMIDI Definition File</value>
+  </data>
+  <data name="PickFolder" xml:space="preserve">
+    <value>Add Folder</value>
+  </data>
+  <data name="PickPlaylist" xml:space="preserve">
+    <value>Open Playlist</value>
+  </data>
+  <data name="PickSongs" xml:space="preserve">
+    <value>Add Songs</value>
+  </data>
+  <data name="PlaylistAdd" xml:space="preserve">
+    <value>Add Playlist</value>
+  </data>
+  <data name="PlaylistClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PlaylistDuplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="PlaylistExportM3u" xml:space="preserve">
+    <value>Export as M3U...</value>
+  </data>
+  <data name="PlaylistOpenInTab" xml:space="preserve">
+    <value>The tab "{0}" has this file open. Save under another name.</value>
+  </data>
+  <data name="PlaylistRename" xml:space="preserve">
+    <value>Rename...</value>
+  </data>
+  <data name="PlaylistSave" xml:space="preserve">
+    <value>Save...</value>
+  </data>
+  <data name="PlaylistTabs" xml:space="preserve">
+    <value>Playlists</value>
+  </data>
+  <data name="PortCannotOpen" xml:space="preserve">
+    <value>Could not open: {0}</value>
+  </data>
+  <data name="PortMapAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="PortMapAuto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="PortMapClearPort" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="PortMapClearPortOf" xml:space="preserve">
+    <value>Clear port {0}</value>
+  </data>
+  <data name="PortMapDefaultTip" xml:space="preserve">
+    <value>This map is used when a song’s target module matches no other map. Target modules cannot be set for it.</value>
+  </data>
+  <data name="PortMapGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="PortMapList" xml:space="preserve">
+    <value>Port Maps</value>
+  </data>
+  <data name="PortMapListTip" xml:space="preserve">
+    <value>Drag to reorder. When more than one map claims the same target module, the higher one is used. The top map cannot be moved.</value>
+  </data>
+  <data name="PortMapName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PortMapPorts" xml:space="preserve">
+    <value>Output Ports</value>
+  </data>
+  <data name="PortMapPortsTip" xml:space="preserve">
+    <value>“Reset” marks the ports that are sent the module’s reset before each song while no TMIDI definition file is loaded. For one device on several ports, check only the first; for separate devices, check each of them. While a definition file is loaded, it decides, and this cannot be changed.</value>
+  </data>
+  <data name="PortMapRemove" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PortMapReset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="PortMapResetOf" xml:space="preserve">
+    <value>Reset port {0}</value>
+  </data>
+  <data name="PortMapTargetModules" xml:space="preserve">
+    <value>Target Modules</value>
+  </data>
+  <data name="PortMapTargetModulesTip" xml:space="preserve">
+    <value>When the port map is “Auto”, songs for the target modules set here play through this map.</value>
+  </data>
+  <data name="PortMapTitle" xml:space="preserve">
+    <value>Port Map Settings</value>
+  </data>
+  <data name="PortMapUseModule" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="PortMapUseModuleEmpty" xml:space="preserve">
+    <value>(module)</value>
+  </data>
+  <data name="PortMapUseModuleTip" xml:space="preserve">
+    <value>Choose the sound module connected to this map’s ports.</value>
+  </data>
+  <data name="PortName" xml:space="preserve">
+    <value>Port {0}</value>
+  </data>
+  <data name="PortOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="PortOpenProblem" xml:space="preserve">
+    <value>{0} ({1}): {2}</value>
+  </data>
+  <data name="PortUnused" xml:space="preserve">
+    <value>(unused)</value>
+  </data>
+  <data name="PriorityHigh" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="PriorityLow" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="PriorityNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="ProblemDeviceNotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="ProblemNotMidiOutput" xml:space="preserve">
+    <value>Not a MIDI output</value>
+  </data>
+  <data name="ProblemSysExDropped" xml:space="preserve">
+    <value>{0}: dropped SysEx messages: {1}</value>
+  </data>
+  <data name="PromptCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RateMidiCable" xml:space="preserve">
+    <value>3125 bytes/s (MIDI cable)</value>
+  </data>
+  <data name="RateUnlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>Rename Playlist</value>
+  </data>
+  <data name="RenamePlaylistPrompt" xml:space="preserve">
+    <value>New name</value>
+  </data>
+  <data name="RepeatAll" xml:space="preserve">
+    <value>Repeat All</value>
+  </data>
+  <data name="RepeatNone" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="RepeatSingle" xml:space="preserve">
+    <value>Single Song</value>
+  </data>
+  <data name="RepeatSingleRepeat" xml:space="preserve">
+    <value>Repeat One</value>
+  </data>
+  <data name="SavePlaylist" xml:space="preserve">
+    <value>Save Playlist</value>
+  </data>
+  <data name="SettingsAllSoundOff" xml:space="preserve">
+    <value>Send All Sound Off on stop</value>
+  </data>
+  <data name="SettingsAppliedAtOnce" xml:space="preserve">
+    <value>Changes take effect immediately. Close the window when done.</value>
+  </data>
+  <data name="SettingsAutoDropPlay" xml:space="preserve">
+    <value>Start playing songs dropped or opened from outside</value>
+  </data>
+  <data name="SettingsDefKeywords" xml:space="preserve">
+    <value>Detect target modules with the TMIDI definition file</value>
+  </data>
+  <data name="SettingsDefKeywordsTip" xml:space="preserve">
+    <value>When off, songs are detected with the patterns in define.yaml. When on, they are detected with the [keyword] section of the TMIDI definition file. Changing this detects every song again.</value>
+  </data>
+  <data name="SettingsDefinition" xml:space="preserve">
+    <value>TMIDI Definition File</value>
+  </data>
+  <data name="SettingsDetectedAsIs" xml:space="preserve">
+    <value>As detected</value>
+  </data>
+  <data name="SettingsDetectedDefaults" xml:space="preserve">
+    <value>When Detection Names No Model</value>
+  </data>
+  <data name="SettingsDetectedDefaultsTip" xml:space="preserve">
+    <value>Which target module a song detected as THRU, GS or XG is played as. "As detected" leaves it as it is. Songs whose target module was set by hand are not affected.</value>
+  </data>
+  <data name="SettingsDetection" xml:space="preserve">
+    <value>Target Module Detection</value>
+  </data>
+  <data name="SettingsDetectionPosition" xml:space="preserve">
+    <value>Model that wins</value>
+  </data>
+  <data name="SettingsDetectionPositionTip" xml:space="preserve">
+    <value>When more than one model is named, whether the one that comes first or the one that comes last is taken.</value>
+  </data>
+  <data name="SettingsDetectionSources" xml:space="preserve">
+    <value>Information to detect from (top first)</value>
+  </data>
+  <data name="SettingsDetectionSourcesTip" xml:space="preserve">
+    <value>What the patterns in define.yaml search, and the song's data. Drag a line to move it. The song's data is used when the others name no model, so it is always last. It decides by the GS, XG and CM-64 initialization messages near the start of the song. The folder path is the part after your home folder. The attached text is the text file with the same name as the song. Changing this detects every song again.</value>
+  </data>
+  <data name="SettingsDisplay" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="SettingsEmulation" xml:space="preserve">
+    <value>Emulation</value>
+  </data>
+  <data name="SettingsFallback" xml:space="preserve">
+    <value>Capital Tone Fallback</value>
+  </data>
+  <data name="SettingsFallbackTip" xml:space="preserve">
+    <value>When the module is a Sound Canvas from the SC-55mkII on (SC-55mkII, SC-33, SC-88, SC-88Pro, SC-8850), a variation tone or drum set it lacks plays on a close one, as on the SC-55.</value>
+  </data>
+  <data name="SettingsHardwareRendering" xml:space="preserve">
+    <value>Draw with the hardware</value>
+  </data>
+  <data name="SettingsHardwareRenderingTip" xml:space="preserve">
+    <value>Off, the processor draws the windows. This may use less memory, but puts more load on the processor.</value>
+  </data>
+  <data name="SettingsLanguage" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="SettingsLoopCount" xml:space="preserve">
+    <value>Endless loop repeats</value>
+  </data>
+  <data name="SettingsMediaKeys" xml:space="preserve">
+    <value>Control with the media keys</value>
+  </data>
+  <data name="SettingsMediaKeysTip" xml:space="preserve">
+    <value>Play, pause, stop and skip songs with the keyboard's media keys and the system's media controls.</value>
+  </data>
+  <data name="SettingsMidiOutReset" xml:space="preserve">
+    <value>Call midiOutReset on stop</value>
+  </data>
+  <data name="SettingsMidiOutput" xml:space="preserve">
+    <value>MIDI Output</value>
+  </data>
+  <data name="SettingsModuleReset" xml:space="preserve">
+    <value>Reset the output module before each song</value>
+  </data>
+  <data name="SettingsModuleResetTip" xml:space="preserve">
+    <value>Without a TMIDI definition file, sends the reset that suits the output module to the port map's ports marked Reset.</value>
+  </data>
+  <data name="SettingsPriority" xml:space="preserve">
+    <value>Process priority</value>
+  </data>
+  <data name="SettingsScanLength" xml:space="preserve">
+    <value>Look up song lengths and target modules in advance</value>
+  </data>
+  <data name="SettingsScanLengthTip" xml:space="preserve">
+    <value>Reads the songs in the list in advance, to show their lengths and target modules. When off, they are shown once a song has been played. Adding many songs takes longer.</value>
+  </data>
+  <data name="SettingsSequencer" xml:space="preserve">
+    <value>Sequencer</value>
+  </data>
+  <data name="SettingsTakesEffectAtStart" xml:space="preserve">
+    <value>Takes effect the next time Glosa starts.</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Preferences</value>
+  </data>
+  <data name="SettingsToneMap" xml:space="preserve">
+    <value>Switch tone maps to suit the target module</value>
+  </data>
+  <data name="SettingsToneMapTip" xml:space="preserve">
+    <value>Without a TMIDI definition file, when the output module is an SC-88 or later or an MU100 or later, plays a song for an earlier model on that model's tone map.</value>
+  </data>
+  <data name="SettingsTooNew" xml:space="preserve">
+    <value>The file is in format version {0}, newer than version {1}, which this Glosa reads</value>
+  </data>
+  <data name="SettingsTransferRate" xml:space="preserve">
+    <value>Transfer rate limit</value>
+  </data>
+  <data name="SettingsTrimTitles" xml:space="preserve">
+    <value>Trim extra spaces in titles</value>
+  </data>
+  <data name="ShowFileName" xml:space="preserve">
+    <value>File Name</value>
+  </data>
+  <data name="ShowPath" xml:space="preserve">
+    <value>Full Path</value>
+  </data>
+  <data name="ShowTitle" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="SongsCopyPath" xml:space="preserve">
+    <value>Copy Path</value>
+  </data>
+  <data name="SongsCopyTo" xml:space="preserve">
+    <value>Copy to Playlist</value>
+  </data>
+  <data name="SongsMoveTo" xml:space="preserve">
+    <value>Move to Playlist</value>
+  </data>
+  <data name="SongsRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SongsShow" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="SongsShowInFileManager" xml:space="preserve">
+    <value>Open in File Manager</value>
+  </data>
+  <data name="SongsSort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="SongsTargetModule" xml:space="preserve">
+    <value>Target Module</value>
+  </data>
+  <data name="SortFileName" xml:space="preserve">
+    <value>By File Name</value>
+  </data>
+  <data name="SortLength" xml:space="preserve">
+    <value>By Length (Shortest First)</value>
+  </data>
+  <data name="SortLengthDescending" xml:space="preserve">
+    <value>By Length (Longest First)</value>
+  </data>
+  <data name="SortModule" xml:space="preserve">
+    <value>By Target Module</value>
+  </data>
+  <data name="SortPath" xml:space="preserve">
+    <value>By Path</value>
+  </data>
+  <data name="SortTitle" xml:space="preserve">
+    <value>By Title</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Port map: {0}   Target: {1} → Module: {2}</value>
+  </data>
+  <data name="StatusWithEmulation" xml:space="preserve">
+    <value>Port map: {0}   Target: {1} → Module: {2}   {3}</value>
+  </data>
+  <data name="Stopped" xml:space="preserve">
+    <value>(stopped)</value>
+  </data>
+  <data name="ToneMapInForce" xml:space="preserve">
+    <value>Tone map: {0}</value>
+  </data>
+  <data name="TransportNext" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="TransportPause" xml:space="preserve">
+    <value>Pause / Resume</value>
+  </data>
+  <data name="TransportPlay" xml:space="preserve">
+    <value>Play</value>
+  </data>
+  <data name="TransportPrevious" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="TransportSeek" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="TransportStop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Something went wrong that Glosa was not prepared for. It carries on, but if it does not behave, restart it.
+
+{0}</value>
+  </data>
+  <data name="UnexpectedErrorTitle" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+</root>

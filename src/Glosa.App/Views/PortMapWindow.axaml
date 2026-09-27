@@ -1,0 +1,192 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Glosa.App"
+        xmlns:vm="using:Glosa.App.ViewModels"
+        xmlns:c="using:Glosa.App.Controls"
+        x:Class="Glosa.App.Views.PortMapWindow"
+        x:DataType="vm:MainViewModel"
+        Width="630" Height="572" MinWidth="560" MinHeight="420"
+        Title="{x:Static l:Strings.PortMapTitle}">
+
+    <Window.Styles>
+        <!--
+          A label is either its text alone or its text with an (i) after it; both take the
+          same width, so the controls beside them line up either way.
+        -->
+        <Style Selector="TextBlock.label, StackPanel.label">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="72" />
+        </Style>
+        <Style Selector="TextBlock.label, StackPanel.label > TextBlock">
+            <Setter Property="Opacity" Value="0.75" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="StackPanel.label, StackPanel.header">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="4" />
+        </Style>
+        <Style Selector="StackPanel.row">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="6" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+    </Window.Styles>
+
+    <!-- The list of maps on the left, what one map holds on the right. -->
+    <Grid Margin="12" ColumnDefinitions="200,12,*">
+
+        <!-- Left: every map, with the one in use marked the way the playlist marks a song. -->
+        <HeaderedContentControl Grid.Column="0" Classes="group" Margin="0">
+            <HeaderedContentControl.Header>
+                <StackPanel Classes="header">
+                    <TextBlock Text="{x:Static l:Strings.PortMapList}" VerticalAlignment="Center" />
+                    <c:InfoTip Text="{x:Static l:Strings.PortMapListTip}" />
+                </StackPanel>
+            </HeaderedContentControl.Header>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                            Margin="0,6,0,0" Spacing="6">
+                    <Button Content="{x:Static l:Strings.PortMapAdd}" Width="62" Command="{Binding AddPortMapCommand}" />
+                    <Button Content="{x:Static l:Strings.PortMapRemove}" Width="62" Command="{Binding RemovePortMapCommand}"
+                            IsEnabled="{Binding CanRemovePortMap}" />
+                </StackPanel>
+
+                <!--
+                  Dragging a row moves the map. The order is what the auto-switch walks, so two
+                  maps naming the same target module are settled by which sits higher.
+                -->
+                <ListBox ItemsSource="{Binding PortMaps}" SelectedItem="{Binding EditedMap}"
+                         AutomationProperties.Name="{x:Static l:Strings.PortMapList}"
+                         Loaded="OnListLoaded">
+                    <!-- Without a name of its own, a row is read out as its view model's type name. -->
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem" x:DataType="vm:PortMapViewModel">
+                            <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PortMapViewModel">
+                            <Grid ColumnDefinitions="14,*">
+                                <TextBlock Grid.Column="0" Text="{Binding Marker}" FontSize="10"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding Title}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </HeaderedContentControl>
+
+        <!-- Right: the map being looked at. Disabled outright when there is none. -->
+        <ScrollViewer Grid.Column="2" Padding="0,0,12,0"
+                      IsEnabled="{Binding EditedMap, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <StackPanel>
+                <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.PortMapGeneral}">
+                    <StackPanel>
+                        <StackPanel Classes="row">
+                            <TextBlock Classes="label" Text="{x:Static l:Strings.PortMapName}" />
+                            <TextBox Width="220" Text="{Binding EditedMap.Title}"
+                                     AutomationProperties.Name="{x:Static l:Strings.PortMapName}" />
+                        </StackPanel>
+
+                        <StackPanel Classes="row">
+                            <StackPanel Classes="label">
+                                <TextBlock Text="{x:Static l:Strings.PortMapUseModule}" />
+                                <c:InfoTip Text="{x:Static l:Strings.PortMapUseModuleTip}" />
+                            </StackPanel>
+                            <ComboBox Width="220" ItemsSource="{Binding UseModules}"
+                                      AutomationProperties.Name="{x:Static l:Strings.PortMapUseModule}"
+                                      SelectedItem="{Binding EditedMap.UseModule}"
+                                      PlaceholderText="{x:Static l:Strings.PortMapUseModuleEmpty}" />
+                        </StackPanel>
+                    </StackPanel>
+                </HeaderedContentControl>
+
+                <HeaderedContentControl Classes="group">
+                    <HeaderedContentControl.Header>
+                        <StackPanel Classes="header">
+                            <TextBlock Text="{x:Static l:Strings.PortMapPorts}" VerticalAlignment="Center" />
+                            <c:InfoTip Text="{x:Static l:Strings.PortMapPortsTip}" />
+                        </StackPanel>
+                    </HeaderedContentControl.Header>
+                    <ItemsControl ItemsSource="{Binding EditedMap.Ports}"
+                                  AutomationProperties.Name="{x:Static l:Strings.PortMapPorts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PortSlotViewModel">
+                                <!--
+                                  The device list takes whatever width the row has left, so the
+                                  button stays inside the outline at the window's narrowest and
+                                  a long device name gets the room when the window is wider.
+                                -->
+                                <Grid ColumnDefinitions="22,14,*,Auto,Auto" Margin="0,2">
+                                    <TextBlock Text="{Binding Label}" FontFamily="Consolas"
+                                               VerticalAlignment="Center" Opacity="0.75" />
+                                    <!-- Whether the device is open, per device: see StateMark. -->
+                                    <TextBlock Grid.Column="1" Text="{Binding StateMark}"
+                                               FontSize="10" VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               ToolTip.Tip="{Binding StateText}" />
+                                    <ComboBox Grid.Column="2" Margin="6,0"
+                                              HorizontalAlignment="Stretch"
+                                              AutomationProperties.Name="{Binding Label}"
+                                              ItemsSource="{Binding Devices}"
+                                              SelectedItem="{Binding Device}"
+                                              PlaceholderText="{Binding Placeholder}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate><TextBlock Text="{Binding Name}" /></DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <!--
+                                      Off with a DEF loaded. These two reach up the tree to the
+                                      window's view model, not the slot's, and are named by their
+                                      port, since every row has the same two.
+                                    -->
+                                    <CheckBox Grid.Column="3" Content="{x:Static l:Strings.PortMapReset}" Margin="0,0,6,0"
+                                              AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapResetOf}}"
+                                              IsChecked="{Binding Reset}"
+                                              IsEnabled="{Binding $parent[Window].((vm:MainViewModel)DataContext).ResetPortsEditable}" />
+                                    <Button Grid.Column="4" Content="{x:Static l:Strings.PortMapClearPort}"
+                                            AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapClearPortOf}}"
+                                            Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ClearPortCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </HeaderedContentControl>
+
+                <!--
+                  For the default map, which names nothing, the controls are switched off
+                  rather than hidden, and its (i) says why. The last group, so it leaves no
+                  gap below it to scroll past.
+                -->
+                <HeaderedContentControl Classes="group" Margin="0">
+                    <HeaderedContentControl.Header>
+                        <StackPanel Classes="header">
+                            <TextBlock Text="{x:Static l:Strings.PortMapTargetModules}" VerticalAlignment="Center" />
+                            <c:InfoTip IsVisible="{Binding CanClaimModules}"
+                                       Text="{x:Static l:Strings.PortMapTargetModulesTip}" />
+                            <c:InfoTip IsVisible="{Binding EditedIsDefault}"
+                                       Text="{x:Static l:Strings.PortMapDefaultTip}" />
+                        </StackPanel>
+                    </HeaderedContentControl.Header>
+                    <!--
+                      A fixed width: stretched, its scroll bar would sit under the window's
+                      own, which overlays the content.
+                    -->
+                    <ListBox Width="220" HorizontalAlignment="Left" Height="176"
+                             AutomationProperties.Name="{x:Static l:Strings.PortMapTargetModules}"
+                             IsEnabled="{Binding CanClaimModules}"
+                             ItemsSource="{Binding ModuleClaims}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ModuleClaimViewModel">
+                                <CheckBox Content="{Binding Module}" IsChecked="{Binding Claimed}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </HeaderedContentControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

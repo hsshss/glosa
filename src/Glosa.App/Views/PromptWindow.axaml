@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Glosa.App"
+        x:Class="Glosa.App.Views.PromptWindow"
+        Width="340" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <StackPanel Margin="12" Spacing="8">
+        <TextBlock Name="Label" TextWrapping="Wrap" />
+        <TextBox Name="Entry" KeyDown="OnKeyDown" />
+        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+            <Button Content="OK" Click="OnAccept" IsDefault="True" MinWidth="72" />
+            <Button Content="{x:Static l:Strings.PromptCancel}" Click="OnCancel" IsCancel="True" MinWidth="72" />
+        </StackPanel>
+    </StackPanel>
+</Window>

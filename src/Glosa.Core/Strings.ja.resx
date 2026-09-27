@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the library tells the user: why a file cannot be loaded, and what is wrong with define.yaml.
+
+  Japanese. The names are those of Strings.resx, the English neutral file; a name left out
+  here is shown in English.
+
+  {0}, {1} ... are filled in with string.Format, in whatever order the language wants
+  them.
+-->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ArchiveEntryMissing" xml:space="preserve">
+    <value>書庫の中に見つかりません: {0}</value>
+  </data>
+  <data name="ArchiveEntryTooLarge" xml:space="preserve">
+    <value>{0}: 書庫の中のファイルが大きすぎます</value>
+  </data>
+  <data name="DefineModuleUnnamed" xml:space="preserve">
+    <value>modules: 名前のない項目があります</value>
+  </data>
+  <data name="DefineUnknownInitializeType" xml:space="preserve">
+    <value>{0}: initializeType {1} — {2} のどれかを指定してください</value>
+  </data>
+  <data name="FileReadOnly" xml:space="preserve">
+    <value>ファイルが読み取り専用です</value>
+  </data>
+  <data name="G36HeaderShort" xml:space="preserve">
+    <value>G36のヘッダが短すぎます</value>
+  </data>
+  <data name="FormatTooNew" xml:space="preserve">
+    <value>ファイルの形式がバージョン {0} で、この Glosa が読めるバージョン {1} より新しいです</value>
+  </data>
+  <data name="InitCut" xml:space="preserve">
+    <value>スクリプトを展開すると {0} バイトを超えるので、そこで打ち切ります</value>
+  </data>
+  <data name="LzhBlockEmpty" xml:space="preserve">
+    <value>LZHのブロックが空です</value>
+  </data>
+  <data name="LzhCrcMismatch" xml:space="preserve">
+    <value>{0}: 展開した内容が壊れています (CRC)</value>
+  </data>
+  <data name="LzhDataBroken" xml:space="preserve">
+    <value>LZHのデータが壊れています</value>
+  </data>
+  <data name="LzhHeaderBroken" xml:space="preserve">
+    <value>LZHのヘッダが壊れています</value>
+  </data>
+  <data name="LzhHeaderCut" xml:space="preserve">
+    <value>LZHのヘッダが途中で切れています</value>
+  </data>
+  <data name="LzhTableBroken" xml:space="preserve">
+    <value>LZHの符号表が壊れています</value>
+  </data>
+  <data name="LzhUnknownMethod" xml:space="preserve">
+    <value>{0}: 対応していない圧縮方式です ({1})</value>
+  </data>
+  <data name="M3uTooLarge" xml:space="preserve">
+    <value>M3U ファイルが大きすぎます</value>
+  </data>
+  <data name="NotUtf8" xml:space="preserve">
+    <value>ファイルが UTF-8 ではありません</value>
+  </data>
+  <data name="RcpHeaderShort" xml:space="preserve">
+    <value>RCPのヘッダが短すぎます</value>
+  </data>
+  <data name="RcpLoopTooLarge" xml:space="preserve">
+    <value>ループの展開が大きすぎます</value>
+  </data>
+  <data name="RcpNotRecomposer" xml:space="preserve">
+    <value>レコンポーザのデータではありません</value>
+  </data>
+  <data name="RcpSameMeasureBroken" xml:space="preserve">
+    <value>同一小節の参照先が壊れています</value>
+  </data>
+  <data name="RcpSameMeasureCycle" xml:space="preserve">
+    <value>同一小節の参照が循環しています</value>
+  </data>
+  <data name="RuleUnreadable" xml:space="preserve">
+    <value>'{0}' は規則として読めません (読めないフィールドは0として登録します)</value>
+  </data>
+  <data name="YamlTooDeep" xml:space="preserve">
+    <value>ファイルの入れ子が {0} 段より深くなっています</value>
+  </data>
+</root>

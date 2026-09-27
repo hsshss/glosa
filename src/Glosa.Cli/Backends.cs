@@ -1,0 +1,51 @@
+using Glosa.Core.Playback;
+using Glosa.Midi;
+#if WINDOWS
+using Glosa.Midi.Windows;
+#endif
+#if MACOS
+using Glosa.Midi.MacOS;
+#endif
+#if LINUX
+using Glosa.Midi.Linux;
+#endif
+
+namespace Glosa.Cli;
+
+/// <summary>
+/// The platform's MIDI outputs and timer: the one place the harness picks them.
+/// </summary>
+/// <remarks>
+/// Each backend is also checked at run time: a build made for no runtime carries the
+/// building machine's backend, and can be run elsewhere.
+/// </remarks>
+internal static class Backends
+{
+    /// <summary>The MIDI outputs, or null where the platform has none.</summary>
+    public static IMidiOutputFactory? MidiOutputs { get; } = CreateMidiOutputs();
+
+    /// <summary>What raises the system timer's resolution while playing, where there is one.</summary>
+    public static IPlatformTimer Timer { get; } = CreateTimer();
+
+    private static IMidiOutputFactory? CreateMidiOutputs()
+    {
+#if WINDOWS
+        if (WinMmOutputFactory.IsSupported) return new WinMmOutputFactory();
+#endif
+#if MACOS
+        if (CoreMidiOutputFactory.IsSupported) return new CoreMidiOutputFactory();
+#endif
+#if LINUX
+        if (AlsaSeqOutputFactory.IsSupported) return new AlsaSeqOutputFactory();
+#endif
+        return null;
+    }
+
+    private static IPlatformTimer CreateTimer()
+    {
+#if WINDOWS
+        if (OperatingSystem.IsWindows()) return new WinMmPlatformTimer();
+#endif
+        return NullPlatformTimer.Instance;
+    }
+}

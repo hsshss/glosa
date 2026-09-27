@@ -1,0 +1,192 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Glosa.App"
+             xmlns:vm="using:Glosa.App.ViewModels"
+             xmlns:s="using:Glosa.App.Services"
+             x:Class="Glosa.App.Views.PlaylistView"
+             x:DataType="vm:MainViewModel">
+
+    <!-- Built in code, one per tab: see PlaylistView.SyncLists. -->
+    <UserControl.Resources>
+        <DataTemplate x:Key="PlaylistList" x:DataType="vm:PlaylistTabViewModel">
+            <!--
+              Multiple, not Toggle: a plain click still picks one row, and Shift and
+              Ctrl extend the way they do in a file list.
+            -->
+            <ListBox Classes="plain"
+                     AutomationProperties.Name="{Binding Name}"
+                     ItemsSource="{Binding Items}"
+                     SelectedItem="{Binding Selected}"
+                     SelectionMode="Multiple"
+                     DoubleTapped="OnPlaySelected"
+                     KeyDown="OnListKeyDown"
+                     ContextRequested="OnListContextRequested">
+                <ListBox.ContextMenu>
+                    <!-- The submenus are filled in code as the menu opens. -->
+                    <ContextMenu>
+                        <MenuItem Name="Modules" Header="{x:Static l:Strings.SongsTargetModule}"
+                                  Icon="{StaticResource IconModule}" />
+                        <Separator />
+                        <MenuItem Name="CopyTo" Header="{x:Static l:Strings.SongsCopyTo}"
+                                  Icon="{StaticResource IconCopy}" />
+                        <MenuItem Name="MoveTo" Header="{x:Static l:Strings.SongsMoveTo}"
+                                  Icon="{StaticResource IconMoveTo}" />
+                        <Separator />
+                        <!-- The whole list, not the selected rows: an order is a
+                             fact about all of them. -->
+                        <MenuItem Header="{x:Static l:Strings.SongsSort}"
+                                  Icon="{StaticResource IconOrder}">
+                            <MenuItem Header="{x:Static l:Strings.SortTitle}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.Title}" />
+                            <MenuItem Header="{x:Static l:Strings.SortFileName}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.FileName}" />
+                            <MenuItem Header="{x:Static l:Strings.SortPath}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.Path}" />
+                            <MenuItem Header="{x:Static l:Strings.SortModule}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.Module}" />
+                            <MenuItem Header="{x:Static l:Strings.SortLength}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.Length}" />
+                            <MenuItem Header="{x:Static l:Strings.SortLengthDescending}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.LengthDescending}" />
+                        </MenuItem>
+                        <!-- For every list, not only this one: see MainViewModel.SongLabel. -->
+                        <MenuItem Name="Show" Header="{x:Static l:Strings.SongsShow}"
+                                  Icon="{StaticResource IconShow}">
+                            <MenuItem Header="{x:Static l:Strings.ShowTitle}" ToggleType="Radio"
+                                      Click="OnShow" Tag="{x:Static s:SongLabel.Title}" />
+                            <MenuItem Header="{x:Static l:Strings.ShowFileName}" ToggleType="Radio"
+                                      Click="OnShow" Tag="{x:Static s:SongLabel.FileName}" />
+                            <MenuItem Header="{x:Static l:Strings.ShowPath}" ToggleType="Radio"
+                                      Click="OnShow" Tag="{x:Static s:SongLabel.Path}" />
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Name="CopyPath" Header="{x:Static l:Strings.SongsCopyPath}"
+                                  Click="OnCopyPaths" Icon="{StaticResource IconCopy}" />
+                        <MenuItem Header="{x:Static l:Strings.SongsShowInFileManager}"
+                                  Click="OnShowInFileManager" Icon="{StaticResource IconFolderOpen}" />
+                        <Separator />
+                        <MenuItem Header="{x:Static l:Strings.SongsRemove}" Click="OnRemoveSelected"
+                                  Icon="{StaticResource IconDelete}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <!-- Without a name of its own, a row is read out as its view model's type name. -->
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem" x:DataType="vm:PlaylistItemViewModel">
+                        <Setter Property="AutomationProperties.Name" Value="{Binding Display}" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlaylistItemViewModel">
+                        <!--
+                          The mark column is a fixed width, not Auto, so every title
+                          sits at the same indent whether its row has the mark or not.
+                        -->
+                        <Grid ColumnDefinitions="13,*,96,Auto">
+                            <!--
+                              The row's foreground, not the accent, which would vanish
+                              on a selected row.
+                            -->
+                            <TextBlock Grid.Column="0" Text="{Binding Marker}"
+                                       FontSize="10" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Display}"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding Path}" />
+                            <!--
+                              Bracketed means the player worked it out and may yet
+                              change its mind; bare means someone said so.
+                            -->
+                            <TextBlock Grid.Column="2" Text="{Binding ModuleText}"
+                                       Opacity="0.65" Margin="20,0,0,0" FontSize="12"
+                                       TextAlignment="Right"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="{Binding Length}"
+                                       Opacity="0.65" Margin="20,0,0,0"
+                                       FontFamily="Consolas, monospace" FontSize="12"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Fluent's tab headers are display-sized; these name a list, not a page. -->
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="9,0" />
+        </Style>
+        <Style Selector="Button.addTab">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Margin" Value="3,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <TabControl Name="Tabs" DockPanel.Dock="Top"
+                    AutomationProperties.Name="{x:Static l:Strings.PlaylistTabs}"
+                    ItemsSource="{Binding Playlists}"
+                    SelectedItem="{Binding SelectedPlaylist}">
+            <!--
+              Only the strip, with the add button at its end. The lists are not the tab
+              control's content, which is one presenter whose list the tabs take turns in.
+            -->
+            <TabControl.Template>
+                <ControlTemplate>
+                    <!--
+                      Right after the last tab, not at the far edge of the window, while the
+                      tabs fit. Once they do not, they scroll and the button stays at the edge:
+                      left-aligned, the grid is no wider than it needs to be.
+                    -->
+                    <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Left">
+                        <ScrollViewer Name="TabScroll"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </ScrollViewer>
+                        <Button Grid.Column="1" Classes="addTab" Content="+" Click="OnNewPlaylist"
+                                ToolTip.Tip="{x:Static l:Strings.PlaylistAdd}"
+                                AutomationProperties.Name="{x:Static l:Strings.PlaylistAdd}" />
+                    </Grid>
+                </ControlTemplate>
+            </TabControl.Template>
+
+            <TabControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:PlaylistTabViewModel">
+                    <!-- Cut short, so one long name does not take the strip. -->
+                    <TextBlock Text="{Binding Header}" ToolTip.Tip="{Binding FilePath}"
+                               MaxWidth="200" TextTrimming="CharacterEllipsis">
+                        <TextBlock.ContextMenu>
+                            <!-- No "new" here: the + at the end of the strip is that. -->
+                            <ContextMenu>
+                                <MenuItem Header="{x:Static l:Strings.PlaylistRename}" Click="OnRenamePlaylist"
+                                          Icon="{StaticResource IconRename}" />
+                                <MenuItem Header="{x:Static l:Strings.PlaylistDuplicate}" Click="OnDuplicatePlaylist"
+                                          Icon="{StaticResource IconDuplicate}" />
+                                <Separator />
+                                <MenuItem Header="{x:Static l:Strings.PlaylistSave}" Click="OnSavePlaylist"
+                                          Icon="{StaticResource IconSave}" />
+                                <MenuItem Header="{x:Static l:Strings.PlaylistExportM3u}" Click="OnExportM3u" />
+                                <Separator />
+                                <MenuItem Header="{x:Static l:Strings.PlaylistClose}" Click="OnCloseTab"
+                                          Icon="{StaticResource IconClose}" />
+                            </ContextMenu>
+                        </TextBlock.ContextMenu>
+                    </TextBlock>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+
+        </TabControl>
+        <Border Classes="card">
+            <Panel Name="Lists" />
+        </Border>
+    </DockPanel>
+</UserControl>

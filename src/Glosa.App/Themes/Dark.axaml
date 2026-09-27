@@ -1,0 +1,313 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Glosa.App.Controls">
+    <!--
+      The chrome around the display. The palette itself lives in App.axaml, where it is
+      handed to the Fluent theme; what is here is the handful of surfaces and the control
+      tweaks that the palette alone cannot express.
+
+      The house colours are a cool blue ink with a cyan accent, chosen against the panel
+      rather than with it: every backlight the modules use is warm (Roland amber, Yamaha
+      yellow-green, Korg spring green), so a cool chassis leaves the display the only warm
+      thing on screen, which is where the eye should go.
+    -->
+    <Styles.Resources>
+        <Color x:Key="AppInkColor">#FF0C0E13</Color>
+        <Color x:Key="AppAccentColor">#FF35B0CE</Color>
+
+        <SolidColorBrush x:Key="AppInkBrush" Color="{StaticResource AppInkColor}" />
+        <SolidColorBrush x:Key="AppSurfaceBrush" Color="#FF1A1E27" />
+        <SolidColorBrush x:Key="AppSurfaceHoverBrush" Color="#FF222835" />
+        <SolidColorBrush x:Key="AppLineBrush" Color="#FF2B313E" />
+        <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+        <SolidColorBrush x:Key="AppAccentDimBrush" Color="{StaticResource AppAccentColor}"
+                         Opacity="0.45" />
+
+        <!-- Barely a gradient: enough to keep a tall window from reading as a flat slab. -->
+        <LinearGradientBrush x:Key="AppWindowBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#FF191D26" />
+            <GradientStop Offset="1" Color="#FF101318" />
+        </LinearGradientBrush>
+
+        <!--
+          Fluent is sized for touch. This player wants a long song list and sixteen part rows
+          on screen at once, driven with a mouse, so every control is taken down a size, on
+          top of the Compact density App.axaml asks for.
+        -->
+        <x:Double x:Key="ControlContentThemeFontSize">12</x:Double>
+        <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
+        <!--
+          Fluent wraps a tooltip at 320 px. Most tooltips here carry a file's full path, so
+          this is wide enough for a deep path on one line; a paragraph of song notes still
+          wraps.
+        -->
+        <x:Double x:Key="ToolTipContentMaxWidth">800</x:Double>
+
+        <Thickness x:Key="ButtonPadding">10,3,10,4</Thickness>
+
+        <x:Double x:Key="ComboBoxMinHeight">26</x:Double>
+        <Thickness x:Key="ComboBoxPadding">9,2,9,3</Thickness>
+        <Thickness x:Key="ComboBoxItemThemePadding">9,3,9,4</Thickness>
+
+        <x:Double x:Key="TextControlThemeMinHeight">26</x:Double>
+        <Thickness x:Key="TextControlThemePadding">9,3,9,4</Thickness>
+
+        <Thickness x:Key="ListBoxItemPadding">8,2,8,3</Thickness>
+
+        <x:Double x:Key="CheckBoxMinHeight">24</x:Double>
+        <x:Double x:Key="RadioButtonMinHeight">24</x:Double>
+
+        <!--
+          The bar's height is its own resource, not something the padding adds up to: leave
+          it alone and a 12pt label sits in a 32px strip.
+        -->
+        <x:Double x:Key="MenuBarHeight">24</x:Double>
+        <Thickness x:Key="MenuBarItemPadding">9,2,9,2</Thickness>
+        <Thickness x:Key="MenuFlyoutItemThemePadding">10,4,10,5</Thickness>
+        <!--
+          A few pixels more on the left than Fluent's, which sets the icon close to the edge
+          of the drop-down. The check and choice marks share this margin, so marks and icons
+          stay on one line.
+        -->
+        <Thickness x:Key="MenuIconPresenterMargin">4,0,12,0</Thickness>
+
+        <x:Double x:Key="ScrollBarSize">10</x:Double>
+
+        <x:Double x:Key="SliderHorizontalHeight">26</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbWidth">16</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbHeight">16</x:Double>
+        <!-- These two are GridLength in Fluent, not Thickness: they are row heights. -->
+        <GridLength x:Key="SliderPreContentMargin">3</GridLength>
+        <GridLength x:Key="SliderPostContentMargin">3</GridLength>
+
+        <x:Double x:Key="TabItemMinHeight">26</x:Double>
+        <x:Double x:Key="TabItemHeaderFontSize">13</x:Double>
+        <Thickness x:Key="TabItemMargin">0,0,0,0</Thickness>
+    </Styles.Resources>
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource AppWindowBrush}" />
+        <!-- Built from tools/icon by build-icon.ps1; edit the SVGs there, not the .ico. -->
+        <Setter Property="Icon" Value="/Assets/glosa.ico" />
+    </Style>
+
+    <!-- The menu bar belongs to the window, not to a strip of its own. -->
+    <Style Selector="Menu">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!--
+      Fluent's padding is taller than a row: under a short menu it reads as an empty entry.
+    -->
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Padding" Value="0,3" />
+    </Style>
+
+    <!--
+      Every item that is not a check or a choice keeps its icon column, icon or not, so the
+      text of every item starts in the same place. Fluent shows the column only for an item
+      that has an icon. Checks and choices keep their mark's column the same way: Fluent
+      shows it only while the item is ticked, which would make the text jump when switched.
+
+      The icon follows the text's colour as it lights and dims; Fluent recolours only the
+      text.
+    -->
+    <Style Selector="MenuItem:not(:toggle):not(:radio) /template/ ContentControl#PART_IconPresenter">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="MenuItem:toggle /template/ ContentControl#PART_ToggleIconPresenter,
+                     MenuItem:radio /template/ ContentControl#PART_ToggleIconPresenter">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="MenuItem:selected /template/ ContentControl#PART_IconPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
+    </Style>
+    <Style Selector="MenuItem:disabled /template/ ContentControl#PART_IconPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
+    </Style>
+
+    <!--
+      A section of a settings window: an outline with its name set into the top edge, the
+      group box of old. Avalonia has none, so a HeaderedContentControl is dressed as one.
+
+      The label is not painted over the line to hide it — the window's background is a
+      gradient, and no one colour behind the label would match it. The top edge is instead
+      drawn in two pieces either side of the label, each half the label's height with its
+      line along the top, so the edge meets the label at its middle.
+    -->
+    <Style Selector="HeaderedContentControl.group">
+        <Setter Property="BorderBrush" Value="{DynamicResource AppLineBrush}" />
+        <Setter Property="Padding" Value="10,4,10,8" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="8,Auto,*">
+                        <Border Grid.Column="0" Height="8" VerticalAlignment="Bottom"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,1,0,0" CornerRadius="4,0,0,0" />
+                        <ContentPresenter Grid.Column="1" Height="16" Margin="4,0"
+                                          Content="{TemplateBinding Header}"
+                                          FontWeight="SemiBold"
+                                          VerticalContentAlignment="Center" />
+                        <Border Grid.Column="2" Height="8" VerticalAlignment="Bottom"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0,1,1,0" CornerRadius="0,4,0,0" />
+                    </Grid>
+                    <Border Grid.Row="1" Padding="{TemplateBinding Padding}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!--
+      The (i) beside a label. Dimmed like the labels it sits by, and lit under the pointer
+      so it reads as something to hover over rather than decoration.
+    -->
+    <Style Selector="PathIcon.info">
+        <Setter Property="Data" Value="{DynamicResource IconInfo}" />
+        <Setter Property="Width" Value="14" />
+        <Setter Property="Height" Value="14" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Opacity" Value="0.6" />
+        <Setter Property="Cursor" Value="Help" />
+        <Setter Property="ToolTip.ShowDelay" Value="200" />
+    </Style>
+    <Style Selector="PathIcon.info:pointerover">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- A panel: the LCD bezel, the transport, the playlist. -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <!--
+      Inverted from a backlit panel's dark marks on a lit ground: the lit dot is the bright
+      one and the ground is the ink the bezel is cut from.
+    -->
+    <Style Selector="c|LcdPanel">
+        <Setter Property="Background" Value="{DynamicResource AppInkBrush}" />
+        <Setter Property="Foreground" Value="#FFE6ECF7" />
+        <Setter Property="UnlitBrush" Value="#FF1D2330" />
+    </Style>
+
+    <!--
+      The display sits in a recess: ink inside, which is darker than the window everywhere
+      the display appears, so the shape is its own edge. No line — the transport beside it
+      has none either, and one box drawn and one not would read as a mistake.
+    -->
+    <Style Selector="Border.bezel">
+        <Setter Property="Background" Value="{DynamicResource AppInkBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <!--
+      Fluent left-aligns the label of a button wider than it (a dialog's OK next to a longer
+      Cancel). Centred here for every button, since that is the normal case.
+    -->
+    <Style Selector="Button">
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.transport">
+        <Setter Property="Width" Value="38" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppLineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <!--
+      Fluent hangs the hover and pressed fills off the template's content presenter, so the
+      states have to be reached there; a setter on the button alone only dresses the resting
+      state.
+    -->
+    <Style Selector="Button.transport:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceHoverBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentDimBrush}" />
+    </Style>
+    <Style Selector="Button.transport:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppInkBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+    </Style>
+
+    <!--
+      The play button is one of the row until a song is running: lighting it while nothing
+      plays would say a state the transport is not in. The glyph is a size larger, which is
+      the whole of what marks it out when it is unlit.
+    -->
+    <Style Selector="Button.transport.play">
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- Playing. After the plain rules, which is what lets these win. -->
+    <Style Selector="Button.transport.play.playing">
+        <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+    <Style Selector="Button.transport.play.playing:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF4FC6E2" />
+        <Setter Property="BorderBrush" Value="#FF4FC6E2" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+    <Style Selector="Button.transport.play.playing:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF1E8CA6" />
+        <Setter Property="BorderBrush" Value="#FF1E8CA6" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+
+    <!--
+      Pause lights only while a song is held, so the row tells stopped from held. It shares
+      the accent with a running play button: only one of the two is ever lit.
+
+      The hover and pressed states are restated because the plain transport rules above would
+      otherwise take the colour off under the pointer, which is where it rests after a press.
+    -->
+    <Style Selector="Button.transport.paused">
+        <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppAccentBrush}" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+    <Style Selector="Button.transport.paused:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF4FC6E2" />
+        <Setter Property="BorderBrush" Value="#FF4FC6E2" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+    <Style Selector="Button.transport.paused:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF1E8CA6" />
+        <Setter Property="BorderBrush" Value="#FF1E8CA6" />
+        <Setter Property="Foreground" Value="#FF08131A" />
+    </Style>
+
+    <!-- Lists are the body of the window, so they sit on the card, not on a box of their own. -->
+    <Style Selector="ListBox.plain">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style Selector="ListBox.plain ListBoxItem">
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="MinHeight" Value="22" />
+    </Style>
+
+    <Style Selector="TextBlock.caption">
+        <Setter Property="Opacity" Value="0.7" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+</Styles>

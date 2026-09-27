@@ -1,0 +1,113 @@
+# Builds the release files and attaches them to the release; run by hand with a tag, it
+# builds them again and replaces those already attached.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The tag of the release to build
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  AVALONIA_TELEMETRY_OPTOUT: 1
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: version
+        shell: bash
+        run: |
+          version=${TAG#v}
+          if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::The tag '$TAG' is not a version (v1.2.0, or 1.2.0-beta.1)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test tests/Glosa.Tests/Glosa.Tests.csproj
+
+  windows:
+    needs: [version, test]
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - shell: pwsh
+        run: |
+          foreach ($rid in 'win-x64', 'win-arm64') {
+            tools/windows/package.ps1 -Rid $rid -Version $env:VERSION -Out out
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          gh release upload $env:TAG (Get-ChildItem out/*.zip).FullName --clobber
+
+  macos:
+    needs: [version, test]
+    runs-on: macos-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - shell: bash
+        run: |
+          set -eu
+          for rid in osx-arm64 osx-x64; do
+            tools/macos/build-app.sh -r "$rid" --version "$VERSION" -o "out/$rid"
+            ditto -c -k --keepParent "out/$rid/Glosa.app" "out/glosa-$VERSION-$rid.zip"
+          done
+          gh release upload "$TAG" out/*.zip --clobber
+
+  linux:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - shell: bash
+        run: |
+          set -eu
+          for rid in linux-x64 linux-arm64; do
+            tools/linux/package.sh -r "$rid" --version "$VERSION" -o out
+          done
+          gh release upload "$TAG" out/*.tar.gz --clobber

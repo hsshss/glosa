@@ -1,0 +1,31 @@
+<Project>
+
+  <!--
+    IsWindowsBuild, IsMacOSBuild and IsLinuxBuild name the system this build is for: the
+    runtime identifier's when there is one, otherwise the building machine's. Each defines
+    WINDOWS, MACOS or LINUX, and only that system's build references its Glosa.Midi.*
+    backend, so code outside the #if that reaches for a backend fails to compile elsewhere.
+  -->
+  <PropertyGroup>
+    <IsWindowsBuild Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier.StartsWith('win'))</IsWindowsBuild>
+    <IsWindowsBuild Condition="'$(RuntimeIdentifier)' == ''">$([MSBuild]::IsOSPlatform('Windows'))</IsWindowsBuild>
+    <DefineConstants Condition="'$(IsWindowsBuild)' == 'true'">$(DefineConstants);WINDOWS</DefineConstants>
+
+    <IsMacOSBuild Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier.StartsWith('osx'))</IsMacOSBuild>
+    <IsMacOSBuild Condition="'$(RuntimeIdentifier)' == ''">$([MSBuild]::IsOSPlatform('OSX'))</IsMacOSBuild>
+    <DefineConstants Condition="'$(IsMacOSBuild)' == 'true'">$(DefineConstants);MACOS</DefineConstants>
+
+    <IsLinuxBuild Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier.StartsWith('linux'))</IsLinuxBuild>
+    <IsLinuxBuild Condition="'$(RuntimeIdentifier)' == ''">$([MSBuild]::IsOSPlatform('Linux'))</IsLinuxBuild>
+    <DefineConstants Condition="'$(IsLinuxBuild)' == 'true'">$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+    A build for a system is one to hand out: the paths it records name the repository's root
+    as /_/, not the folder it was built in, which may carry the user's name.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=/_/</PathMap>
+  </PropertyGroup>
+
+</Project>

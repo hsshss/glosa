@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Glosa.App"
+             xmlns:vm="using:Glosa.App.ViewModels"
+             xmlns:c="using:Glosa.App.Controls"
+             x:Class="Glosa.App.Views.MonitorView"
+             x:DataType="vm:MainViewModel">
+    <UserControl.Styles>
+        <Style Selector="c|LevelBar">
+            <Setter Property="Height" Value="6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Track" Value="{DynamicResource AppLineBrush}" />
+            <Setter Property="Fill" Value="{DynamicResource AppAccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Classes="card" Padding="8,5" Margin="0,0,0,5">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="{x:Static l:Strings.MonitorChord}" Opacity="0.7" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Chord}" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppAccentBrush}"
+                           MinWidth="88" VerticalAlignment="Center" />
+                <TextBlock Text="{x:Static l:Strings.MonitorVoices}" Opacity="0.7" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding SoundingNotes}" FontSize="13"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <Grid DockPanel.Dock="Top" Margin="3,0,3,3" ColumnDefinitions="34,158,92,92,46,*">
+            <TextBlock Grid.Column="0" Text="{x:Static l:Strings.MonitorPart}" Opacity="0.6" FontSize="10" />
+            <TextBlock Grid.Column="1" Text="{x:Static l:Strings.MonitorTone}" Opacity="0.6" FontSize="10" />
+            <TextBlock Grid.Column="2" Text="{x:Static l:Strings.MonitorVolume}" Opacity="0.6" FontSize="10" />
+            <TextBlock Grid.Column="3" Text="{x:Static l:Strings.MonitorPan}" Opacity="0.6" FontSize="10" />
+            <TextBlock Grid.Column="4" Text="{x:Static l:Strings.MonitorNotes}" Opacity="0.6" FontSize="10" />
+            <TextBlock Grid.Column="5" Text="{x:Static l:Strings.MonitorKeys}" Opacity="0.6" FontSize="10" />
+        </Grid>
+
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Parts}"
+                          AutomationProperties.Name="{x:Static l:Strings.PaneMonitor}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PartRowViewModel">
+                        <Grid ColumnDefinitions="34,158,92,92,46,*" Height="21"
+                              Opacity="{Binding RowOpacity}">
+                            <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                       FontFamily="Consolas, monospace"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Instrument}"
+                                       TextTrimming="CharacterEllipsis" FontSize="11"
+                                       VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <c:LevelBar Grid.Column="2" Value="{Binding Volume}" />
+                            <c:LevelBar Grid.Column="3" Value="{Binding Pan}" Centred="True" />
+                            <TextBlock Grid.Column="4" Text="{Binding Sounding}"
+                                       FontFamily="Consolas, monospace" FontSize="11"
+                                       VerticalAlignment="Center" />
+                            <c:NoteStrip Grid.Column="5" Height="15" VerticalAlignment="Center"
+                                         Notes="{Binding Notes}" Velocity="{Binding Velocity}"
+                                         Revision="{Binding Revision}"
+                                         Foreground="{DynamicResource AppAccentBrush}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

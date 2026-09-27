@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Glosa.App"
+        x:Class="Glosa.App.Views.AboutWindow"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="{x:Static l:Strings.AboutTitle}">
+    <StackPanel Margin="20,16" Spacing="12" MinWidth="320">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+            <Image Source="/Assets/glosa.ico" Width="64" Height="64" />
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="Glosa" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Name="Version" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Spacing="2">
+            <TextBlock Text="Copyright (c) 2026 hsshss" />
+            <TextBlock Text="{x:Static l:Strings.AboutLicense}" />
+            <HyperlinkButton Name="Home" Padding="0" />
+            <HyperlinkButton Name="Post" Padding="0" />
+        </StackPanel>
+
+        <!-- What a bug report wants to know, and can be copied from here. -->
+        <SelectableTextBlock Name="Runtime" Opacity="0.6" FontSize="11" TextWrapping="Wrap" MaxWidth="360" />
+    </StackPanel>
+</Window>

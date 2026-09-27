@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the library tells the user: why a file cannot be loaded, and what is wrong with define.yaml.
+
+  This file is English, the neutral language: what is shown when there is no
+  Strings.<culture>.resx for the language in use, and what a translation leaves out.
+  A translation is a Strings.<culture>.resx beside it with the same names, as
+  Strings.ja.resx is.
+
+  {0}, {1} ... are filled in with string.Format, in whatever order the language wants
+  them. The class the code reads them through (Strings) is generated from this file at
+  build time, so a new name goes here first.
+-->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ArchiveEntryMissing" xml:space="preserve">
+    <value>Not found in the archive: {0}</value>
+  </data>
+  <data name="ArchiveEntryTooLarge" xml:space="preserve">
+    <value>{0}: the file inside the archive is too large</value>
+  </data>
+  <data name="DefineModuleUnnamed" xml:space="preserve">
+    <value>modules: an entry has no name</value>
+  </data>
+  <data name="DefineUnknownInitializeType" xml:space="preserve">
+    <value>{0}: initializeType {1} — must be one of {2}</value>
+  </data>
+  <data name="FileReadOnly" xml:space="preserve">
+    <value>The file is read-only</value>
+  </data>
+  <data name="G36HeaderShort" xml:space="preserve">
+    <value>The G36 header is too short</value>
+  </data>
+  <data name="FormatTooNew" xml:space="preserve">
+    <value>The file is in format version {0}, newer than version {1}, which this Glosa reads</value>
+  </data>
+  <data name="InitCut" xml:space="preserve">
+    <value>The scripts expand to more than {0} bytes and are cut short there</value>
+  </data>
+  <data name="LzhBlockEmpty" xml:space="preserve">
+    <value>An LZH block is empty</value>
+  </data>
+  <data name="LzhCrcMismatch" xml:space="preserve">
+    <value>{0}: the extracted data is corrupt (CRC)</value>
+  </data>
+  <data name="LzhDataBroken" xml:space="preserve">
+    <value>The LZH data is corrupt</value>
+  </data>
+  <data name="LzhHeaderBroken" xml:space="preserve">
+    <value>The LZH header is corrupt</value>
+  </data>
+  <data name="LzhHeaderCut" xml:space="preserve">
+    <value>The LZH header is cut short</value>
+  </data>
+  <data name="LzhTableBroken" xml:space="preserve">
+    <value>An LZH code table is corrupt</value>
+  </data>
+  <data name="LzhUnknownMethod" xml:space="preserve">
+    <value>{0}: unsupported compression method ({1})</value>
+  </data>
+  <data name="M3uTooLarge" xml:space="preserve">
+    <value>The M3U file is too large</value>
+  </data>
+  <data name="NotUtf8" xml:space="preserve">
+    <value>The file is not UTF-8</value>
+  </data>
+  <data name="RcpHeaderShort" xml:space="preserve">
+    <value>The RCP header is too short</value>
+  </data>
+  <data name="RcpLoopTooLarge" xml:space="preserve">
+    <value>The loops expand too far</value>
+  </data>
+  <data name="RcpNotRecomposer" xml:space="preserve">
+    <value>Not Recomposer data</value>
+  </data>
+  <data name="RcpSameMeasureBroken" xml:space="preserve">
+    <value>A same-measure reference points at nothing valid</value>
+  </data>
+  <data name="RcpSameMeasureCycle" xml:space="preserve">
+    <value>Same-measure references go round in a circle</value>
+  </data>
+  <data name="RuleUnreadable" xml:space="preserve">
+    <value>'{0}' cannot be read as a rule (unreadable fields are registered as 0)</value>
+  </data>
+  <data name="YamlTooDeep" xml:space="preserve">
+    <value>The file is nested more than {0} levels deep</value>
+  </data>
+</root>

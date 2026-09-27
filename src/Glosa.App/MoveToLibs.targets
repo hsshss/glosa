@@ -1,0 +1,187 @@
+<Project>
+
+  <!--
+    Moves a published folder's libraries into libs/. The build output is left flat, and a
+    single-file publish has its libraries inside the executable already.
+
+    What stays at the top: the executable, the app's own assembly with its deps.json and
+    runtimeconfig.json, the .NET host of a self-contained app, and MoveToLibsKeep.
+
+    The host looks for a published asset in the app's folder by its name unless the deps.json
+    gives it a "localPath", so every asset moved gets one.
+  -->
+  <Target Name="MoveToLibs" AfterTargets="Publish" Condition="'$(PublishSingleFile)' != 'true'">
+    <MoveToLibs PublishDir="$(PublishDir)" AppName="$(AssemblyName)" Keep="$(MoveToLibsKeep)" />
+  </Target>
+
+  <UsingTask TaskName="MoveToLibs" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <PublishDir ParameterType="System.String" Required="true" />
+      <AppName ParameterType="System.String" Required="true" />
+      <Keep ParameterType="System.String[]" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs"><![CDATA[
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Microsoft.Build.Framework;
+
+public class MoveToLibs : Microsoft.Build.Utilities.Task
+{
+    private const string Libs = "libs";
+
+    public string PublishDir { get; set; }
+    public string AppName { get; set; }
+    public string[] Keep { get; set; }
+
+    public override bool Execute()
+    {
+        string root = Path.GetFullPath(PublishDir).TrimEnd('\\', '/');
+        string depsPath = Path.Combine(root, AppName + ".deps.json");
+        if (!File.Exists(depsPath))
+        {
+            Log.LogError("{0} not found", depsPath);
+            return false;
+        }
+
+        var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            Libs,
+            AppName, AppName + ".exe", AppName + ".dll", AppName + ".deps.json", AppName + ".runtimeconfig.json",
+            // A self-contained app's host: the executable looks for these beside itself.
+            "hostfxr.dll", "hostpolicy.dll", "libhostfxr.so", "libhostpolicy.so",
+            "libhostfxr.dylib", "libhostpolicy.dylib",
+        };
+        keep.UnionWith(Keep ?? new string[0]);
+
+        string libs = Path.Combine(root, Libs);
+        foreach (string entry in Directory.GetFileSystemEntries(root))
+        {
+            if (keep.Contains(Path.GetFileName(entry))) continue;
+            if (File.Exists(entry))
+            {
+                MoveFile(entry, Path.Combine(libs, Path.GetFileName(entry)));
+                continue;
+            }
+            // A folder is merged file by file into what an earlier publish left there.
+            foreach (string file in Directory.GetFiles(entry, "*", SearchOption.AllDirectories))
+                MoveFile(file, Path.Combine(libs, file.Substring(root.Length + 1)));
+            Directory.Delete(entry, true);
+        }
+
+        string deps = File.ReadAllText(depsPath);
+        int moved;
+        File.WriteAllText(depsPath, AddLocalPaths(deps, libs, out moved), new UTF8Encoding(false));
+        Log.LogMessage(MessageImportance.High, "{0} assets moved to {1}", moved, libs);
+        return !Log.HasLoggedErrors;
+    }
+
+    private static void MoveFile(string from, string to)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(to));
+        if (File.Exists(to)) File.Delete(to);
+        File.Move(from, to);
+    }
+
+    /// <summary>
+    /// Gives each asset of targets/*/*/{runtime,native,resources,runtimeTargets} that is now in
+    /// libs a localPath, as its first property. The JSON is walked by hand, as MSBuild offers
+    /// no parser to an inline task; only the objects are followed, and nothing else changes.
+    /// </summary>
+    private static string AddLocalPaths(string json, string libs, out int moved)
+    {
+        var inserts = new List<KeyValuePair<int, string>>();
+        // Per open object: its key path, the key last read in it, where a localPath would go.
+        var paths = new Stack<List<string>>();
+        var keys = new Stack<string>();
+        var pending = new Stack<KeyValuePair<int, string>?>();
+        string lastString = null;
+
+        for (int i = 0; i < json.Length; i++)
+        {
+            char c = json[i];
+            if (c == '"')
+            {
+                var text = new StringBuilder();
+                for (i++; json[i] != '"'; i++)
+                {
+                    if (json[i] == '\\') i++;
+                    text.Append(json[i]);
+                }
+                lastString = text.ToString();
+            }
+            else if (c == ':' && keys.Count > 0)
+            {
+                keys.Pop();
+                keys.Push(lastString);
+                if (lastString == "localPath" && pending.Peek() != null)
+                {
+                    // Already given one, on an earlier publish into this folder.
+                    pending.Pop();
+                    pending.Push(null);
+                }
+            }
+            else if (c == '{' || c == '[')
+            {
+                var path = new List<string>(paths.Count > 0 ? paths.Peek() : new List<string>());
+                if (keys.Count > 0 && keys.Peek() != null) path.Add(keys.Peek());
+                paths.Push(path);
+                keys.Push(null);
+                pending.Push(c == '{' ? Insert(json, i, path, libs) : null);
+            }
+            else if (c == '}' || c == ']')
+            {
+                paths.Pop();
+                keys.Pop();
+                var insert = pending.Pop();
+                if (insert != null) inserts.Add(insert.Value);
+                // A value was read in the enclosing object: the next string is a key again.
+                if (keys.Count > 0) { keys.Pop(); keys.Push(null); }
+            }
+            else if (c == ',' && keys.Count > 0)
+            {
+                keys.Pop();
+                keys.Push(null);
+            }
+        }
+
+        var result = new StringBuilder(json);
+        foreach (var insert in inserts.OrderByDescending(p => p.Key))
+            result.Insert(insert.Key, insert.Value);
+        moved = inserts.Count;
+        return result.ToString();
+    }
+
+    private static KeyValuePair<int, string>? Insert(string json, int brace, List<string> path, string libs)
+    {
+        string[] kinds = { "runtime", "native", "resources", "runtimeTargets" };
+        if (path.Count != 5 || path[0] != "targets" || !kinds.Contains(path[3])) return null;
+
+        // Where publishing put it: a resource in its culture's folder, a runtime-specific
+        // asset (a portable app's) at its own path, anything else under its name alone.
+        string[] parts = path[4].Split('/');
+        string published = path[3] == "resources" && parts.Length >= 2
+            ? parts[parts.Length - 2] + "/" + parts[parts.Length - 1]
+            : path[3] == "runtimeTargets" ? path[4] : parts[parts.Length - 1];
+        if (!File.Exists(Path.Combine(libs, published))) return null;
+
+        int lineStart = json.LastIndexOf('\n', brace) + 1;
+        string indent = new string(json.Skip(lineStart).TakeWhile(char.IsWhiteSpace).ToArray());
+        string property = "\"localPath\": \"" + "libs/" + published + "\"";
+        int next = brace + 1;
+        while (char.IsWhiteSpace(json[next])) next++;
+        string text = json[next] == '}'
+            ? "\n" + indent + "  " + property + "\n" + indent
+            : "\n" + indent + "  " + property + ",";
+        return new KeyValuePair<int, string>(brace + 1, text);
+    }
+}
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+</Project>

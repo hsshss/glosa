@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Glosa.App"
+        xmlns:vm="using:Glosa.App.ViewModels"
+        xmlns:c="using:Glosa.App.Controls"
+        x:Class="Glosa.App.Views.SettingsWindow"
+        x:DataType="vm:MainViewModel"
+        Width="403" Height="577" MinWidth="350" MinHeight="300"
+        Title="{x:Static l:Strings.SettingsTitle}">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Opacity" Value="0.75" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="128" />
+        </Style>
+        <!-- A label too long for a narrow window wraps rather than running off its edge. -->
+        <Style Selector="CheckBox /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!--
+          A control is named for UI Automation by the label beside it, which it is not tied
+          to otherwise. The spinner's own text box takes the spinner's name.
+        -->
+        <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+            <Setter Property="AutomationProperties.Name"
+                    Value="{Binding $parent[NumericUpDown].(AutomationProperties.Name)}" />
+        </Style>
+        <Style Selector="StackPanel.row">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="6" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+    </Window.Styles>
+
+    <ScrollViewer Padding="12">
+        <StackPanel>
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsSequencer}">
+                <StackPanel>
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="{x:Static l:Strings.SettingsLoopCount}" />
+                        <NumericUpDown Width="96" Minimum="0" Maximum="999" Increment="1"
+                                       AutomationProperties.Name="{x:Static l:Strings.SettingsLoopCount}"
+                                       FormatString="0" Value="{Binding LoopRepeatCount}" />
+                    </StackPanel>
+
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="{x:Static l:Strings.SettingsPriority}" />
+                        <ComboBox Width="128" ItemsSource="{Binding Priorities}"
+                                  AutomationProperties.Name="{x:Static l:Strings.SettingsPriority}"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding Priority}" />
+                    </StackPanel>
+
+                    <c:TipRow Margin="0,4,0,0">
+                        <CheckBox Content="{x:Static l:Strings.SettingsScanLength}" IsChecked="{Binding ScanLength}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsScanLengthTip}" />
+                    </c:TipRow>
+
+                    <CheckBox Content="{x:Static l:Strings.SettingsTrimTitles}" IsChecked="{Binding TrimTitles}" />
+                    <CheckBox Content="{x:Static l:Strings.SettingsAutoDropPlay}" IsChecked="{Binding AutoDropPlay}" />
+
+                    <c:TipRow>
+                        <CheckBox Content="{x:Static l:Strings.SettingsMediaKeys}" IsChecked="{Binding UseMediaKeys}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsMediaKeysTip}" />
+                    </c:TipRow>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsMidiOutput}">
+                <StackPanel>
+                    <CheckBox Content="{x:Static l:Strings.SettingsMidiOutReset}" IsChecked="{Binding UseMidiOutReset}" />
+                    <CheckBox Content="{x:Static l:Strings.SettingsAllSoundOff}"
+                              IsChecked="{Binding SendAllNotesOffOnStop}" />
+
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="{x:Static l:Strings.SettingsTransferRate}" />
+                        <ComboBox Width="168" ItemsSource="{Binding TransferRates}"
+                                  AutomationProperties.Name="{x:Static l:Strings.SettingsTransferRate}"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding TransferRate}" />
+                    </StackPanel>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <!-- The reset and the tone map are greyed out while a DEF is loaded. -->
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsEmulation}">
+                <StackPanel>
+                    <c:TipRow IsEnabled="{Binding DefinitionPath, Converter={x:Static ObjectConverters.IsNull}}">
+                        <CheckBox Content="{x:Static l:Strings.SettingsModuleReset}" IsChecked="{Binding SendModuleReset}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsModuleResetTip}" />
+                    </c:TipRow>
+                    <c:TipRow IsEnabled="{Binding DefinitionPath, Converter={x:Static ObjectConverters.IsNull}}">
+                        <CheckBox Content="{x:Static l:Strings.SettingsToneMap}" IsChecked="{Binding SwitchToneMap}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsToneMapTip}" />
+                    </c:TipRow>
+                    <c:TipRow>
+                        <CheckBox Content="{x:Static l:Strings.SettingsFallback}" IsChecked="{Binding CapitalToneFallback}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsFallbackTip}" />
+                    </c:TipRow>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <!--
+              Which words define.yaml's patterns are run over, in what order (drag a line to
+              move it), and which model wins.
+            -->
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsDetection}"
+                                    IsEnabled="{Binding !UseDefKeywords}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Opacity="0.75" VerticalAlignment="Center"
+                                   Text="{x:Static l:Strings.SettingsDetectionSources}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsDetectionSourcesTip}" />
+                    </StackPanel>
+
+                    <ListBox Margin="0,4,0,4" ItemsSource="{Binding DetectionSources}"
+                             AutomationProperties.Name="{x:Static l:Strings.SettingsDetectionSources}"
+                             Loaded="OnSourcesLoaded">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DetectionSourceViewModel">
+                                <CheckBox Content="{Binding Label}" IsChecked="{Binding Enabled}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="{x:Static l:Strings.SettingsDetectionPosition}" />
+                        <ComboBox Width="140" ItemsSource="{Binding MatchPositions}"
+                                  AutomationProperties.Name="{x:Static l:Strings.SettingsDetectionPosition}"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding DetectionPosition}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsDetectionPositionTip}" />
+                    </StackPanel>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <!--
+              Outside the group above: it applies to the DEF's keywords as well. The names on
+              the left are the detected answers, which are the same in every language.
+            -->
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsDetectedDefaults}">
+                <StackPanel>
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="THRU" />
+                        <ComboBox Width="140" ItemsSource="{Binding DetectedDefaultChoices}"
+                                  AutomationProperties.Name="THRU"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding ThruPlaysAs}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsDetectedDefaultsTip}" />
+                    </StackPanel>
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="GS" />
+                        <ComboBox Width="140" ItemsSource="{Binding DetectedDefaultChoices}"
+                                  AutomationProperties.Name="GS"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding GsPlaysAs}" />
+                    </StackPanel>
+                    <StackPanel Classes="row">
+                        <TextBlock Classes="label" Text="XG" />
+                        <ComboBox Width="140" ItemsSource="{Binding DetectedDefaultChoices}"
+                                  AutomationProperties.Name="XG"
+                                  SelectedValueBinding="{ReflectionBinding Value}"
+                                  SelectedValue="{Binding XgPlaysAs}" />
+                    </StackPanel>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsDefinition}">
+                <c:TipRow>
+                    <CheckBox Content="{x:Static l:Strings.SettingsDefKeywords}"
+                              IsChecked="{Binding UseDefKeywords}" />
+                    <c:InfoTip Text="{x:Static l:Strings.SettingsDefKeywordsTip}" />
+                </c:TipRow>
+            </HeaderedContentControl>
+
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsDisplay}">
+                <StackPanel>
+                    <c:TipRow>
+                        <CheckBox Content="{x:Static l:Strings.SettingsHardwareRendering}"
+                                  IsChecked="{Binding HardwareRendering}" />
+                        <c:InfoTip Text="{x:Static l:Strings.SettingsHardwareRenderingTip}" />
+                    </c:TipRow>
+                    <TextBlock Margin="0,4,0,0" Opacity="0.6" FontSize="11" TextWrapping="Wrap"
+                               Text="{x:Static l:Strings.SettingsTakesEffectAtStart}" />
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <HeaderedContentControl Classes="group" Header="{x:Static l:Strings.SettingsLanguage}">
+                <StackPanel>
+                    <ComboBox Width="168" ItemsSource="{Binding LanguageChoices}"
+                              AutomationProperties.Name="{x:Static l:Strings.SettingsLanguage}"
+                              SelectedItem="{Binding Language}" />
+                    <TextBlock Margin="0,4,0,0" Opacity="0.6" FontSize="11" TextWrapping="Wrap"
+                               Text="{x:Static l:Strings.SettingsTakesEffectAtStart}" />
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <TextBlock Margin="0,4,0,0" Opacity="0.6" FontSize="11" TextWrapping="Wrap"
+                       Text="{x:Static l:Strings.SettingsAppliedAtOnce}" />
+        </StackPanel>
+    </ScrollViewer>
+</Window>

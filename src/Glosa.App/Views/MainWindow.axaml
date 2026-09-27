@@ -1,0 +1,193 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Glosa.App"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Glosa.App.ViewModels"
+        xmlns:c="using:Glosa.App.Controls"
+        xmlns:v="using:Glosa.App.Views"
+        mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="620"
+        x:Class="Glosa.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Width="762" Height="573" MinWidth="620" MinHeight="440"
+        WindowStartupLocation="CenterScreen"
+        Title="Glosa">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <!--
+          Each line of a choice menu is a MenuChoice: it says what it is, whether it is the
+          one in force, and what to do when picked. ItemTemplate would only dress the header,
+          so the container itself is themed.
+        -->
+        <ControlTheme x:Key="ChoiceItem" TargetType="MenuItem"
+                      x:DataType="vm:MenuChoice"
+                      BasedOn="{StaticResource {x:Type MenuItem}}">
+            <Setter Property="Header" Value="{Binding Label}" />
+            <Setter Property="Command" Value="{Binding SelectCommand}" />
+            <Setter Property="ToggleType" Value="Radio" />
+            <Setter Property="IsChecked" Value="{Binding IsSelected, Mode=OneWay}" />
+        </ControlTheme>
+    </Window.Resources>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <!--
+              What belongs to one playlist lives on that playlist's tab, not here.
+              Opening one is not such a thing: it makes a tab rather than acting on one.
+            -->
+            <MenuItem Header="{x:Static l:Strings.MenuFile}">
+                <MenuItem Header="{x:Static l:Strings.MenuAddSongs}" Click="OnAddFiles" Icon="{StaticResource IconAdd}" />
+                <MenuItem Header="{x:Static l:Strings.MenuAddFolder}" Click="OnAddFolder"
+                          Icon="{StaticResource IconFolderAdd}" />
+                <MenuItem Header="{x:Static l:Strings.MenuOpenPlaylist}" Click="OnOpenPlaylist"
+                          Icon="{StaticResource IconFolderOpen}" />
+                <Separator />
+                <MenuItem Header="{x:Static l:Strings.MenuExit}" Click="OnExit" Icon="{StaticResource IconExit}" />
+            </MenuItem>
+            <MenuItem Header="{x:Static l:Strings.MenuSettings}">
+                <!-- No tooltip here: it pops over the submenu it belongs to. -->
+                <!-- Auto to let the song pick the map, or a map to stay on. -->
+                <MenuItem Header="{x:Static l:Strings.MenuPortMap}" ItemsSource="{Binding PortMapChoices}"
+                          ItemContainerTheme="{StaticResource ChoiceItem}"
+                          Icon="{StaticResource IconPortMap}" />
+                <MenuItem Header="{x:Static l:Strings.MenuPortMapSettings}" Click="OnOpenPortMaps"
+                          Icon="{StaticResource IconPortMapSettings}" />
+                <Separator />
+                <MenuItem Header="{x:Static l:Strings.MenuOrder}" ItemsSource="{Binding OrderChoices}"
+                          ItemContainerTheme="{StaticResource ChoiceItem}"
+                          Icon="{StaticResource IconOrder}" />
+                <MenuItem Header="{x:Static l:Strings.MenuRepeat}" ItemsSource="{Binding RepeatChoices}"
+                          ItemContainerTheme="{StaticResource ChoiceItem}"
+                          Icon="{StaticResource IconRepeat}" />
+                <Separator />
+                <MenuItem Header="{x:Static l:Strings.MenuOpenDefinition}" Click="OnOpenDefinition"
+                          Icon="{StaticResource IconDefinition}" />
+                <MenuItem Header="{x:Static l:Strings.MenuCloseDefinition}" Click="OnCloseDefinition"
+                          IsEnabled="{Binding DefinitionPath, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <Separator />
+                <!-- Where settings.yaml and the playlists are, for a look or a backup. -->
+                <MenuItem Header="{x:Static l:Strings.MenuOpenConfigFolder}" Click="OnOpenConfigFolder"
+                          Icon="{StaticResource IconFolderOpen}" />
+                <Separator />
+                <MenuItem Header="{x:Static l:Strings.MenuPreferences}" Click="OnOpenSettings"
+                          Icon="{StaticResource IconSettings}" />
+            </MenuItem>
+            <MenuItem Header="{x:Static l:Strings.MenuWindow}">
+                <MenuItem Header="{x:Static l:Strings.MenuMonitor}" Click="OnOpenMonitor"
+                          Icon="{StaticResource IconMonitor}" />
+                <MenuItem Header="{x:Static l:Strings.MenuDebug}" Click="OnOpenDebug" Icon="{StaticResource IconDebug}" />
+            </MenuItem>
+            <MenuItem Header="{x:Static l:Strings.MenuHelp}">
+                <MenuItem Header="{x:Static l:Strings.MenuAbout}" Click="OnOpenAbout" Icon="{StaticResource IconInfo}" />
+            </MenuItem>
+        </Menu>
+
+        <!--
+          The transport on the left, the module display on the right. The display asks for
+          its own width, so it goes in the auto column and the transport takes the rest.
+        -->
+        <Grid DockPanel.Dock="Top" Margin="6,4,6,6" ColumnDefinitions="*,Auto">
+            <!-- No outline: a strip of controls on the window's own ground, not a list. -->
+            <Border Grid.Column="0" Classes="card" BorderThickness="0" Padding="10,6" MinHeight="80">
+                <!--
+                  The display next to it sets the height of the row; the slack goes between
+                  what the song is (top) and the controls (bottom).
+                -->
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!--
+                      Fixed at two lines of the taller font: Japanese and English titles are
+                      drawn from fonts that disagree about line height, and a block sized to
+                      its text would move the transport when the script changes.
+                    -->
+                    <StackPanel Grid.Row="0" Height="28">
+                        <TextBlock Text="{Binding NowPlaying}" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" />
+                        <!--
+                          The song's copyright notice or first text event; the tooltip carries
+                          the whole of it.
+                        -->
+                        <TextBlock Classes="caption" Text="{Binding SongInfo}"
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding SongInfo}" />
+                    </StackPanel>
+
+                    <!--
+                      Stop, play, pause (the song's states), then previous and next (moving
+                      along the list). The seek bar takes whatever width the buttons leave.
+                    -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+                        <!--
+                          Each button is named by its tooltip: its face is a symbol, which is
+                          what it would be read out as.
+                        -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="3">
+                            <Button Classes="transport" Content="■" Command="{Binding StopCommand}"
+                                    ToolTip.Tip="{x:Static l:Strings.TransportStop}"
+                                    AutomationProperties.Name="{x:Static l:Strings.TransportStop}" />
+                            <!--
+                              At most one of these two is lit: play while a song runs, pause
+                              while it is held, neither when stopped.
+                            -->
+                            <Button Classes="transport play" Classes.playing="{Binding IsPlaying}"
+                                    Content="▶" Command="{Binding PlayCommand}"
+                                    ToolTip.Tip="{x:Static l:Strings.TransportPlay}"
+                                    AutomationProperties.Name="{x:Static l:Strings.TransportPlay}" />
+                            <Button Classes="transport" Classes.paused="{Binding IsPaused}"
+                                    Content="❚❚" Command="{Binding PauseCommand}"
+                                    ToolTip.Tip="{x:Static l:Strings.TransportPause}"
+                                    AutomationProperties.Name="{x:Static l:Strings.TransportPause}" />
+                            <Button Classes="transport" Content="|◀" Command="{Binding PreviousCommand}"
+                                    ToolTip.Tip="{x:Static l:Strings.TransportPrevious}"
+                                    AutomationProperties.Name="{x:Static l:Strings.TransportPrevious}" />
+                            <Button Classes="transport" Content="▶|" Command="{Binding NextCommand}"
+                                    ToolTip.Tip="{x:Static l:Strings.TransportNext}"
+                                    AutomationProperties.Name="{x:Static l:Strings.TransportNext}" />
+                        </StackPanel>
+
+                        <!--
+                          The seek is sent on release (see the code-behind). Disabled while
+                          stopped, since play would start the song over anyway.
+                        -->
+                        <Slider Grid.Column="1" Margin="14,0,0,0"
+                                Minimum="0" Maximum="{Binding SeekMax}"
+                                Value="{Binding PositionMs, Mode=TwoWay}"
+                                IsEnabled="{Binding CanSeek}"
+                                Loaded="OnSeekBarLoaded"
+                                ToolTip.Tip="{x:Static l:Strings.TransportSeek}"
+                                AutomationProperties.Name="{x:Static l:Strings.TransportSeek}" />
+
+                        <!-- Monospaced so the bar does not shift as the digits change. -->
+                        <TextBlock Grid.Column="2" Classes="caption"
+                                   Text="{Binding PositionText}"
+                                   FontFamily="Consolas, monospace"
+                                   Margin="10,0,2,0" VerticalAlignment="Center" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Classes="bezel" Margin="6,0,0,0">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{x:Static l:Strings.LcdEnlarge}" ToggleType="CheckBox"
+                                  IsChecked="{Binding LcdEnlarged, Mode=TwoWay}" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <!-- The colours come from the theme; see Themes/Dark.axaml. -->
+                <c:LcdPanel Enlarged="{Binding LcdEnlarged}"
+                            Panel="{Binding Panel}"
+                            Parts="{Binding PartCount}"
+                            Revision="{Binding PanelRevision}" />
+            </Border>
+        </Grid>
+
+        <!-- The status bar. -->
+        <TextBlock DockPanel.Dock="Bottom" Classes="caption" Margin="8,2,8,4"
+                   TextTrimming="CharacterEllipsis" Text="{Binding Status}" />
+
+        <v:PlaylistView Margin="6,0,6,0" />
+    </DockPanel>
+</Window>

@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The player's words: menus, windows, and the messages in the status bar.
+
+  Japanese. The names are those of Strings.resx, the English neutral file; a name left out
+  here is shown in English.
+
+  {0}, {1} ... are filled in with string.Format, in whatever order the language wants
+  them.
+-->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AboutLicense" xml:space="preserve">
+    <value>MIT License で公開しています。</value>
+  </data>
+  <data name="AboutPostOnX" xml:space="preserve">
+    <value>X で Glosa についてポストする</value>
+  </data>
+  <data name="AboutTitle" xml:space="preserve">
+    <value>バージョン情報</value>
+  </data>
+  <data name="AboutVersion" xml:space="preserve">
+    <value>バージョン {0}</value>
+  </data>
+  <data name="AutoDetect" xml:space="preserve">
+    <value>自動判別</value>
+  </data>
+  <data name="CannotCloseUnsaved" xml:space="preserve">
+    <value>{0} に保存できなかったので、変更を失わないようにタブを閉じずに残しました。
+
+{1}</value>
+  </data>
+  <data name="CannotLoadDef" xml:space="preserve">
+    <value>{0} を読み込めませんでした。
+
+{1}</value>
+  </data>
+  <data name="CannotLoadDefTitle" xml:space="preserve">
+    <value>TMIDI定義ファイルを読み込めませんでした</value>
+  </data>
+  <data name="CannotOpenOutputs" xml:space="preserve">
+    <value>以下の出力を開けませんでした。演奏を停止します。</value>
+  </data>
+  <data name="CannotOpenTitle" xml:space="preserve">
+    <value>出力を開けませんでした</value>
+  </data>
+  <data name="CannotOpenPlaylist" xml:space="preserve">
+    <value>{0} を開けませんでした。
+
+{1}</value>
+  </data>
+  <data name="CannotOpenPlaylistTitle" xml:space="preserve">
+    <value>プレイリストを開けませんでした</value>
+  </data>
+  <data name="CannotReadSettings" xml:space="preserve">
+    <value>{0} を読み込めなかったため、既定の設定で起動しました。
+
+{1}
+
+元のファイルは {2} に残してあります。</value>
+  </data>
+  <data name="CannotReadSettingsKept" xml:space="preserve">
+    <value>{0} を読み込めなかったため、既定の設定で起動しました。
+
+{1}
+
+このファイルは、終了するときも上書きしません。</value>
+  </data>
+  <data name="CannotReadSettingsTitle" xml:space="preserve">
+    <value>設定を読み込めませんでした</value>
+  </data>
+  <data name="CannotReadOverride" xml:space="preserve">
+    <value>{0} を読み込めませんでした。
+
+{1}
+
+define.override.yaml を修正するか削除して Glosa を起動し直してください。</value>
+  </data>
+  <data name="CannotReadOverrideTitle" xml:space="preserve">
+    <value>対象音源の定義を読み込めませんでした</value>
+  </data>
+  <data name="CannotSavePlaylist" xml:space="preserve">
+    <value>{0} に保存できませんでした。
+
+{1}</value>
+  </data>
+  <data name="CannotSavePlaylistTitle" xml:space="preserve">
+    <value>プレイリストを保存できませんでした</value>
+  </data>
+  <data name="CannotSendInit" xml:space="preserve">
+    <value>音源の初期化データを送れませんでした。演奏を停止します。</value>
+  </data>
+  <data name="CannotSendTitle" xml:space="preserve">
+    <value>出力に送れませんでした</value>
+  </data>
+  <data name="DebugCopy" xml:space="preserve">
+    <value>コピー</value>
+  </data>
+  <data name="DebugSelectAll" xml:space="preserve">
+    <value>すべて選択</value>
+  </data>
+  <data name="DefaultPortMapName" xml:space="preserve">
+    <value>既定</value>
+  </data>
+  <data name="DetectionData" xml:space="preserve">
+    <value>曲のデータ</value>
+  </data>
+  <data name="DetectionDocument" xml:space="preserve">
+    <value>添付テキスト</value>
+  </data>
+  <data name="DetectionFileName" xml:space="preserve">
+    <value>ファイル名</value>
+  </data>
+  <data name="DetectionFirst" xml:space="preserve">
+    <value>先に出たもの</value>
+  </data>
+  <data name="DetectionFolderPath" xml:space="preserve">
+    <value>フォルダパス</value>
+  </data>
+  <data name="DetectionLast" xml:space="preserve">
+    <value>後に出たもの</value>
+  </data>
+  <data name="DetectionTitle" xml:space="preserve">
+    <value>タイトル</value>
+  </data>
+  <data name="DeviceMissing" xml:space="preserve">
+    <value>{0}（見つかりません）</value>
+  </data>
+  <data name="ExportM3u" xml:space="preserve">
+    <value>M3U に書き出す</value>
+  </data>
+  <data name="FileTypeDefinitions" xml:space="preserve">
+    <value>TMIDI定義ファイル</value>
+  </data>
+  <data name="FileTypeM3u" xml:space="preserve">
+    <value>M3U プレイリスト</value>
+  </data>
+  <data name="FileTypePlaylists" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="FileTypeSongs" xml:space="preserve">
+    <value>MIDI・圧縮ファイル</value>
+  </data>
+  <data name="LanguageSystem" xml:space="preserve">
+    <value>OSに合わせる</value>
+  </data>
+  <data name="LcdEnlarge" xml:space="preserve">
+    <value>拡大する</value>
+  </data>
+  <data name="MenuAbout" xml:space="preserve">
+    <value>バージョン情報...</value>
+  </data>
+  <data name="MenuAddFolder" xml:space="preserve">
+    <value>フォルダを追加...</value>
+  </data>
+  <data name="MenuAddSongs" xml:space="preserve">
+    <value>曲を追加...</value>
+  </data>
+  <data name="MenuCloseDefinition" xml:space="preserve">
+    <value>TMIDI定義ファイルを閉じる</value>
+  </data>
+  <data name="MenuDebug" xml:space="preserve">
+    <value>デバッグ...</value>
+  </data>
+  <data name="MenuExit" xml:space="preserve">
+    <value>終了</value>
+  </data>
+  <data name="MenuFile" xml:space="preserve">
+    <value>ファイル(_F)</value>
+  </data>
+  <data name="MenuHelp" xml:space="preserve">
+    <value>ヘルプ(_H)</value>
+  </data>
+  <data name="MenuMonitor" xml:space="preserve">
+    <value>演奏モニタ...</value>
+  </data>
+  <data name="MenuOpenConfigFolder" xml:space="preserve">
+    <value>設定フォルダを開く</value>
+  </data>
+  <data name="MenuOpenDefinition" xml:space="preserve">
+    <value>TMIDI定義ファイルを開く...</value>
+  </data>
+  <data name="MenuOpenPlaylist" xml:space="preserve">
+    <value>プレイリストを開く...</value>
+  </data>
+  <data name="MenuOrder" xml:space="preserve">
+    <value>曲順</value>
+  </data>
+  <data name="MenuPortMap" xml:space="preserve">
+    <value>ポートマップ</value>
+  </data>
+  <data name="MenuPortMapSettings" xml:space="preserve">
+    <value>ポートマップ設定...</value>
+  </data>
+  <data name="MenuPreferences" xml:space="preserve">
+    <value>環境設定...</value>
+  </data>
+  <data name="MenuRepeat" xml:space="preserve">
+    <value>リピート</value>
+  </data>
+  <data name="MenuSettings" xml:space="preserve">
+    <value>設定(_S)</value>
+  </data>
+  <data name="MenuWindow" xml:space="preserve">
+    <value>ウィンドウ(_W)</value>
+  </data>
+  <data name="MonitorChord" xml:space="preserve">
+    <value>コード</value>
+  </data>
+  <data name="MonitorKeys" xml:space="preserve">
+    <value>鍵盤</value>
+  </data>
+  <data name="MonitorNotes" xml:space="preserve">
+    <value>発音</value>
+  </data>
+  <data name="MonitorPan" xml:space="preserve">
+    <value>パン</value>
+  </data>
+  <data name="MonitorPart" xml:space="preserve">
+    <value>パート</value>
+  </data>
+  <data name="MonitorTone" xml:space="preserve">
+    <value>音色</value>
+  </data>
+  <data name="MonitorVoices" xml:space="preserve">
+    <value>発音数</value>
+  </data>
+  <data name="MonitorVolume" xml:space="preserve">
+    <value>音量</value>
+  </data>
+  <data name="NewPlaylistName" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="NewPortMapName" xml:space="preserve">
+    <value>マップ {0}</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>(なし)</value>
+  </data>
+  <data name="NoteBadArgument" xml:space="preserve">
+    <value>引数を解釈できませんでした: {0}</value>
+  </data>
+  <data name="NoteBadConfig" xml:space="preserve">
+    <value>--config {0}: {1} 代わりに通常の設定フォルダを使います。</value>
+  </data>
+  <data name="NoteCannotLoad" xml:space="preserve">
+    <value>読み込めませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadDef" xml:space="preserve">
+    <value>TMIDI定義ファイルを読み込めませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadDefine" xml:space="preserve">
+    <value>対象音源の定義を読み込めませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotLoadPlaylist" xml:space="preserve">
+    <value>プレイリストを読み込めませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotOpenConfigFolder" xml:space="preserve">
+    <value>設定フォルダを開けませんでした: {0}</value>
+  </data>
+  <data name="NoteCannotOpenOutput" xml:space="preserve">
+    <value>出力を開けませんでした: {0}</value>
+  </data>
+  <data name="NoteCannotSavePlaylist" xml:space="preserve">
+    <value>プレイリストを保存できませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotSaveSettings" xml:space="preserve">
+    <value>設定を保存できませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteCannotSendInit" xml:space="preserve">
+    <value>音源の初期化を送れませんでした: {0}</value>
+  </data>
+  <data name="NoteCannotShowFile" xml:space="preserve">
+    <value>ファイルマネージャで開けませんでした: {0}</value>
+  </data>
+  <data name="NoteCannotWriteDefineSample" xml:space="preserve">
+    <value>対象音源の定義の見本を書き出せませんでした: {0} — {1}</value>
+  </data>
+  <data name="NoteClosingOutput" xml:space="preserve">
+    <value>出力を閉じるときにエラーが起きました: {0}</value>
+  </data>
+  <data name="NoteDefineOverride" xml:space="preserve">
+    <value>対象音源の定義を、同梱のものの代わりに {0} から読み込みました</value>
+  </data>
+  <data name="NoteDefineProblem" xml:space="preserve">
+    <value>対象音源の定義: {0}</value>
+  </data>
+  <data name="NoteDetectFailed" xml:space="preserve">
+    <value>判別を途中でやめました: {0}</value>
+  </data>
+  <data name="NoteDetected" xml:space="preserve">
+    <value>対象音源の判別: {0}</value>
+  </data>
+  <data name="NoteDetectedPlaysAs" xml:space="preserve">
+    <value>対象音源の判別: {0}、{1} として演奏</value>
+  </data>
+  <data name="NoteDeviceLost" xml:space="preserve">
+    <value>出力が応答しませんでした: {0}</value>
+  </data>
+  <data name="NoteEmulation" xml:space="preserve">
+    <value>エミュレーション: {0} ← {1}  {2}</value>
+  </data>
+  <data name="NoteFallbackTables" xml:space="preserve">
+    <value>代理発音(CTF): {0} の音色表</value>
+  </data>
+  <data name="NoteFaulted" xml:space="preserve">
+    <value>保護のため演奏を停止しました: {0}</value>
+  </data>
+  <data name="NoteInitCut" xml:space="preserve">
+    <value>TMIDI定義ファイルの初期化が長すぎるので、途中で打ち切りました</value>
+  </data>
+  <data name="NoteInitialize" xml:space="preserve">
+    <value>初期化: {0}（{1}）</value>
+  </data>
+  <data name="NoteLengthsScanned" xml:space="preserve">
+    <value>{0} 曲の長さを調べました</value>
+  </data>
+  <data name="NoteNoDefine" xml:space="preserve">
+    <value>対象音源の定義がありません: {0}</value>
+  </data>
+  <data name="NoteNothingPlayable" xml:space="preserve">
+    <value>演奏できるファイルがありませんでした</value>
+  </data>
+  <data name="NoteOutputNotFound" xml:space="preserve">
+    <value>出力が見つかりませんでした: {0}</value>
+  </data>
+  <data name="NoteOutputSilenced" xml:space="preserve">
+    <value>送ったメッセージを出力が捨てた可能性があるので、すべてのノートを止めました: {0}</value>
+  </data>
+  <data name="NoteOutputs" xml:space="preserve">
+    <value>出力: {0}</value>
+  </data>
+  <data name="NoteOutputsNextSong" xml:space="preserve">
+    <value>出力の変更は次の曲から反映されます</value>
+  </data>
+  <data name="NotePlaylistDuplicated" xml:space="preserve">
+    <value>「{0}」を複製しました</value>
+  </data>
+  <data name="NotePlaylistExported" xml:space="preserve">
+    <value>プレイリストを書き出しました: {0}</value>
+  </data>
+  <data name="NotePlaylistLoaded" xml:space="preserve">
+    <value>プレイリストを読み込みました: {0}</value>
+  </data>
+  <data name="NotePlaylistSaved" xml:space="preserve">
+    <value>プレイリストを保存しました: {0}</value>
+  </data>
+  <data name="NotePortMap" xml:space="preserve">
+    <value>ポートマップ: {0} ({1})</value>
+  </data>
+  <data name="NotePortMapNextSong" xml:space="preserve">
+    <value>ポートマップ: {0}（次の曲から反映されます）</value>
+  </data>
+  <data name="NotePortMapVia" xml:space="preserve">
+    <value>ポートマップ: {0} ({1} → {2})</value>
+  </data>
+  <data name="NoteScanFailed" xml:space="preserve">
+    <value>曲の長さの読み取りを途中でやめました: {0}</value>
+  </data>
+  <data name="NoteSongsAdded" xml:space="preserve">
+    <value>{0} 曲を「{1}」に追加しました</value>
+  </data>
+  <data name="NoteSongsAddedPlaying" xml:space="preserve">
+    <value>{0} 曲を「{1}」に追加しました（演奏中のため続けます）</value>
+  </data>
+  <data name="NoteSongsCopied" xml:space="preserve">
+    <value>{0} 曲を「{1}」へコピーしました</value>
+  </data>
+  <data name="NoteSongsMoved" xml:space="preserve">
+    <value>{0} 曲を「{1}」へ移しました</value>
+  </data>
+  <data name="NoteSongsRemoved" xml:space="preserve">
+    <value>{0} 曲を「{1}」から外しました</value>
+  </data>
+  <data name="NoteSongsTargetCleared" xml:space="preserve">
+    <value>{0} 曲の対象音源を自動判別に戻しました</value>
+  </data>
+  <data name="NoteSongsTargetSet" xml:space="preserve">
+    <value>{0} 曲の対象音源を {1} にしました</value>
+  </data>
+  <data name="NoteSwitchFailed" xml:space="preserve">
+    <value>曲の切り替えに失敗しました: {0}</value>
+  </data>
+  <data name="NoteTargetModule" xml:space="preserve">
+    <value>対象音源: {0}</value>
+  </data>
+  <data name="NoteUnexpected" xml:space="preserve">
+    <value>想定していないエラーが起きました: {0}</value>
+  </data>
+  <data name="NoteUnknownUseModule" xml:space="preserve">
+    <value>出力音源が一覧にないので、そのまま使います: {0}</value>
+  </data>
+  <data name="NoteUseModuleNextSong" xml:space="preserve">
+    <value>出力音源: {0}（次の曲から反映されます）</value>
+  </data>
+  <data name="OrderFileName" xml:space="preserve">
+    <value>ファイル名順</value>
+  </data>
+  <data name="OrderRandom" xml:space="preserve">
+    <value>ランダム</value>
+  </data>
+  <data name="OrderRegistered" xml:space="preserve">
+    <value>表示順</value>
+  </data>
+  <data name="OrderTitle" xml:space="preserve">
+    <value>タイトル順</value>
+  </data>
+  <data name="OverrideWrongVersion" xml:space="preserve">
+    <value>書式のバージョンが合いません（このファイルはバージョン {0}、この Glosa が読めるのはバージョン {1}）。define.override.yaml.sample をもとに作り直してください。</value>
+  </data>
+  <data name="PaneDebug" xml:space="preserve">
+    <value>デバッグ</value>
+  </data>
+  <data name="PaneMonitor" xml:space="preserve">
+    <value>演奏モニタ</value>
+  </data>
+  <data name="PickDefinition" xml:space="preserve">
+    <value>TMIDI定義ファイルを開く</value>
+  </data>
+  <data name="PickFolder" xml:space="preserve">
+    <value>フォルダを追加</value>
+  </data>
+  <data name="PickPlaylist" xml:space="preserve">
+    <value>プレイリストを開く</value>
+  </data>
+  <data name="PickSongs" xml:space="preserve">
+    <value>曲を追加</value>
+  </data>
+  <data name="PlaylistAdd" xml:space="preserve">
+    <value>プレイリストを追加</value>
+  </data>
+  <data name="PlaylistClose" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="PlaylistDuplicate" xml:space="preserve">
+    <value>複製</value>
+  </data>
+  <data name="PlaylistExportM3u" xml:space="preserve">
+    <value>M3U に書き出す...</value>
+  </data>
+  <data name="PlaylistOpenInTab" xml:space="preserve">
+    <value>このファイルは「{0}」のタブで開いています。別の名前で保存してください。</value>
+  </data>
+  <data name="PlaylistRename" xml:space="preserve">
+    <value>名前の変更...</value>
+  </data>
+  <data name="PlaylistSave" xml:space="preserve">
+    <value>保存...</value>
+  </data>
+  <data name="PlaylistTabs" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="PortCannotOpen" xml:space="preserve">
+    <value>開けませんでした: {0}</value>
+  </data>
+  <data name="PortMapAdd" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="PortMapAuto" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="PortMapClearPort" xml:space="preserve">
+    <value>クリア</value>
+  </data>
+  <data name="PortMapClearPortOf" xml:space="preserve">
+    <value>ポート {0} をクリア</value>
+  </data>
+  <data name="PortMapDefaultTip" xml:space="preserve">
+    <value>このマップは、対象音源がどのマップにも該当しない場合に使用されます。対象音源は指定できません。</value>
+  </data>
+  <data name="PortMapGeneral" xml:space="preserve">
+    <value>全般</value>
+  </data>
+  <data name="PortMapList" xml:space="preserve">
+    <value>ポートマップ</value>
+  </data>
+  <data name="PortMapListTip" xml:space="preserve">
+    <value>ドラッグで並べ替えられます。同じ対象音源をもつマップが複数ある場合は、上にあるものが優先されます。一番上のマップは動かせません。</value>
+  </data>
+  <data name="PortMapName" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="PortMapPorts" xml:space="preserve">
+    <value>出力ポート</value>
+  </data>
+  <data name="PortMapPortsTip" xml:space="preserve">
+    <value>「リセット」は、TMIDI定義ファイルを読み込んでいないとき、曲の前に出力音源のリセットを送るポートです。1台の機器を複数のポートにつないでいるときは最初のポートだけに、別々の機器をつないでいるときはそれぞれのポートにチェックを入れてください。TMIDI定義ファイルを読み込んでいるときは、定義ファイルの指定に従うので変更できません。</value>
+  </data>
+  <data name="PortMapRemove" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="PortMapReset" xml:space="preserve">
+    <value>リセット</value>
+  </data>
+  <data name="PortMapResetOf" xml:space="preserve">
+    <value>ポート {0} のリセット</value>
+  </data>
+  <data name="PortMapTargetModules" xml:space="preserve">
+    <value>対象音源</value>
+  </data>
+  <data name="PortMapTargetModulesTip" xml:space="preserve">
+    <value>ポートマップが「自動」のとき、ここで指定した対象音源の曲はこのマップで再生されます。</value>
+  </data>
+  <data name="PortMapTitle" xml:space="preserve">
+    <value>ポートマップ設定</value>
+  </data>
+  <data name="PortMapUseModule" xml:space="preserve">
+    <value>出力音源</value>
+  </data>
+  <data name="PortMapUseModuleEmpty" xml:space="preserve">
+    <value>(出力音源)</value>
+  </data>
+  <data name="PortMapUseModuleTip" xml:space="preserve">
+    <value>このマップのポートに接続されている音源を指定してください。</value>
+  </data>
+  <data name="PortName" xml:space="preserve">
+    <value>ポート {0}</value>
+  </data>
+  <data name="PortOpen" xml:space="preserve">
+    <value>開いています</value>
+  </data>
+  <data name="PortOpenProblem" xml:space="preserve">
+    <value>{0}（{1}）: {2}</value>
+  </data>
+  <data name="PortUnused" xml:space="preserve">
+    <value>(使わない)</value>
+  </data>
+  <data name="PriorityHigh" xml:space="preserve">
+    <value>高</value>
+  </data>
+  <data name="PriorityLow" xml:space="preserve">
+    <value>低</value>
+  </data>
+  <data name="PriorityNormal" xml:space="preserve">
+    <value>通常</value>
+  </data>
+  <data name="ProblemDeviceNotFound" xml:space="preserve">
+    <value>見つかりません</value>
+  </data>
+  <data name="ProblemNotMidiOutput" xml:space="preserve">
+    <value>MIDI出力に対応していません</value>
+  </data>
+  <data name="ProblemSysExDropped" xml:space="preserve">
+    <value>{0}: SysExを {1} 通取りこぼしました</value>
+  </data>
+  <data name="PromptCancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="RateMidiCable" xml:space="preserve">
+    <value>3125バイト/秒（MIDIケーブル相当）</value>
+  </data>
+  <data name="RateUnlimited" xml:space="preserve">
+    <value>無制限</value>
+  </data>
+  <data name="RenamePlaylist" xml:space="preserve">
+    <value>プレイリスト名の変更</value>
+  </data>
+  <data name="RenamePlaylistPrompt" xml:space="preserve">
+    <value>新しい名前</value>
+  </data>
+  <data name="RepeatAll" xml:space="preserve">
+    <value>リピート</value>
+  </data>
+  <data name="RepeatNone" xml:space="preserve">
+    <value>なし</value>
+  </data>
+  <data name="RepeatSingle" xml:space="preserve">
+    <value>単曲演奏</value>
+  </data>
+  <data name="RepeatSingleRepeat" xml:space="preserve">
+    <value>単曲リピート</value>
+  </data>
+  <data name="SavePlaylist" xml:space="preserve">
+    <value>プレイリストを保存</value>
+  </data>
+  <data name="SettingsAllSoundOff" xml:space="preserve">
+    <value>停止時にオールサウンドオフを送る</value>
+  </data>
+  <data name="SettingsAppliedAtOnce" xml:space="preserve">
+    <value>変更はすぐに反映されます。閉じるボタンで閉じてください。</value>
+  </data>
+  <data name="SettingsAutoDropPlay" xml:space="preserve">
+    <value>ドロップや外から曲を追加したら演奏を開始する</value>
+  </data>
+  <data name="SettingsDefKeywords" xml:space="preserve">
+    <value>TMIDI定義ファイルで対象音源を判別する</value>
+  </data>
+  <data name="SettingsDefKeywordsTip" xml:space="preserve">
+    <value>無効のときは define.yaml のパターンで判別します。有効にするとTMIDI定義ファイルの [keyword] で判別します。切り替えるとすべての曲を判別し直します。</value>
+  </data>
+  <data name="SettingsDefinition" xml:space="preserve">
+    <value>TMIDI定義ファイル</value>
+  </data>
+  <data name="SettingsDetectedAsIs" xml:space="preserve">
+    <value>そのまま</value>
+  </data>
+  <data name="SettingsDetectedDefaults" xml:space="preserve">
+    <value>判別で機種が決まらないとき</value>
+  </data>
+  <data name="SettingsDetectedDefaultsTip" xml:space="preserve">
+    <value>自動判別の結果が THRU・GS・XG だった曲を、どの対象音源として演奏するかです。「そのまま」は判別の結果のまま演奏します。対象音源を手で指定した曲には効きません。</value>
+  </data>
+  <data name="SettingsDetection" xml:space="preserve">
+    <value>対象音源の判別</value>
+  </data>
+  <data name="SettingsDetectionPosition" xml:space="preserve">
+    <value>優先する機種</value>
+  </data>
+  <data name="SettingsDetectionPositionTip" xml:space="preserve">
+    <value>複数の機種が書かれているとき、先に出たものと後に出たもののどちらを採るかです。</value>
+  </data>
+  <data name="SettingsDetectionSources" xml:space="preserve">
+    <value>判別に使う情報（上から順に）</value>
+  </data>
+  <data name="SettingsDetectionSourcesTip" xml:space="preserve">
+    <value>define.yaml のパターンで探す情報と、曲のデータです。行をドラッグすると並べ替えられます。曲のデータはほかの情報で機種が分からないときに使うので、常に最後です。曲の先頭近くにある GS・XG・CM-64 の初期化メッセージで判別します。フォルダパスはホームフォルダより後の部分です。添付テキストは曲と同名のテキストファイルのことです。変更するとすべての曲を判別し直します。</value>
+  </data>
+  <data name="SettingsDisplay" xml:space="preserve">
+    <value>画面</value>
+  </data>
+  <data name="SettingsEmulation" xml:space="preserve">
+    <value>エミュレーション</value>
+  </data>
+  <data name="SettingsFallback" xml:space="preserve">
+    <value>代理発音(CTF)</value>
+  </data>
+  <data name="SettingsFallbackTip" xml:space="preserve">
+    <value>出力音源が SC-55mkII 以降の SC（SC-55mkII・SC-33・SC-88・SC-88Pro・SC-8850）のとき、その機種に無いバリエーション音色やドラムセットが選ばれたら、SC-55 と同じく近い音色で鳴らします。</value>
+  </data>
+  <data name="SettingsHardwareRendering" xml:space="preserve">
+    <value>ハードウェアで描画する</value>
+  </data>
+  <data name="SettingsHardwareRenderingTip" xml:space="preserve">
+    <value>オフにすると CPU で描画します。メモリ使用量が減ることがありますが、CPU の負荷が増えます。</value>
+  </data>
+  <data name="SettingsLanguage" xml:space="preserve">
+    <value>言語 (Language)</value>
+  </data>
+  <data name="SettingsLoopCount" xml:space="preserve">
+    <value>無限ループの繰り返し回数</value>
+  </data>
+  <data name="SettingsMediaKeys" xml:space="preserve">
+    <value>メディアキーで操作する</value>
+  </data>
+  <data name="SettingsMediaKeysTip" xml:space="preserve">
+    <value>キーボードのメディアキーや OS のメディア操作で、再生・一時停止・停止・曲送りができます。</value>
+  </data>
+  <data name="SettingsMidiOutReset" xml:space="preserve">
+    <value>停止時に midiOutReset を呼ぶ</value>
+  </data>
+  <data name="SettingsMidiOutput" xml:space="preserve">
+    <value>MIDI出力</value>
+  </data>
+  <data name="SettingsModuleReset" xml:space="preserve">
+    <value>曲の前に出力音源をリセットする</value>
+  </data>
+  <data name="SettingsModuleResetTip" xml:space="preserve">
+    <value>TMIDI定義ファイルを使わないとき、出力音源に合わせたリセットを、ポートマップでリセットに印を付けたポートへ送ります。</value>
+  </data>
+  <data name="SettingsPriority" xml:space="preserve">
+    <value>実行優先順位</value>
+  </data>
+  <data name="SettingsScanLength" xml:space="preserve">
+    <value>曲の長さと対象音源を事前に調べる</value>
+  </data>
+  <data name="SettingsScanLengthTip" xml:space="preserve">
+    <value>リストの曲のファイルを先に読み込み、長さと対象音源を表示します。無効にすると、演奏するまで表示しません。曲数が多いと追加したときに時間がかかります。</value>
+  </data>
+  <data name="SettingsSequencer" xml:space="preserve">
+    <value>シーケンサ</value>
+  </data>
+  <data name="SettingsTakesEffectAtStart" xml:space="preserve">
+    <value>次に起動したときから反映されます。</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>環境設定</value>
+  </data>
+  <data name="SettingsToneMap" xml:space="preserve">
+    <value>対象音源に合わせて音色マップを切り替える</value>
+  </data>
+  <data name="SettingsToneMapTip" xml:space="preserve">
+    <value>TMIDI定義ファイルを使わないとき、出力音源が SC-88 以降か MU100 以降なら、下位機種向けの曲をその機種の音色マップで鳴らします。</value>
+  </data>
+  <data name="SettingsTooNew" xml:space="preserve">
+    <value>ファイルの形式がバージョン {0} で、この Glosa が読めるバージョン {1} より新しいです</value>
+  </data>
+  <data name="SettingsTransferRate" xml:space="preserve">
+    <value>転送レート上限</value>
+  </data>
+  <data name="SettingsTrimTitles" xml:space="preserve">
+    <value>タイトルの余分なスペースをカットする</value>
+  </data>
+  <data name="ShowFileName" xml:space="preserve">
+    <value>ファイル名</value>
+  </data>
+  <data name="ShowPath" xml:space="preserve">
+    <value>フルパス</value>
+  </data>
+  <data name="ShowTitle" xml:space="preserve">
+    <value>タイトル</value>
+  </data>
+  <data name="SongsCopyPath" xml:space="preserve">
+    <value>パスをコピー</value>
+  </data>
+  <data name="SongsCopyTo" xml:space="preserve">
+    <value>他のプレイリストへコピー</value>
+  </data>
+  <data name="SongsMoveTo" xml:space="preserve">
+    <value>他のプレイリストへ移動</value>
+  </data>
+  <data name="SongsRemove" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="SongsShow" xml:space="preserve">
+    <value>表示</value>
+  </data>
+  <data name="SongsShowInFileManager" xml:space="preserve">
+    <value>ファイルマネージャで開く</value>
+  </data>
+  <data name="SongsSort" xml:space="preserve">
+    <value>並べ替え</value>
+  </data>
+  <data name="SongsTargetModule" xml:space="preserve">
+    <value>対象音源</value>
+  </data>
+  <data name="SortFileName" xml:space="preserve">
+    <value>ファイル名順</value>
+  </data>
+  <data name="SortLength" xml:space="preserve">
+    <value>長さ順（短い曲から）</value>
+  </data>
+  <data name="SortLengthDescending" xml:space="preserve">
+    <value>長さ順（長い曲から）</value>
+  </data>
+  <data name="SortModule" xml:space="preserve">
+    <value>対象音源順</value>
+  </data>
+  <data name="SortPath" xml:space="preserve">
+    <value>パス順</value>
+  </data>
+  <data name="SortTitle" xml:space="preserve">
+    <value>タイトル順</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>ポートマップ: {0}　対象音源: {1} → 出力音源: {2}</value>
+  </data>
+  <data name="StatusWithEmulation" xml:space="preserve">
+    <value>ポートマップ: {0}　対象音源: {1} → 出力音源: {2}　{3}</value>
+  </data>
+  <data name="Stopped" xml:space="preserve">
+    <value>(停止中)</value>
+  </data>
+  <data name="ToneMapInForce" xml:space="preserve">
+    <value>音色マップ: {0}</value>
+  </data>
+  <data name="TransportNext" xml:space="preserve">
+    <value>次の曲</value>
+  </data>
+  <data name="TransportPause" xml:space="preserve">
+    <value>一時停止 / 再開</value>
+  </data>
+  <data name="TransportPlay" xml:space="preserve">
+    <value>演奏</value>
+  </data>
+  <data name="TransportPrevious" xml:space="preserve">
+    <value>前の曲</value>
+  </data>
+  <data name="TransportSeek" xml:space="preserve">
+    <value>再生位置</value>
+  </data>
+  <data name="TransportStop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Glosa が想定していないエラーが起きました。そのまま使えますが、おかしな動きをするときは起動し直してください。
+
+{0}</value>
+  </data>
+  <data name="UnexpectedErrorTitle" xml:space="preserve">
+    <value>エラーが起きました</value>
+  </data>
+</root>

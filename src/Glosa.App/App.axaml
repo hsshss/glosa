@@ -1,0 +1,82 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Glosa.App.App"
+             xmlns:local="using:Glosa.App"
+             Name="Glosa"
+             RequestedThemeVariant="Dark">
+             <!-- Dark on every platform: the player is one lit display in a dark case. -->
+             <!-- The name is the one macOS puts on the application menu. -->
+
+    <!--
+      macOS: the application menu's own items, above the Hide and Quit the system gives it.
+      None, so that it does not offer "About Avalonia", which is what it has otherwise.
+    -->
+    <NativeMenu.Menu>
+        <NativeMenu />
+    </NativeMenu.Menu>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://glosa/Themes/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+        <!--
+          A geometry handed over as content is an icon (Themes/Icons.axaml), so a MenuItem
+          can say Icon="{StaticResource IconSave}" and nothing more. Drawn at its own size,
+          not stretched, so each icon keeps the margin it was drawn with; filled with the
+          colour of whatever holds it, so it dims and lights with the item's text.
+        -->
+        <DataTemplate DataType="Geometry">
+            <Path Data="{Binding}" Width="16" Height="16" Stretch="None"
+                  Fill="{Binding $parent[ContentControl].Foreground}" />
+        </DataTemplate>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <!--
+          Fluent builds every control brush out of this handful of colours, so restating
+          them is enough to re-dress the whole theme. Fluent's own dark greys are neutral;
+          these are pulled towards blue ink, and the accent is the cyan the chrome uses.
+        -->
+        <FluentTheme DensityStyle="Compact">
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark"
+                                       Accent="#FF35B0CE"
+                                       RegionColor="#FF15181F"
+                                       AltHigh="#FF0C0E13"
+                                       AltMediumHigh="#CC0C0E13"
+                                       AltMedium="#990C0E13"
+                                       AltMediumLow="#660C0E13"
+                                       AltLow="#330C0E13"
+                                       BaseHigh="#FFEBEFF7"
+                                       BaseMediumHigh="#FFC3CAD9"
+                                       BaseMedium="#FF99A1B3"
+                                       BaseMediumLow="#FF6C7385"
+                                       BaseLow="#FF333949"
+                                       ChromeAltLow="#FFEBEFF7"
+                                       ChromeBlackHigh="#FF000000"
+                                       ChromeBlackMedium="#FF000000"
+                                       ChromeBlackMediumLow="#FF000000"
+                                       ChromeBlackLow="#FFEBEFF7"
+                                       ChromeDisabledHigh="#FF272C38"
+                                       ChromeDisabledLow="#FF7B8294"
+                                       ChromeGray="#FF7B8294"
+                                       ChromeHigh="#FF6E7689"
+                                       ChromeLow="#FF14171E"
+                                       ChromeMedium="#FF1A1E27"
+                                       ChromeMediumLow="#FF222835"
+                                       ChromeWhite="#FFFFFFFF"
+                                       ListLow="#19FFFFFF"
+                                       ListMedium="#26FFFFFF"
+                                       ErrorText="#FFFF7A7A" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <StyleInclude Source="avares://glosa/Themes/Dark.axaml" />
+    </Application.Styles>
+</Application>

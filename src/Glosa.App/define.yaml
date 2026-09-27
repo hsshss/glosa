@@ -1,0 +1,109 @@
+# The target modules Glosa knows, and how it tells which one a song was written for.
+# Do not edit define.yaml itself. To change the definitions, rename
+# define.override.yaml.sample in the settings folder to define.override.yaml and edit that;
+# it is then read in place of define.yaml, at startup.
+# The format is described in docs/define.md (English) and docs/define.ja.md (Japanese).
+
+# The version of the format. Leave it as it is.
+version: 1
+
+modules:
+  - name: THRU
+  - name: SC-8850
+    initializeType: SC88
+    patterns:
+      - '(?<![0-9A-Za-z])(SC-?)?88[25]0(?![0-9A-UW-Za-uw-z])'
+  - name: SC-88PRO
+    initializeType: SC88
+    patterns:
+      - '(?<![0-9A-Za-z])(SC-?)?88 ?P(RO)?(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])8P(?![0-9A-Za-z])'
+  - name: SC-88
+    initializeType: SC88
+    patterns:
+      - '(?<![0-9A-Za-z])SC-?88(VL|ST)?(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])88(VL|ST)?(?![0-9A-UW-Za-uw-z]|[\p{IsCJKUnifiedIdeographs}-[対等系専用音互版]])'
+      - '(?<![0-9A-Za-z])88 ?MAP(?![0-9A-UW-Za-uw-z])'
+  - name: SC-55mk2
+    initializeType: GS
+    patterns:
+      - '(?<![0-9A-Za-z])(SC-?)?55 ?MK ?(2|II)(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])(SC-?)?55ST(?![0-9A-UW-Za-uw-z])'
+  - name: SC-55
+    initializeType: GS
+    patterns:
+      - '(?<![0-9A-Za-z])SC-?1?55(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])55(?![0-9A-UW-Za-uw-z]|[\p{IsCJKUnifiedIdeographs}-[対等系専用音互版]])'
+      - '(?<![0-9A-Za-z])55 ?MAP(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])CM-?[35]00(?![0-9A-UW-Za-uw-z])'
+  - name: SC-33
+    initializeType: GS
+    patterns:
+      - '(?<![0-9A-Za-z])SC-?33(?![0-9A-UW-Za-uw-z])'
+  - name: CM-64
+    initializeType: MT32
+    patterns:
+      - '(?<![0-9A-Za-z])CM-?64(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])CM-?32L?(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])MT-?32(?![0-9A-UW-Za-uw-z])'
+  - name: MU2000
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU2(000|K)(?![0-9A-UW-Za-uw-z])'
+  - name: MU1000
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU1(000|K)(?![0-9A-UW-Za-uw-z])'
+  - name: MU128
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU128(?![0-9A-UW-Za-uw-z])'
+  - name: MU100
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU100[BR]?(?![0-9A-UW-Za-uw-z])'
+  - name: MU90
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU90[BR]?(?![0-9A-UW-Za-uw-z])'
+  - name: MU80
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU80(?![0-9A-UW-Za-uw-z])'
+  - name: MU50
+    initializeType: XG
+    patterns:
+      - '(?<![0-9A-Za-z])MU50(?![0-9A-UW-Za-uw-z])'
+  - name: TG300B
+    initializeType: GS
+    patterns:
+      - '(?<![0-9A-Za-z])TG300B(?![0-9A-UW-Za-uw-z])'
+  - name: X5D
+    initializeType: GM
+    patterns:
+      - '(?<![0-9A-Za-z])X5DR?(?![0-9A-UW-Za-uw-z])'
+  - name: 05R/W
+    initializeType: GM
+    patterns:
+      - '(?<![0-9A-Za-z])05R(/W)?(?![0-9A-UW-Za-uw-z])'
+  - name: SB32
+    initializeType: GM
+    patterns:
+      - '(?<![0-9A-Za-z])SB(32)?(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])AWE32(?![0-9A-UW-Za-uw-z])'
+      - '(?<![0-9A-Za-z])BLASTER(?![0-9A-UW-Za-uw-z])'
+  - name: GM
+    initializeType: GM
+    fallback: true
+  - name: GS
+    initializeType: GS
+    fallback: true
+  - name: XG
+    initializeType: XG
+    fallback: true
+
+nameDetection:
+  maxDocumentLength: 2048
+
+dataDetection:
+  maxMessages: 1000

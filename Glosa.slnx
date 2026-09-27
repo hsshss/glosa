@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Glosa.App/Glosa.App.csproj" />
+    <Project Path="src/Glosa.Cli/Glosa.Cli.csproj" />
+    <Project Path="src/Glosa.Core/Glosa.Core.csproj" />
+    <Project Path="src/Glosa.Midi.Linux/Glosa.Midi.Linux.csproj" />
+    <Project Path="src/Glosa.Midi.MacOS/Glosa.Midi.MacOS.csproj" />
+    <Project Path="src/Glosa.Midi.Windows/Glosa.Midi.Windows.csproj" />
+    <Project Path="src/Glosa.Midi/Glosa.Midi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Glosa.Tests/Glosa.Tests.csproj" />
+  </Folder>
+</Solution>

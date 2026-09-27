@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Glosa.Midi\Glosa.Midi.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glosa.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Emulation\SoundCanvasTones.txt"
+                      LogicalName="Glosa.Core.Emulation.SoundCanvasTones.txt" />
+  </ItemGroup>
+
+  <!-- Strings.resx (English) and its translations; Strings.Designer.cs is generated from it. -->
+  <PropertyGroup>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" Generator="ResXFileCodeGenerator"
+                      LastGenOutput="Strings.Designer.cs" />
+    <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="True"
+             DependentUpon="Strings.resx" />
+  </ItemGroup>
+  <Target Name="GenerateStrings">
+    <!-- In-process, as the build's own resx step runs it: there is no ResGen.exe here. -->
+    <GenerateResource Sources="Strings.resx" ExecuteAsTool="false"
+                      OutputResources="$(IntermediateOutputPath)GenerateStrings.resources"
+                      StronglyTypedLanguage="CSharp" StronglyTypedNamespace="Glosa.Core"
+                      StronglyTypedClassName="Strings" StronglyTypedFileName="Strings.Designer.cs" />
+  </Target>
+
+</Project>

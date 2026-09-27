@@ -1,0 +1,6 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Glosa.App.Views.PaneWindow"
+        Width="660" Height="440" MinWidth="320" MinHeight="200">
+    <ContentControl Name="Host" Margin="6" />
+</Window>
