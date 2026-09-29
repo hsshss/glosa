@@ -5,6 +5,8 @@ English | [日本語](README.ja.md)
 A MIDI player that tells which sound module each song was written for (its target module) and switches port maps to suit it.  
 It also emulates one module on another, using TMIDI Player's definition files.
 
+![The main window: the playlist shows the target module detected for each song, and the LCD panel shows the song's text and dot picture](images/main-window.png)
+
 ## Features
 
 ### What it does
@@ -36,6 +38,8 @@ A song written for a different module is played with the differences converted (
   Tones are replaced with ones the output module has, and exclusive messages it does not accept are held back.
 - **More output modules to choose from** — Modules only the definition file knows (SYG20, MSGS and others) can be chosen too.
 - **Detection by TMIDI Player's rules** — Preferences can switch target module detection to the definition file's rules.
+
+![A song for the SC-88Pro played on an MU2000: the status bar lists the conversions applied](images/emulation.png)
 
 ## Requirements
 
@@ -80,6 +84,8 @@ In **Settings → Port Map Settings...**, assign MIDI devices to ports A to F.
 
 Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for each song from its target module; choosing a map fixes it to that map.
 
+<img src="images/port-map-settings.png" width="560" alt="Port Map Settings: a map for the MU2000, used for songs whose target module is the MU2000, MU1000 or MU128">
+
 ### Adding and playing songs
 
 - Add songs from the **File** menu or by dropping them on the window. Adding an archive or a folder adds all the songs in it.
@@ -112,6 +118,8 @@ TMIDI definition files are not included with this software. Use one exported fro
 
 - **Window → Monitor...** shows the state of each part.
 - **Window → Debug...** records messages, such as files that could not be read.
+
+<img src="images/monitor.png" width="640" alt="The monitor: each part's tone, volume, pan, notes and keyboard, with the chord name at the top">
 
 ### Preferences
 
