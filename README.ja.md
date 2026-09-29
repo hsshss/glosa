@@ -154,8 +154,9 @@ glosa [オプション] [曲やフォルダ...]
 設定とプレイリストは次の場所に保存されます。**設定 → 設定フォルダを開く** で開けます。
 
 ```
-Windows        %APPDATA%\glosa\
-Linux / macOS  ~/.config/glosa/
+Windows  %APPDATA%\glosa\
+macOS    ~/Library/Application Support/glosa/
+Linux    ~/.config/glosa/
 ```
 
 - `settings.yaml` — 設定

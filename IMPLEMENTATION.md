@@ -444,7 +444,7 @@ RCP を変換する `RCPCV.DLL` は Windows 専用なので、変換は自前で
 ## 設定の保存
 
 ```
-%APPDATA%\glosa\settings.yaml       設定（Linux / macOS では ~/.config/glosa/）
+%APPDATA%\glosa\settings.yaml       設定（macOS では ~/Library/Application Support/glosa/、Linux では ~/.config/glosa/）
 %APPDATA%\glosa\playlists\*.yaml    プレイリスト（1 つにつき 1 ファイル）
 %APPDATA%\glosa\define.override.yaml         対象音源の定義の上書き（利用者が作ったときだけ）
 %APPDATA%\glosa\define.override.yaml.sample  その見本（起動するたびに書き出す）

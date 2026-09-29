@@ -151,8 +151,9 @@ glosa [options] [songs or folders...]
 Settings and playlists are kept in the folder below. **Settings → Open Settings Folder** opens it.
 
 ```
-Windows        %APPDATA%\glosa\
-Linux / macOS  ~/.config/glosa/
+Windows  %APPDATA%\glosa\
+macOS    ~/Library/Application Support/glosa/
+Linux    ~/.config/glosa/
 ```
 
 - `settings.yaml` — settings

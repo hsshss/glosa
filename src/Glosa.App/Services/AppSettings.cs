@@ -301,7 +301,8 @@ public sealed class AppSettings
 
     /// <summary>
     /// Where the settings and the working playlist live: the roaming application data
-    /// folder, which is <c>~/.config</c> on the platforms that have no such thing.
+    /// folder: <c>~/Library/Application Support</c> on macOS, and <c>~/.config</c> on Linux,
+    /// which has no such thing.
     /// </summary>
     /// <remarks>
     /// Settable for <c>--config</c>. Set before anything reads the settings; moving it
