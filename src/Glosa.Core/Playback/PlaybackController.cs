@@ -124,6 +124,9 @@ public sealed class PlaybackController : IDisposable
     /// </summary>
     private PlaylistItem? _detached;
 
+    /// <summary>The song <see cref="CurrentChanged"/> last named.</summary>
+    private PlaylistItem? _announced;
+
     private PlayOrder _playOrder = PlayOrder.Registered;
 
     /// <summary>The requests not taken yet. Also what the thread waits on.</summary>
@@ -191,6 +194,7 @@ public sealed class PlaybackController : IDisposable
                 // The song playing now keeps playing; only what comes after it changes.
                 BuildOrder(Current);
             }
+            Announce();
         }
     }
 
@@ -221,8 +225,9 @@ public sealed class PlaybackController : IDisposable
 
     /// <summary>Raised when the cursor moves to another song.</summary>
     /// <remarks>
-    /// Whether or not anything plays: stepping while stopped moves the cursor too. For the
-    /// songs that were actually played, see <see cref="Started"/>.
+    /// Whether or not anything plays: stepping while stopped, or a list running out, moves
+    /// it too. For the songs actually played, see <see cref="Started"/>. Raised on the thread
+    /// that moved it, so two may cross; <see cref="Current"/> is where it is now.
     /// </remarks>
     public event Action<PlaylistItem?>? CurrentChanged;
 
@@ -248,14 +253,18 @@ public sealed class PlaybackController : IDisposable
     /// </summary>
     public event Action? Rewinding;
 
-    public void SetPlaylist(Playlist playlist)
+    /// <summary>Hands over another list, with the cursor on <paramref name="start"/> or at the top.</summary>
+    public void SetPlaylist(Playlist playlist, PlaylistItem? start = null)
     {
+        PlaylistItem? now;
         lock (_gate)
         {
             _playlist = playlist;
             BuildOrder(null);
+            if (start is not null && IndexOf(_order, start) is >= 0 and int at) _position = at;
+            now = _announced = Current;
         }
-        CurrentChanged?.Invoke(Current);
+        CurrentChanged?.Invoke(now);
     }
 
     /// <summary>
@@ -271,6 +280,7 @@ public sealed class PlaybackController : IDisposable
     public void Rearranged()
     {
         lock (_gate) BuildOrder(Current);
+        Announce();
     }
 
     /// <summary>Starts the song at <paramref name="itemIndex"/> in the playlist's own order.</summary>
@@ -408,6 +418,7 @@ public sealed class PlaybackController : IDisposable
             try
             {
                 Handle(request);
+                Announce();
             }
             catch (Exception ex)
             {
@@ -552,7 +563,6 @@ public sealed class PlaybackController : IDisposable
         }
 
         if (playing) Start(step);
-        else CurrentChanged?.Invoke(Current);
     }
 
     private void OnSongEnded(SongEnded ended)
@@ -589,29 +599,10 @@ public sealed class PlaybackController : IDisposable
                 return;
 
             case RepeatMode.None:
-                lock (_gate)
-                {
-                    if (!MoveCursor(+1, wrap: false)) goto done;
-                }
-                Start(ended);
-                return;
-
             case RepeatMode.All:
                 lock (_gate)
                 {
-                    PlaylistItem? ending = Current;
-                    if (!MoveCursor(+1, wrap: true)) goto done;
-                    // Reshuffle once a random walk has been all the way round, so the next
-                    // pass is not the same order again, nor starts on the song just played.
-                    if (_position == 0 && _playOrder == PlayOrder.Random)
-                    {
-                        Shuffle(_order);
-                        if (_order.Length > 1 && ReferenceEquals(_order[0], ending))
-                        {
-                            int other = 1 + _random.Next(_order.Length - 1);
-                            (_order[0], _order[other]) = (_order[other], _order[0]);
-                        }
-                    }
+                    if (!MoveOn(wrap: Repeat == RepeatMode.All)) goto done;
                 }
                 Start(ended);
                 return;
@@ -658,7 +649,10 @@ public sealed class PlaybackController : IDisposable
                 if (PastUnreadable(cause) is not { } next) break;
                 lock (_gate)
                 {
-                    if (!MoveCursor(next.By, next.Wrap)) { stop = StopCause.EndOfList; break; }
+                    bool moved = cause is StepRequest
+                        ? MoveCursor(next.By, next.Wrap)
+                        : MoveOn(next.Wrap);
+                    if (!moved) { stop = StopCause.EndOfList; break; }
                 }
                 continue;
             }
@@ -687,6 +681,7 @@ public sealed class PlaybackController : IDisposable
 
             // 4. The song starts.
             _sequencer.Load(sequence);
+            lock (_gate) _announced = item;
             CurrentChanged?.Invoke(item);
             lock (_life)
             {
@@ -847,6 +842,19 @@ public sealed class PlaybackController : IDisposable
         else if (_position >= order.Length) _position = order.Length > 0 ? 0 : -1;
     }
 
+    /// <summary>Raises <see cref="CurrentChanged"/> if the cursor has moved. Outside the lock.</summary>
+    private void Announce()
+    {
+        PlaylistItem? now;
+        lock (_gate)
+        {
+            now = Current;
+            if (ReferenceEquals(now, _announced)) return;
+            _announced = now;
+        }
+        CurrentChanged?.Invoke(now);
+    }
+
     private static int IndexOf(PlaylistItem[] order, PlaylistItem item)
         => Array.FindIndex(order, each => ReferenceEquals(each, item));
 
@@ -856,6 +864,36 @@ public sealed class PlaybackController : IDisposable
         {
             int j = _random.Next(i + 1);
             (order[i], order[j]) = (order[j], order[i]);
+        }
+    }
+
+    /// <summary>
+    /// Goes on to the next song as the list does by itself. At the end the cursor goes back
+    /// to the top; false when it does not <paramref name="wrap"/>.
+    /// </summary>
+    private bool MoveOn(bool wrap)
+    {
+        PlaylistItem? leaving = Current;
+        bool moved = MoveCursor(+1, wrap);
+        if (!moved || _position == 0) Rewind(leaving);
+        return moved;
+    }
+
+    /// <summary>
+    /// Puts the cursor at the top for another pass. A random walk is reshuffled, and does
+    /// not start on <paramref name="leaving"/>.
+    /// </summary>
+    private void Rewind(PlaylistItem? leaving)
+    {
+        _detached = null;
+        _position = _order.Length > 0 ? 0 : -1;
+        if (_playOrder != PlayOrder.Random) return;
+
+        Shuffle(_order);
+        if (_order.Length > 1 && ReferenceEquals(_order[0], leaving))
+        {
+            int other = 1 + _random.Next(_order.Length - 1);
+            (_order[0], _order[other]) = (_order[other], _order[0]);
         }
     }
 

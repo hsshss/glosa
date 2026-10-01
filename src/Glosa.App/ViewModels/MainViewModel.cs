@@ -32,14 +32,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         foreach (MidiDeviceInfo device in PlayerService.Devices()) Devices.Add(device);
 
         _player.Controller.Loading += OnSongLoading;
-        _player.Controller.CurrentChanged += item =>
-            Dispatcher.UIThread.Post(() => OnCurrentChanged(item));
-        _player.Controller.Started += item =>
-            Dispatcher.UIThread.Post(() =>
-            {
-                foreach (PlaylistTabViewModel tab in Playlists) tab.Played(item);
-                PlayingRowMoved?.Invoke();
-            });
+        _player.Controller.CurrentChanged += _ =>
+            Dispatcher.UIThread.Post(OnCurrentChanged);
         _player.Controller.LoadFailed += (item, error) =>
             Dispatcher.UIThread.Post(() => Note(string.Format(Strings.NoteCannotLoad, item.Path, error.Message)));
         // Invoke, not Post: the transport waits for this, so the outputs are let go before
@@ -405,11 +399,12 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>Hands a tab's list to the player and marks it as the one being walked.</summary>
+    /// <remarks>The cursor starts on the list's playing mark.</remarks>
     private void StartPlaying(PlaylistTabViewModel tab)
     {
         foreach (PlaylistTabViewModel other in Playlists) other.IsPlaying = other == tab;
         if (!ReferenceEquals(_player.Controller.Playlist, tab.List))
-            _player.Controller.SetPlaylist(tab.List);
+            _player.Controller.SetPlaylist(tab.List, tab.LastPlayedRow?.Item);
     }
 
     public AppSettings Settings => _settings;
@@ -420,7 +415,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     public ObservableCollection<PlaylistTabViewModel> Playlists { get; } = [];
 
     /// <summary>
-    /// A song has started and the lists have moved their playing marks
+    /// The playing mark has moved with the cursor
     /// (<see cref="PlaylistTabViewModel.RevealsLastPlayed"/>). On the UI thread.
     /// </summary>
     public event Action? PlayingRowMoved;
@@ -780,34 +775,19 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     /// The transport's play button: carries on where playback is.
     /// </summary>
     /// <remarks>
-    /// A paused song resumes. A stopped player starts the tab in front from the top of the
-    /// song it last played, or on its first song — or, when the transport is on that tab's
-    /// list, on the song the cursor is on, which next and previous move while stopped. Not
-    /// on the selected row: selecting is for looking and for the row menus
+    /// A paused song resumes. A stopped player starts the tab in front on its playing mark.
+    /// Not on the selected row: selecting is for looking and for the row menus
     /// (<see cref="PlaySelectedCommand"/> plays that).
     /// </remarks>
     [RelayCommand]
     private void Play()
     {
-        if (_player.Controller.State != TransportState.Stopped)
+        if (_player.Controller.State == TransportState.Stopped)
         {
-            _player.Controller.Play();
-            return;
+            if (SelectedPlaylist is not { } tab) return;
+            StartPlaying(tab);
         }
-
-        if (SelectedPlaylist is not { } tab) return;
-        bool onCursor = ReferenceEquals(_player.Controller.Playlist, tab.List)
-                        && _player.Controller.Current is not null;
-        StartPlaying(tab);
-        if (onCursor)
-        {
-            _player.Controller.Play();
-            return;
-        }
-
-        int last = tab.LastPlayed;
-        if (last >= 0) _player.Controller.Play(last);
-        else _player.Controller.Play();
+        _player.Controller.Play();
     }
 
     /// <summary>
@@ -2617,10 +2597,17 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         ReleaseOutputs();
     }
 
-    private void OnCurrentChanged(PlaylistItem? item)
+    /// <remarks>Reads <see cref="PlaybackController.Current"/>: changes may arrive out of turn.</remarks>
+    private void OnCurrentChanged()
     {
+        PlaylistItem? item = _player.Controller.Current;
         NowPlaying = Title(item);
-        foreach (PlaylistTabViewModel tab in Playlists) tab.Refresh();
+        foreach (PlaylistTabViewModel tab in Playlists)
+        {
+            if (ReferenceEquals(tab.List, _player.Controller.Playlist)) tab.StandsOn(item);
+            tab.Refresh();
+        }
+        PlayingRowMoved?.Invoke();
         BuildParts();
     }
 
@@ -2709,8 +2696,7 @@ public sealed partial class PlaylistItemViewModel(PlaylistItem item, Func<Playli
     private string? _detected;
 
     /// <summary>
-    /// True for the row its list is playing or last played
-    /// (<see cref="PlaylistTabViewModel.LastPlayedRow"/>).
+    /// True for the row with the playing mark (<see cref="PlaylistTabViewModel.LastPlayedRow"/>).
     /// </summary>
     [ObservableProperty]
     public partial bool IsLastPlayed { get; set; }

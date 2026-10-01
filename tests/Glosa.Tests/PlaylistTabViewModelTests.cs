@@ -140,7 +140,7 @@ public class PlaylistTabViewModelTests : IDisposable
         PlaylistTabViewModel tab = Tab("a", "a", "b");
         PlaylistItem second = tab.List.Items[1];
 
-        tab.Played(second);
+        tab.StandsOn(second);
 
         Assert.Equal(1, tab.LastPlayed);
         Assert.True(tab.Items[1].IsLastPlayed);
@@ -152,14 +152,16 @@ public class PlaylistTabViewModelTests : IDisposable
     }
 
     [Fact]
-    public void ASongFromAnotherListLeavesTheMarkWhereItWas()
+    public void ACursorOnASongTheListNoLongerHasTakesTheMarkOff()
     {
+        // A song taken out while it plays: the cursor is still on it, and no row is.
         PlaylistTabViewModel tab = Tab("a", "b");
         tab.LastPlayed = 1;
 
-        tab.Played(new PlaylistItem { Path = "a" });
+        tab.StandsOn(new PlaylistItem { Path = "b" });
 
-        Assert.Equal(1, tab.LastPlayed);
+        Assert.Equal(-1, tab.LastPlayed);
+        Assert.False(tab.Items[1].IsLastPlayed);
     }
 
     [Fact]

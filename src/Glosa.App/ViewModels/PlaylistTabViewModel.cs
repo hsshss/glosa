@@ -100,8 +100,8 @@ public sealed partial class PlaylistTabViewModel : ViewModelBase
     public ObservableCollection<PlaylistItemViewModel> Items { get; } = [];
 
     /// <summary>
-    /// The row this list is playing or last played, or null for none. It carries the
-    /// playing mark.
+    /// The row with the playing mark, or null: the transport's cursor on the list being
+    /// played (<see cref="StandsOn"/>), where the list was left on any other.
     /// </summary>
     /// <remarks>
     /// Kept per tab, since each list is left somewhere of its own. The row itself rather than
@@ -266,22 +266,13 @@ public sealed partial class PlaylistTabViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Takes note that <paramref name="item"/> has started playing, when it is one of this
-    /// list's songs; the playing mark moves to its row.
+    /// Puts the playing mark on the cursor's song, or takes it off when the list does not
+    /// have it. By identity: the same file may sit in a list twice.
     /// </summary>
-    /// <remarks>
-    /// By identity, not by path: the same file may sit in two lists. Every tab is told about
-    /// every song, and a tab the song is not in keeps its mark where it was left.
-    /// </remarks>
-    public void Played(PlaylistItem item)
+    public void StandsOn(PlaylistItem? item)
     {
-        foreach (PlaylistItemViewModel row in Items)
-        {
-            if (!ReferenceEquals(row.Item, item)) continue;
-            LastPlayedRow = row;
-            RevealsLastPlayed = true;
-            return;
-        }
+        LastPlayedRow = Items.FirstOrDefault(row => ReferenceEquals(row.Item, item));
+        RevealsLastPlayed = LastPlayedRow is not null;
     }
 
     /// <summary>

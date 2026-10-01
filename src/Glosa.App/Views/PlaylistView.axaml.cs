@@ -172,7 +172,7 @@ public partial class PlaylistView : UserControl
     }
 
     /// <summary>
-    /// Scrolls a list just far enough to show the row it has started playing, when that is off
+    /// Scrolls a list just far enough to show the row with the playing mark, when that is off
     /// screen.
     /// </summary>
     /// <remarks>

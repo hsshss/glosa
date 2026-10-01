@@ -220,8 +220,7 @@ public class PlaybackControllerTests
         player.SetPlaylist(ListOf("a.mid", "b.mid", "c.mid"));
         player.Repeat = RepeatMode.None;
 
-        List<string> played = [];
-        player.CurrentChanged += item => { if (item is not null) lock (played) played.Add(item.Path); };
+        List<string> played = Started(player);
         var done = new ManualResetEventSlim();
         player.Stopped += _ => done.Set();
 
@@ -229,6 +228,117 @@ public class PlaybackControllerTests
         Assert.True(done.Wait(TimeSpan.FromSeconds(10)), "the list never ran out");
 
         lock (played) Assert.Equal(["a.mid", "b.mid", "c.mid"], played);
+    }
+
+    [Fact]
+    public void AListThatRunsOutGoesBackToTheTop()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        player.SetPlaylist(ListOf("a.mid", "b.mid", "c.mid"));
+        player.Repeat = RepeatMode.None;
+        List<string?> cursor = [];
+        player.CurrentChanged += item => { lock (cursor) cursor.Add(item?.Path); };
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        player.Play();
+        Assert.True(done.Wait(TimeSpan.FromSeconds(10)), "the list never ran out");
+        Done(player.WhenIdle());
+
+        // Play again starts a new walk, not the last song over.
+        Assert.Equal("a.mid", player.Current?.Path);
+        lock (cursor) Assert.Equal("a.mid", cursor[^1]);
+        List<string> played = Started(player);
+        Done(player.Play());
+        Done(player.WhenIdle());
+        lock (played) Assert.Equal("a.mid", played[0]);
+        Done(player.Stop());
+    }
+
+    [Fact]
+    public void AStopByHandAtTheLastSongStaysThere()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long());
+        player.SetPlaylist(ListOf("a.mid", "b.mid"));
+        player.Repeat = RepeatMode.None;
+
+        Done(player.Play(1));
+        Done(player.Stop());
+
+        Assert.Equal("b.mid", player.Current?.Path);
+    }
+
+    [Fact]
+    public void AnUnreadableLastSongStillGoesBackToTheTop()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(
+            sequencer,
+            path => path == "c.mid" ? throw new InvalidDataException("not an SMF") : Tiny());
+        player.SetPlaylist(ListOf("a.mid", "b.mid", "c.mid"));
+        player.Repeat = RepeatMode.None;
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        player.Play();
+        Assert.True(done.Wait(TimeSpan.FromSeconds(10)));
+        Done(player.WhenIdle());
+
+        Assert.Equal("a.mid", player.Current?.Path);
+    }
+
+    [Fact]
+    public void SingleStaysOnItsSong()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        player.SetPlaylist(ListOf("a.mid", "b.mid", "c.mid"));
+        player.Repeat = RepeatMode.Single;
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        player.Play(2);
+        Assert.True(done.Wait(TimeSpan.FromSeconds(10)));
+        Done(player.WhenIdle());
+
+        Assert.Equal("c.mid", player.Current?.Path);
+    }
+
+    [Fact]
+    public void AListIsHandedOverWithTheCursorWhereItWasLeft()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        Playlist list = ListOf("a.mid", "b.mid", "c.mid");
+        string? said = null;
+        player.CurrentChanged += item => said = item?.Path;
+
+        player.SetPlaylist(list, list.Items[1]);
+        Assert.Equal("b.mid", player.Current?.Path);
+        Assert.Equal("b.mid", said);
+
+        // A song the list does not have is no place to start.
+        player.SetPlaylist(list, new PlaylistItem { Path = "b.mid" });
+        Assert.Equal("a.mid", player.Current?.Path);
+    }
+
+    [Fact]
+    public void TakingOutTheSongTheCursorIsOnWhileStoppedSaysWhereItWent()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        Playlist list = ListOf("a.mid", "b.mid", "c.mid");
+        player.SetPlaylist(list, list.Items[1]);
+        string? said = null;
+        player.CurrentChanged += item => said = item?.Path;
+
+        list.Items.RemoveAt(1);
+        player.Rearranged();
+
+        Assert.Equal("c.mid", player.Current?.Path);
+        Assert.Equal("c.mid", said);
     }
 
     [Fact]
@@ -241,9 +351,8 @@ public class PlaybackControllerTests
 
         var fourth = new ManualResetEventSlim();
         List<string> played = [];
-        player.CurrentChanged += item =>
+        player.Started += item =>
         {
-            if (item is null) return;
             lock (played)
             {
                 played.Add(item.Path);
@@ -660,7 +769,7 @@ public class PlaybackControllerTests
     private static List<string> Started(PlaybackController player)
     {
         List<string> started = [];
-        player.CurrentChanged += item => { if (item is not null) lock (started) started.Add(item.Path); };
+        player.Started += item => { lock (started) started.Add(item.Path); };
         return started;
     }
 
@@ -964,6 +1073,35 @@ public class PlaybackControllerTests
             Assert.NotEqual(list.Items.Select(i => i.Path), started);
         }
         lock (stops) Assert.Equal([StopCause.EndOfList], stops.Select(s => s.Cause));
+    }
+
+    [Fact]
+    public void ARandomWalkThatRunsOutIsShuffledAfreshForTheNext()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        player.SetPlaylist(Numbered(8));
+        List<string> started = Started(player);
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        List<string>[] passes = new List<string>[3];
+        for (int pass = 0; pass < passes.Length; pass++)
+        {
+            done.Reset();
+            lock (started) started.Clear();
+            player.Play();
+            Assert.True(done.Wait(TimeSpan.FromSeconds(10)), "the list never ran out");
+            Done(player.WhenIdle());
+            lock (started) passes[pass] = [.. started];
+
+            // Ready for the next pass, and not on the song that ended this one.
+            Assert.NotEqual(passes[pass][^1], player.Current?.Path);
+        }
+
+        Assert.All(passes, pass => Assert.Equal(passes[0].Order(), pass.Order()));
+        Assert.False(passes.Skip(1).All(pass => pass.SequenceEqual(passes[0])), "every pass came round the same");
     }
 
     [Fact]
