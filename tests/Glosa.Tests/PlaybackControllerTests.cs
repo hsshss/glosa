@@ -1191,11 +1191,142 @@ public class PlaybackControllerTests
 
         Assert.Equal("2.mid", player.Current?.Path);
         Assert.Equal(TransportState.Playing, player.State);
-        // Stepping on from it comes round to it again only after every other song.
+        // It is first in the new walk, with every other song after it.
         List<string> walk = StepThrough(player, 6);
         Assert.Equal("2.mid", walk[0]);
         Assert.Equal(list.Items.Select(i => i.Path).Order(), walk.Order());
-        Assert.Equal("2.mid", player.Current?.Path);
+        // Stepping past the end deals another pass, which does not start on the last song.
+        Assert.NotEqual(walk[^1], player.Current?.Path);
+        Done(player.Stop());
+    }
+
+    [Fact]
+    public void ChangingTheListKeepsTheRandomWalkAndPutsNewSongsAhead()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        Playlist list = Numbered(6);
+        player.SetPlaylist(list);
+        List<string> before = StepThrough(player, 3);
+        string on = player.Current!.Path;
+
+        list.Items.Add(new PlaylistItem { Path = "new1.mid" });
+        list.Items.Add(new PlaylistItem { Path = "new2.mid" });
+        list.Items.Reverse();
+        player.Rearranged();
+
+        Assert.Equal(on, player.Current?.Path);
+        Done(player.Previous());
+        Assert.Equal(before[^1], player.Current?.Path);
+        Done(player.Next());
+
+        // The rest of the pass is every song not yet visited, new ones included, once each.
+        List<string> rest = StepThrough(player, 8 - before.Count);
+        Assert.Equal(on, rest[0]);
+        Assert.Equal(list.Items.Select(i => i.Path).Except(before).Order(), rest.Order());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public void ARandomListHandedOverStartsItsWalkOnTheSongAskedFor(int start)
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        Playlist list = Numbered(6);
+
+        player.SetPlaylist(list, list.Items[start]);
+        List<string> started = Started(player);
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        // One pass, not the tail of one: every song plays before the list runs out.
+        player.Play();
+        Assert.True(done.Wait(TimeSpan.FromSeconds(10)), "the list never ran out");
+        Done(player.WhenIdle());
+
+        lock (started)
+        {
+            Assert.Equal($"{start}.mid", started[0]);
+            Assert.Equal(list.Items.Select(i => i.Path).Order(), started.Order());
+        }
+    }
+
+    [Fact]
+    public void ASongPickedOutOfTurnIsHeardNextAndBackReturnsToTheOneBefore()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        Playlist list = Numbered(6);
+        player.SetPlaylist(list);
+        Done(player.Play());
+        string first = player.Current!.Path;
+        int picked = list.Items.FindIndex(i => i.Path != first);
+
+        Done(player.Play(picked));
+        Assert.Equal(list.Items[picked].Path, player.Current?.Path);
+
+        Done(player.Previous());
+        Assert.Equal(first, player.Current?.Path);
+        Done(player.Stop());
+
+        // The pass from the top is still every song once: the picked one has not been left
+        // to come round again.
+        Done(player.Previous());
+        Assert.Equal(first, player.Current?.Path);
+        Assert.Equal(list.Items.Select(i => i.Path).Order(), StepThrough(player, 6).Order());
+    }
+
+    [Fact]
+    public void BackFromTheTopOfARandomPassStaysOnTheSong()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        player.SetPlaylist(Numbered(6));
+        string first = player.Current!.Path;
+
+        Done(player.Previous());
+        Assert.Equal(first, player.Current?.Path);
+
+        Done(player.Play());
+        Done(player.Previous());
+        Assert.Equal(first, player.Current?.Path);
+        Assert.Equal(TransportState.Playing, player.State);
+        Done(player.Stop());
+    }
+
+    [Fact]
+    public void TakingOutTheFirstSongOfARandomPassWhileItPlaysDoesNotDealAgain()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        Playlist list = Numbered(6);
+        player.SetPlaylist(list);
+        List<string> walk = StepThrough(player, 2);
+        Done(player.Previous());
+        Done(player.Previous());
+        Assert.Equal(walk[0], player.Current?.Path);
+
+        List<string> started = Started(player);
+        var second = new ManualResetEventSlim();
+        player.Started += item => { if (item.Path != walk[0]) second.Set(); };
+
+        Done(player.Play());
+        list.Items.RemoveAll(i => i.Path == walk[0]);
+        player.Rearranged();
+
+        // The song after it is now first in the walk, which is not the walk coming round.
+        Assert.True(second.Wait(TimeSpan.FromSeconds(10)), "the song never ended");
+        lock (started) Assert.Equal(walk[1], started[1]);
         Done(player.Stop());
     }
 }
