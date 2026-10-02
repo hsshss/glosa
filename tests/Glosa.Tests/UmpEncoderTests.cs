@@ -1,9 +1,10 @@
-using Glosa.Midi.MacOS;
+using Glosa.Midi;
 
 namespace Glosa.Tests;
 
 /// <summary>
-/// The MIDI 1.0 bytes the CoreMIDI backend is handed, as the Universal MIDI Packets it sends.
+/// The MIDI 1.0 bytes the CoreMIDI and Windows MIDI Services backends are handed, as the
+/// Universal MIDI Packets they send.
 /// </summary>
 public class UmpEncoderTests
 {
@@ -132,6 +133,29 @@ public class UmpEncoderTests
         words.Clear();
         encoder.Reset(words);
         Assert.Empty(words);
+    }
+
+    [Fact]
+    public void EveryMessageIsOnTheEncodersGroup()
+    {
+        var encoder = new UmpEncoder(group: 11);
+        Assert.Equal(
+            [0x1BF8_0000u, 0x2B90_3C64u, 0x3B16_4110u, 0x4212_4000u, 0x3B33_7F00u, 0x4100_0000u],
+            Write(encoder, 0xF8, 0x90, 0x3C, 0x64,
+                  0xF0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00, 0x41, 0xF7));
+
+        Write(encoder, 0xF0, 0x41);
+        var words = new List<uint>();
+        encoder.Reset(words);
+        Assert.Equal([0x3B30_0000u, 0x0000_0000u], words);
+    }
+
+    [Fact]
+    public void AShortMessageIsOnTheGroupItIsGiven()
+    {
+        var words = new List<uint>();
+        UmpEncoder.Short(0xB0 | 0x7B << 8, words, group: 15);
+        Assert.Equal([0x2FB0_7B00u], words);
     }
 
     [Fact]

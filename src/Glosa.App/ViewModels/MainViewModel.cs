@@ -30,6 +30,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     public MainViewModel()
     {
         foreach (MidiDeviceInfo device in PlayerService.Devices()) Devices.Add(device);
+        if (Backends.MidiOutputs is { } outputs)
+            Note(Backends.MidiServicesUnavailable is { } why
+                ? string.Format(Strings.NoteMidiApiFallback, outputs.BackendName, why)
+                : string.Format(Strings.NoteMidiApi, outputs.BackendName));
 
         _player.Controller.Loading += OnSongLoading;
         _player.Controller.CurrentChanged += _ =>

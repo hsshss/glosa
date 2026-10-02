@@ -9,6 +9,7 @@ Glosa の設計の判断とその理由を置く。
 
 - **GUI は Avalonia。** .NET でデスクトップの Windows・Linux・macOS を揃って扱えるのはこれだけだった。.NET MAUI は Linux を公式に対応せず、Uno Platform は WebAssembly 寄りで層が厚い。Web 技術で UI を作るもの（Photino、Blazor Hybrid）は、液晶パネルや演奏モニタのような実時間の自前描画に向かない。ビューモデルは CommunityToolkit.Mvvm（ソースジェネレータで、リフレクションに頼らない）。
 - **MIDI 出力は自前の `IMidiOutput` 抽象と、WinMM への P/Invoke。** 出力だけなら API の表面は小さく、既製ライブラリが持ち込む依存（RtMidi.Core の Serilog、Haukcode.MidiDevice の System.Reactive）に見合わない。`midiOutReset` の有無を設定で選べること、SysEx を大量にすぐ送るので送出の時機とバッファの管理を手元に置きたいこと、ポートごとにハンドルを持つことも自前に向く。DryWetMIDI はデバイスの入出力が Linux に対応していないので候補にならなかった。macOS も同じ理由で、CoreMIDI への P/Invoke を自前で持つ（[CoreMIDI バックエンド](#coremidi-バックエンド)）。Linux は ALSA シーケンサーへの P/Invoke（[ALSA バックエンド](#alsa-バックエンド)）。
+- Windows でも、使えるときは WinMM ではなく Windows MIDI Services を vtable で直接呼ぶ（[Windows MIDI Services バックエンド](#windows-midi-services-バックエンド)）。
 - **SMF の解析は自前。** ポートを選ぶ `FF 21`、音源の判別に使うテキストイベントを CP932 の生バイトのまま読むこと、SysEx を加工せず通すこと、と既製品に合わせにくい要件が並ぶ。
 - **CP932 は .NET 組み込みの `CodePagesEncodingProvider`。** .NET 10 に入っているのでパッケージは要らない。ICU ではなく .NET 内蔵の変換表なので、どの OS でも同じに動く。
   DEF、SMF のテキスト、添付ドキュメント、書庫の中の名前に使う。
@@ -513,7 +514,7 @@ OS に依存するものは、**OS に依存しない側のインターフェー
 
 | 何か | インターフェース | Windows の実装 | macOS の実装 | Linux の実装 | 選ぶ場所 |
 |---|---|---|---|---|---|
-| MIDI 出力 | `IMidiOutputFactory` / `IMidiOutput` | `WinMmOutputFactory` | `CoreMidiOutputFactory` | `AlsaSeqOutputFactory` | `Backends`（App・CLI） |
+| MIDI 出力 | `IMidiOutputFactory` / `IMidiOutput` | `MidiServicesOutputFactory`（使えなければ `WinMmOutputFactory`） | `CoreMidiOutputFactory` | `AlsaSeqOutputFactory` | `Backends`（App・CLI） |
 | MIDI 入力 | `IMidiInputFactory` / `IMidiInput` | `WinMmInputFactory` | `CoreMidiInputFactory` | `AlsaSeqInputFactory` | （App・CLI は使わない） |
 | タイマー分解能 | `IPlatformTimer` | `WinMmPlatformTimer` | （要らない） | （要らない） | `Backends`（App・CLI） |
 | メディアキー | `IMediaKeys` | `WindowsMediaKeys` | `MacMediaKeys` | `MprisMediaKeys` | `MediaKeys.Create`（App） |
@@ -536,6 +537,33 @@ macOS の `.app` は、Finder で開いたファイルを引数ではなく OS �
 ## WinMM バックエンド
 
 閉じる経路には、**ケーブルの向こう側を壊さない**ための規則が 3 つある（`WinMmOutput` のコメント）。これらの規則は、「アプリを閉じて開き直すと、ソフトウェア音源にメッセージが届かなくなり、音源を再起動するまで戻らないことがある」という報告から来ている。**症状は再現できていない。** ハンドルの漏れと loopMIDI は実測で除外した。3 つの規則は閉じる経路にあった、症状を説明できる欠陥で、原因と確かめたものではない。再発したときに経路を切り分けられるよう、バッファが空かずに落とした SysEx の件数と閉じるときの問題はデバッグウィンドウに出す。
+
+## Windows MIDI Services バックエンド
+
+Windows では、**Windows MIDI Services が使えればそれで出力し、使えなければ WinMM で出力する**（`Backends`）。
+使えるのは、API（`Windows.Devices.Midi2`）があり、MIDI サービスが動いていて、Windows が Legacy API Mode になっていないとき。
+Legacy API Mode は、Windows 自身を WinMM に戻す設定である。Glosa は WinMM に戻す設定を別に持たず、これに従う。
+
+WinMM から移すのは、**WinMM ではプロセスを終えるまで出力が戻らない壊れ方があるため**。
+Windows MIDI Services が入った Windows では、WinMM も MIDI サービスを通る。
+loopMIDI のポートで、受け手が先に開いている → 送り手が開く → 受け手が閉じる → 別の受け手が開いて閉じる、と進むと、送り手の `midiOutShortMsg` が `MMSYSERR_ERROR` を返す。
+以後そのプロセスからは、同じエンドポイントのポート（loopMIDI のポートは全部で 1 つのエンドポイント）がどれも `midiOutOpen` で同じエラーになり、新しい受け手が来ても戻らない。
+ほかのプロセスからは開けるので、Glosa を再起動するまで直らない。
+Windows MIDI Services でも同じ手順で接続は壊れるが、**同じプロセスで新しいセッションを作れば元どおり届く**。
+
+- **出力を開くたびに、セッションと接続を新しく作る。** 出力は再生が止まると閉じ、次の曲で開き直す（[出力を開く・閉じる](#出力を開く閉じる)）。なので、受け手が戻った後の次の曲から、自然に回復する。
+- **接続は `WaitForEndpointReceiptOnSend` を付けて開き、送信が失敗を返したら出力の異常として曲を止める。** 壊れた接続は、送信に成功を返したまま中身を捨てる。`EndpointDeviceDisconnected` のイベントは来ず、`IsOpen` も true のままで、`AutoReconnect` を付けても戻らない。この設定を付けた接続だけが、壊れた後の送信で失敗を返す（最初の 1 回は約 1 秒待ってから）。正常なときの送信は約 0.1 ms で、付けないとき（約 0.02 ms）との差は再生の妨げにならない。
+- **一覧は MIDI 1.0 のポートの一覧から作る。** 名前も番号の順も WinMM と同じなので、保存したポートマップはどちらのバックエンドでもそのまま使える。MIDI サービスを通らないポート（Microsoft GS Wavetable Synth）は、同じファクトリが WinMM で開く。
+- 送るのは MIDI 1.0 プロトコルの UMP で、ポートのグループ番号を付ける。UMP への組み直しは CoreMIDI と同じ `UmpEncoder` を使い、SysEx は SysEx7 のパケットにして、1 回の送信で受け付ける語数ごとに送る。`Reset` と `Close` も CoreMIDI と同じく、開いている SysEx を閉じ、サステインオフと All Notes Off を全チャンネルに送る。
+
+API は WinRT の投影を使わず、メディアキーと同じく **vtable を直接呼ぶ**（理由は[メディアキー](#メディアキー)と同じ）。
+.NET のアセンブリを参照しないので、API の DLL は使うと決まってから OS が読み込む。
+API は 2026 年 11 月の Windows に入る予定で、それまでは使えず WinMM になる。
+開発中は、環境変数 `GLOSA_MIDI2_DLL` に API の DLL（プレビューの NuGet パッケージ `Windows.Devices.Midi2` の中のもの）を指すと、それを使う。プレビューの DLL は配布物に含めてはいけない。
+IID と vtable の並びはプレビュー 9（0.99.83）のメタデータから取った。**Windows に入る正式版で確かめ直す。**
+
+動作確認は、受け手と送り手を別のプロセスにして、上の手順で壊れることと、検出して曲が止まること、同じプロセスで開き直すと届くことを見た。SysEx は、11〜4002 バイトと、パケットの区切りの前後の長さで、送ったとおりに届くのを見た。
+確かめた音源はすべて loopMIDI のポートで、実機の MIDI ケーブルの速さでどう送られるかは見ていない。
 
 ## CoreMIDI バックエンド
 

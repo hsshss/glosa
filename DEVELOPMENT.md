@@ -14,8 +14,8 @@ out, and how the releases are made. The design decisions and the reasons for the
 | Project | Contents |
 |---|---|
 | `src/Glosa.Core` | SMF parsing, the sequencer, moving through the playlist, DEF parsing, emulation (resolving, conversion during playback, panel state), CP932 |
-| `src/Glosa.Midi` | The MIDI output and input abstractions (`IMidiOutput`, `IMidiInput` and their factories), and `DeviceName`, which points to a device by name |
-| `src/Glosa.Midi.Windows` | The WinMM backend (P/Invoke) and a high-resolution timer |
+| `src/Glosa.Midi` | The MIDI output and input abstractions (`IMidiOutput`, `IMidiInput` and their factories), `DeviceName`, which points to a device by name, and `UmpEncoder`, shared by the backends that send UMP |
+| `src/Glosa.Midi.Windows` | The Windows MIDI Services backend (called through raw vtables), the WinMM backend (P/Invoke) and a high-resolution timer |
 | `src/Glosa.Midi.MacOS` | The CoreMIDI backend (P/Invoke) |
 | `src/Glosa.Midi.Linux` | The ALSA sequencer backend (P/Invoke) |
 | `src/Glosa.App` | The Avalonia GUI |

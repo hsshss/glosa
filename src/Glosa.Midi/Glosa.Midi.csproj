@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- UmpEncoder is shared by the backends that send Universal MIDI Packets. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glosa.Midi.MacOS" />
+    <InternalsVisibleTo Include="Glosa.Midi.Windows" />
+    <InternalsVisibleTo Include="Glosa.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -11,8 +11,8 @@ Glosa を作る側のための文書。構成、ビルド、動作確認の道�
 | プロジェクト | 内容 |
 |---|---|
 | `src/Glosa.Core` | SMF 解析、シーケンサ、曲送り、DEF 解析、エミュレーション（解決・実行時変換・パネル状態）、CP932 |
-| `src/Glosa.Midi` | MIDI 出力・入力の抽象（`IMidiOutput`・`IMidiInput` とそのファクトリ）と、装置を名前で指す `DeviceName` |
-| `src/Glosa.Midi.Windows` | WinMM バックエンド（P/Invoke）、高分解能タイマ |
+| `src/Glosa.Midi` | MIDI 出力・入力の抽象（`IMidiOutput`・`IMidiInput` とそのファクトリ）、装置を名前で指す `DeviceName`、UMP を送るバックエンドが共用する `UmpEncoder` |
+| `src/Glosa.Midi.Windows` | Windows MIDI Services バックエンド（vtable を直接呼ぶ）、WinMM バックエンド（P/Invoke）、高分解能タイマ |
 | `src/Glosa.Midi.MacOS` | CoreMIDI バックエンド（P/Invoke） |
 | `src/Glosa.Midi.Linux` | ALSA シーケンサーのバックエンド（P/Invoke） |
 | `src/Glosa.App` | Avalonia の GUI |

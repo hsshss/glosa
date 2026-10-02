@@ -326,6 +326,12 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="NoteLengthsScanned" xml:space="preserve">
     <value>{0} 曲の長さを調べました</value>
   </data>
+  <data name="NoteMidiApi" xml:space="preserve">
+    <value>MIDI 出力の API: {0}</value>
+  </data>
+  <data name="NoteMidiApiFallback" xml:space="preserve">
+    <value>MIDI 出力の API: {0}（Windows MIDI Services を使わない理由: {1}）</value>
+  </data>
   <data name="NoteNoDefine" xml:space="preserve">
     <value>対象音源の定義がありません: {0}</value>
   </data>

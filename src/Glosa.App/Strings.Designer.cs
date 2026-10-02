@@ -933,6 +933,24 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MIDI output API: {0}.
+        /// </summary>
+        public static string NoteMidiApi {
+            get {
+                return ResourceManager.GetString("NoteMidiApi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MIDI output API: {0} (not Windows MIDI Services: {1}).
+        /// </summary>
+        public static string NoteMidiApiFallback {
+            get {
+                return ResourceManager.GetString("NoteMidiApiFallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Target module definitions not found: {0}.
         /// </summary>
         public static string NoteNoDefine {

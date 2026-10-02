@@ -329,6 +329,12 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="NoteLengthsScanned" xml:space="preserve">
     <value>Song lengths measured: {0}</value>
   </data>
+  <data name="NoteMidiApi" xml:space="preserve">
+    <value>MIDI output API: {0}</value>
+  </data>
+  <data name="NoteMidiApiFallback" xml:space="preserve">
+    <value>MIDI output API: {0} (not Windows MIDI Services: {1})</value>
+  </data>
   <data name="NoteNoDefine" xml:space="preserve">
     <value>Target module definitions not found: {0}</value>
   </data>

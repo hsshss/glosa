@@ -177,6 +177,7 @@ static int Devices()
 {
     IMidiOutputFactory factory = Factory();
     Console.WriteLine($"backend: {factory.BackendName}");
+    if (Glosa.Cli.Backends.MidiServicesUnavailable is { } why) Console.WriteLine($"  (not Windows MIDI Services: {why})");
     IReadOnlyList<MidiDeviceInfo> devices = factory.Enumerate();
     if (devices.Count == 0) { Console.WriteLine("  (no output devices)"); return 0; }
     foreach (MidiDeviceInfo d in devices)
@@ -350,6 +351,11 @@ static int Play(string[] args)
 
     var done = new ManualResetEventSlim(false);
     sequencer.Finished += () => done.Set();
+    sequencer.DeviceFailed += problem =>
+    {
+        Console.WriteLine($"device failed: {problem}");
+        done.Set();
+    };
 
     var wall = Stopwatch.StartNew();
     sequencer.Play();
@@ -362,9 +368,21 @@ static int Play(string[] args)
     sequencer.Stop();
     wall.Stop();
 
-    if (options.UseMidiOutReset)
-        foreach (IMidiOutput? o in outputs) o?.Reset();
-    foreach (IMidiOutput? o in outputs) o?.Dispose();
+    foreach (IMidiOutput? o in outputs)
+    {
+        if (o is null) continue;
+        try
+        {
+            if (options.UseMidiOutReset) o.Reset();
+        }
+        catch (MidiDeviceException ex)
+        {
+            // A device that failed during playback is closed all the same.
+            Console.WriteLine($"reset failed: {ex.Message}");
+        }
+        o.Dispose();
+        if (o.CloseError is { } closing) Console.WriteLine($"close: {closing}");
+    }
 
     Console.WriteLine($"stopped at {reached:mm\\:ss\\.fff} "
         + $"(wall {wall.Elapsed:mm\\:ss\\.fff})");

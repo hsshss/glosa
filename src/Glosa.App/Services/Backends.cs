@@ -27,12 +27,17 @@ internal static class Backends
     /// </remarks>
     public static IMidiOutputFactory? MidiOutputs { get; } = CreateMidiOutputs();
 
+    /// <summary>Why Windows MIDI Services is not the backend, where WinMM is.</summary>
+    public static string? MidiServicesUnavailable { get; private set; }
+
     /// <summary>What raises the system timer's resolution while playing, where there is one.</summary>
     public static IPlatformTimer Timer { get; } = CreateTimer();
 
     private static IMidiOutputFactory? CreateMidiOutputs()
     {
 #if WINDOWS
+        if (MidiServicesOutputFactory.TryCreate(out string? why) is { } services) return services;
+        MidiServicesUnavailable = why;
         if (WinMmOutputFactory.IsSupported) return new WinMmOutputFactory();
 #endif
 #if MACOS
