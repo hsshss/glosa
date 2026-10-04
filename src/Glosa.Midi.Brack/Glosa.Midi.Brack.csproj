@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Brack's audio plugins as outputs, on any system; empty without Brack (#if BRACK, Directory.Build.props). -->
+  <ItemGroup>
+    <ProjectReference Include="..\Glosa.Midi\Glosa.Midi.csproj" />
+    <ProjectReference Include="$(BrackProject)" Condition="'$(BrackSource)' == 'Project'" />
+    <PackageReference Include="Brack.NET" Version="$(BrackVersion)" Condition="'$(BrackSource)' == 'Package'" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glosa.Tests" />
+  </ItemGroup>
+
+</Project>

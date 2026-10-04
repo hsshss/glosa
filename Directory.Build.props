@@ -21,6 +21,19 @@
   </PropertyGroup>
 
   <!--
+    Brack, the plugin host: from a checkout beside this repository, else its package of
+    BrackVersion (UseBrackPackage=true prefers the package). With neither, BRACK is not
+    defined. Whether it runs on this system is found at run time.
+  -->
+  <PropertyGroup>
+    <BrackVersion></BrackVersion>
+    <BrackProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../brack/bindings/dotnet/Brack/Brack.csproj'))</BrackProject>
+    <BrackSource Condition="'$(UseBrackPackage)' != 'true' and Exists('$(BrackProject)')">Project</BrackSource>
+    <BrackSource Condition="'$(BrackSource)' == '' and '$(BrackVersion)' != ''">Package</BrackSource>
+    <DefineConstants Condition="'$(BrackSource)' != ''">$(DefineConstants);BRACK</DefineConstants>
+  </PropertyGroup>
+
+  <!--
     A build for a system is one to hand out: the paths it records name the repository's root
     as /_/, not the folder it was built in, which may carry the user's name.
   -->

@@ -28,6 +28,11 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <!-- The audio plugins window only where there is Brack (Directory.Build.props); its code is in #if BRACK. -->
+  <ItemGroup Condition="'$(BrackSource)' == ''">
+    <AvaloniaXaml Remove="Views\AudioPluginsWindow.axaml" />
+  </ItemGroup>
+
   <!--
     Strings.resx is English; each translation is a Strings.<culture>.resx beside it and goes
     out as a satellite assembly. GenerateStrings writes Strings.Designer.cs outside an IDE.
@@ -110,6 +115,9 @@
                       Condition="'$(IsMacOSBuild)' == 'true'" />
     <ProjectReference Include="..\Glosa.Midi.Linux\Glosa.Midi.Linux.csproj"
                       Condition="'$(IsLinuxBuild)' == 'true'" />
+    <!-- The audio plugins, on any system, where there is Brack (Directory.Build.props). -->
+    <ProjectReference Include="..\Glosa.Midi.Brack\Glosa.Midi.Brack.csproj"
+                      Condition="'$(BrackSource)' != ''" />
   </ItemGroup>
 
   <ItemGroup>

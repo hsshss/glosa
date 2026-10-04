@@ -36,6 +36,87 @@
   <data name="AboutVersion" xml:space="preserve">
     <value>Version {0}</value>
   </data>
+  <data name="AudioPluginCrashed" xml:space="preserve">
+    <value>Crashed</value>
+  </data>
+  <data name="AudioPluginFailed" xml:space="preserve">
+    <value>Could not load</value>
+  </data>
+  <data name="AudioPluginLoading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="AudioPluginPorts" xml:space="preserve">
+    <value>{0} MIDI ports</value>
+  </data>
+  <data name="AudioPluginsAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="AudioPluginsAddFile" xml:space="preserve">
+    <value>From File...</value>
+  </data>
+  <data name="AudioPluginsAdding" xml:space="preserve">
+    <value>Loading {0}...</value>
+  </data>
+  <data name="AudioPluginsDefaultDevice" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="AudioPluginsDevice" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="AudioPluginsEditor" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="AudioPluginsFound" xml:space="preserve">
+    <value>Instruments</value>
+  </data>
+  <data name="AudioPluginsFoundTip" xml:space="preserve">
+    <value>The instruments found in the standard CLAP, VST3 and VST2 folders. To load a plugin kept somewhere else, use From File.</value>
+  </data>
+  <data name="AudioPluginsLevel" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="AudioPluginsLoad" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="AudioPluginsLoadTip" xml:space="preserve">
+    <value>The share of the time the plugins take to render. Near 100%, the sound breaks up.</value>
+  </data>
+  <data name="AudioPluginsOutput" xml:space="preserve">
+    <value>Audio Output</value>
+  </data>
+  <data name="AudioPluginsRack" xml:space="preserve">
+    <value>Rack</value>
+  </data>
+  <data name="AudioPluginsRackTip" xml:space="preserve">
+    <value>Each MIDI port of a plugin here is an output device named after the plugin: choose it for a port in Port Map Settings. A plugin renamed keeps its place in the port maps. Drag to reorder; the devices are listed in this order. What is set in a plugin's editor is saved with the rack.</value>
+  </data>
+  <data name="AudioPluginsReload" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="AudioPluginsReloading" xml:space="preserve">
+    <value>Reloading {0}...</value>
+  </data>
+  <data name="AudioPluginsRemove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="AudioPluginsRename" xml:space="preserve">
+    <value>Rename...</value>
+  </data>
+  <data name="AudioPluginsRenamePrompt" xml:space="preserve">
+    <value>New name</value>
+  </data>
+  <data name="AudioPluginsRenameTitle" xml:space="preserve">
+    <value>Rename Plugin</value>
+  </data>
+  <data name="AudioPluginsRescan" xml:space="preserve">
+    <value>Scan Again</value>
+  </data>
+  <data name="AudioPluginsScanning" xml:space="preserve">
+    <value>Looking for plugins...</value>
+  </data>
+  <data name="AudioPluginsTitle" xml:space="preserve">
+    <value>Audio Plugins</value>
+  </data>
   <data name="AutoDetect" xml:space="preserve">
     <value>Auto-detect</value>
   </data>
@@ -65,6 +146,16 @@
   </data>
   <data name="CannotOpenPlaylistTitle" xml:space="preserve">
     <value>Could not open the playlist</value>
+  </data>
+  <data name="CannotReadAudioPlugins" xml:space="preserve">
+    <value>Could not read the rack of audio plugins, so it starts empty.
+
+{0}
+
+The file has been kept as {1}.</value>
+  </data>
+  <data name="CannotReadAudioPluginsTitle" xml:space="preserve">
+    <value>Could not read the audio plugins</value>
   </data>
   <data name="CannotReadSettings" xml:space="preserve">
     <value>Could not read {0}, so Glosa started with the default settings.
@@ -137,11 +228,17 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="DetectionTitle" xml:space="preserve">
     <value>Song title</value>
   </data>
+  <data name="DeviceAudioPlugin" xml:space="preserve">
+    <value>Audio plugin</value>
+  </data>
   <data name="DeviceMissing" xml:space="preserve">
     <value>{0} (not found)</value>
   </data>
   <data name="ExportM3u" xml:space="preserve">
     <value>Export as M3U</value>
+  </data>
+  <data name="FileTypeAudioPlugins" xml:space="preserve">
+    <value>Audio plugins</value>
   </data>
   <data name="FileTypeDefinitions" xml:space="preserve">
     <value>TMIDI definition files</value>
@@ -169,6 +266,9 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="MenuAddSongs" xml:space="preserve">
     <value>Add Songs...</value>
+  </data>
+  <data name="MenuAudioPlugins" xml:space="preserve">
+    <value>Audio Plugins...</value>
   </data>
   <data name="MenuCloseDefinition" xml:space="preserve">
     <value>Close TMIDI Definition File</value>
@@ -251,11 +351,23 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="None" xml:space="preserve">
     <value>(none)</value>
   </data>
+  <data name="NoteAudioPluginsUnavailable" xml:space="preserve">
+    <value>Audio plugins cannot be used: {0}</value>
+  </data>
   <data name="NoteBadArgument" xml:space="preserve">
     <value>Unrecognized argument: {0}</value>
   </data>
   <data name="NoteBadConfig" xml:space="preserve">
     <value>--config {0}: {1} The usual settings folder is used instead.</value>
+  </data>
+  <data name="NoteBrackLog" xml:space="preserve">
+    <value>Brack: {0}</value>
+  </data>
+  <data name="NoteBrackLogError" xml:space="preserve">
+    <value>Brack error: {0}</value>
+  </data>
+  <data name="NoteBrackLogWarning" xml:space="preserve">
+    <value>Brack warning: {0}</value>
   </data>
   <data name="NoteCannotLoad" xml:space="preserve">
     <value>Could not load: {0} — {1}</value>
@@ -433,6 +545,9 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="PaneMonitor" xml:space="preserve">
     <value>Monitor</value>
+  </data>
+  <data name="PickAudioPlugin" xml:space="preserve">
+    <value>Open Audio Plugin</value>
   </data>
   <data name="PickDefinition" xml:space="preserve">
     <value>Open TMIDI Definition File</value>
@@ -772,6 +887,13 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="ToneMapInForce" xml:space="preserve">
     <value>Tone map: {0}</value>
+  </data>
+  <data name="TransportMasterVolume" xml:space="preserve">
+    <value>Master volume (audio plugins only)</value>
+  </data>
+  <data name="TransportMasterVolumeTip" xml:space="preserve">
+    <value>Master volume (audio plugins only): {0} dB
+Double-click for 0 dB</value>
   </data>
   <data name="TransportNext" xml:space="preserve">
     <value>Next</value>

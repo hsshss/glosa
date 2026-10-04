@@ -27,6 +27,10 @@ internal static class Dialogs
     internal static readonly FilePickerFileType DefinitionFiles =
         new(Strings.FileTypeDefinitions) { Patterns = AnyCase("*.def") };
 
+    /// <summary>CLAP, VST3 (the file inside a bundle) and VST2, as Windows names them.</summary>
+    internal static readonly FilePickerFileType AudioPluginFiles =
+        new(Strings.FileTypeAudioPlugins) { Patterns = AnyCase("*.clap", "*.vst3", "*.dll") };
+
     /// <summary>
     /// Each pattern in lower case and in upper case.
     /// </summary>

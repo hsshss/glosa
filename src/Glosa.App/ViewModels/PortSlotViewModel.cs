@@ -31,15 +31,16 @@ public sealed partial class PortSlotViewModel : ViewModelBase
     public partial MidiDeviceInfo? Device { get; set; }
 
     /// <summary>
-    /// The machine this port is set to, by name, whether or not it is here now; empty when
-    /// the port is unused.
+    /// The stored key of this port's machine (<see cref="DeviceName.Key"/>), here or not; empty
+    /// when the port is unused.
     /// </summary>
     public string Name { get; private set; } = string.Empty;
 
     /// <summary>
     /// What the box says when there is no device on it, naming the machine that is missing.
     /// </summary>
-    public string Placeholder => Name.Length > 0 ? string.Format(Strings.DeviceMissing, Name) : Strings.PortUnused;
+    public string Placeholder
+        => Name.Length > 0 ? string.Format(Strings.DeviceMissing, DeviceName.Parse(Name).Name) : Strings.PortUnused;
 
     /// <summary>Whether a module reset goes to this port when there is no DEF.</summary>
     /// <remarks>See <see cref="Services.PortMap.ResetPorts"/>.</remarks>
@@ -116,12 +117,28 @@ public sealed partial class PortSlotViewModel : ViewModelBase
 
     private bool _loading;
 
+    /// <summary>Leaves the port unused, forgetting a missing machine's name too.</summary>
+    /// <remarks>A missing machine's port has no device already, so setting none changes nothing.</remarks>
+    public void Clear()
+    {
+        if (Device is not null)
+        {
+            Device = null;
+            return;
+        }
+        if (Name.Length == 0) return;
+
+        Name = string.Empty;
+        OnPropertyChanged(nameof(Placeholder));
+        _changed();
+    }
+
     partial void OnDeviceChanged(MidiDeviceInfo? value)
     {
         if (_loading) return;
 
         // Chosen by hand, so the name follows, including a choice of nothing.
-        Name = value?.Name ?? string.Empty;
+        Name = value is { } device ? DeviceName.KeyOf(device) : string.Empty;
         OnPropertyChanged(nameof(Placeholder));
         _changed();
     }

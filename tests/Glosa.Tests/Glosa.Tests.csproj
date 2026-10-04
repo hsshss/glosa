@@ -28,6 +28,12 @@
     <ProjectReference Include="..\..\src\Glosa.Midi.Linux\Glosa.Midi.Linux.csproj" />
   </ItemGroup>
 
+  <!-- Brack's test instrument, built beside it, for the audio plugin tests (Directory.Build.props). -->
+  <ItemGroup Condition="'$(BrackSource)' == 'Project'">
+    <AssemblyMetadata Include="BrackTestSynth"
+                      Value="$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName($(BrackProject)))/../../../build/bin/brack-test-synth.clap'))" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- The definition the player ships with, so the tests hold it to what they say. -->
     <None Include="..\..\src\Glosa.App\define.yaml" Link="define.yaml"

@@ -3,6 +3,7 @@
         xmlns:l="using:Glosa.App"
         xmlns:vm="using:Glosa.App.ViewModels"
         xmlns:c="using:Glosa.App.Controls"
+        xmlns:m="using:Glosa.Midi"
         x:Class="Glosa.App.Views.PortMapWindow"
         x:DataType="vm:MainViewModel"
         Width="630" Height="572" MinWidth="560" MinHeight="420"
@@ -133,8 +134,17 @@
                                               ItemsSource="{Binding Devices}"
                                               SelectedItem="{Binding Device}"
                                               PlaceholderText="{Binding Placeholder}">
+                                        <!-- Plugins wear the Audio Plugins menu's icon, before the name so a narrow box does not clip it. -->
                                         <ComboBox.ItemTemplate>
-                                            <DataTemplate><TextBlock Text="{Binding Name}" /></DataTemplate>
+                                            <DataTemplate x:DataType="m:MidiDeviceInfo">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <PathIcon Data="{StaticResource IconModule}" Width="14" Height="14"
+                                                              ToolTip.Tip="{x:Static l:Strings.DeviceAudioPlugin}"
+                                                              AutomationProperties.Name="{x:Static l:Strings.DeviceAudioPlugin}"
+                                                              IsVisible="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static m:MidiDeviceKind.AudioPlugin}}" />
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </StackPanel>
+                                            </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
                                     <!--

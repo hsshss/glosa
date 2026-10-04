@@ -33,6 +33,87 @@
   <data name="AboutVersion" xml:space="preserve">
     <value>バージョン {0}</value>
   </data>
+  <data name="AudioPluginCrashed" xml:space="preserve">
+    <value>クラッシュしました</value>
+  </data>
+  <data name="AudioPluginFailed" xml:space="preserve">
+    <value>読み込めません</value>
+  </data>
+  <data name="AudioPluginLoading" xml:space="preserve">
+    <value>読み込み中</value>
+  </data>
+  <data name="AudioPluginPorts" xml:space="preserve">
+    <value>MIDI ポート {0} 個</value>
+  </data>
+  <data name="AudioPluginsAdd" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="AudioPluginsAddFile" xml:space="preserve">
+    <value>ファイルから...</value>
+  </data>
+  <data name="AudioPluginsAdding" xml:space="preserve">
+    <value>{0} を読み込んでいます...</value>
+  </data>
+  <data name="AudioPluginsDefaultDevice" xml:space="preserve">
+    <value>システムの既定</value>
+  </data>
+  <data name="AudioPluginsDevice" xml:space="preserve">
+    <value>デバイス</value>
+  </data>
+  <data name="AudioPluginsEditor" xml:space="preserve">
+    <value>エディタ</value>
+  </data>
+  <data name="AudioPluginsFound" xml:space="preserve">
+    <value>音源</value>
+  </data>
+  <data name="AudioPluginsFoundTip" xml:space="preserve">
+    <value>CLAP・VST3・VST2 の標準のフォルダで見つかった音源です。ほかの場所にあるプラグインは「ファイルから...」で読み込みます。</value>
+  </data>
+  <data name="AudioPluginsLevel" xml:space="preserve">
+    <value>レベル</value>
+  </data>
+  <data name="AudioPluginsLoad" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="AudioPluginsLoadTip" xml:space="preserve">
+    <value>プラグインが音を作るのにかかった時間の割合です。100%に近づくと音が途切れます。</value>
+  </data>
+  <data name="AudioPluginsOutput" xml:space="preserve">
+    <value>オーディオ出力</value>
+  </data>
+  <data name="AudioPluginsRack" xml:space="preserve">
+    <value>ラック</value>
+  </data>
+  <data name="AudioPluginsRackTip" xml:space="preserve">
+    <value>ここにあるプラグインの MIDI ポートは、それぞれがプラグインの名前の出力デバイスになります。ポートマップ設定でポートに割り当てて使います。名前を変えても、ポートマップの割り当てはそのまま付いていきます。ドラッグで並べ替えられ、デバイスもこの順に並びます。プラグインのエディタで変えた設定は、ラックと一緒に保存されます。</value>
+  </data>
+  <data name="AudioPluginsReload" xml:space="preserve">
+    <value>読み込み直す</value>
+  </data>
+  <data name="AudioPluginsReloading" xml:space="preserve">
+    <value>{0} を読み込み直しています...</value>
+  </data>
+  <data name="AudioPluginsRemove" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="AudioPluginsRename" xml:space="preserve">
+    <value>名前を変更...</value>
+  </data>
+  <data name="AudioPluginsRenamePrompt" xml:space="preserve">
+    <value>新しい名前</value>
+  </data>
+  <data name="AudioPluginsRenameTitle" xml:space="preserve">
+    <value>プラグイン名の変更</value>
+  </data>
+  <data name="AudioPluginsRescan" xml:space="preserve">
+    <value>探し直す</value>
+  </data>
+  <data name="AudioPluginsScanning" xml:space="preserve">
+    <value>プラグインを探しています...</value>
+  </data>
+  <data name="AudioPluginsTitle" xml:space="preserve">
+    <value>オーディオプラグイン</value>
+  </data>
   <data name="AutoDetect" xml:space="preserve">
     <value>自動判別</value>
   </data>
@@ -62,6 +143,16 @@
   </data>
   <data name="CannotOpenPlaylistTitle" xml:space="preserve">
     <value>プレイリストを開けませんでした</value>
+  </data>
+  <data name="CannotReadAudioPlugins" xml:space="preserve">
+    <value>オーディオプラグインのラックを読み込めなかったため、空のラックで始めます。
+
+{0}
+
+元のファイルは {1} に残してあります。</value>
+  </data>
+  <data name="CannotReadAudioPluginsTitle" xml:space="preserve">
+    <value>オーディオプラグインを読み込めませんでした</value>
   </data>
   <data name="CannotReadSettings" xml:space="preserve">
     <value>{0} を読み込めなかったため、既定の設定で起動しました。
@@ -134,11 +225,17 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="DetectionTitle" xml:space="preserve">
     <value>タイトル</value>
   </data>
+  <data name="DeviceAudioPlugin" xml:space="preserve">
+    <value>オーディオプラグイン</value>
+  </data>
   <data name="DeviceMissing" xml:space="preserve">
     <value>{0}（見つかりません）</value>
   </data>
   <data name="ExportM3u" xml:space="preserve">
     <value>M3U に書き出す</value>
+  </data>
+  <data name="FileTypeAudioPlugins" xml:space="preserve">
+    <value>オーディオプラグイン</value>
   </data>
   <data name="FileTypeDefinitions" xml:space="preserve">
     <value>TMIDI定義ファイル</value>
@@ -166,6 +263,9 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="MenuAddSongs" xml:space="preserve">
     <value>曲を追加...</value>
+  </data>
+  <data name="MenuAudioPlugins" xml:space="preserve">
+    <value>オーディオプラグイン...</value>
   </data>
   <data name="MenuCloseDefinition" xml:space="preserve">
     <value>TMIDI定義ファイルを閉じる</value>
@@ -248,11 +348,23 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="None" xml:space="preserve">
     <value>(なし)</value>
   </data>
+  <data name="NoteAudioPluginsUnavailable" xml:space="preserve">
+    <value>オーディオプラグインは使えません: {0}</value>
+  </data>
   <data name="NoteBadArgument" xml:space="preserve">
     <value>引数を解釈できませんでした: {0}</value>
   </data>
   <data name="NoteBadConfig" xml:space="preserve">
     <value>--config {0}: {1} 代わりに通常の設定フォルダを使います。</value>
+  </data>
+  <data name="NoteBrackLog" xml:space="preserve">
+    <value>Brack: {0}</value>
+  </data>
+  <data name="NoteBrackLogError" xml:space="preserve">
+    <value>Brack のエラー: {0}</value>
+  </data>
+  <data name="NoteBrackLogWarning" xml:space="preserve">
+    <value>Brack の警告: {0}</value>
   </data>
   <data name="NoteCannotLoad" xml:space="preserve">
     <value>読み込めませんでした: {0} — {1}</value>
@@ -430,6 +542,9 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="PaneMonitor" xml:space="preserve">
     <value>演奏モニタ</value>
+  </data>
+  <data name="PickAudioPlugin" xml:space="preserve">
+    <value>オーディオプラグインを開く</value>
   </data>
   <data name="PickDefinition" xml:space="preserve">
     <value>TMIDI定義ファイルを開く</value>
@@ -769,6 +884,13 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="ToneMapInForce" xml:space="preserve">
     <value>音色マップ: {0}</value>
+  </data>
+  <data name="TransportMasterVolume" xml:space="preserve">
+    <value>マスターボリューム（オーディオプラグインのみ）</value>
+  </data>
+  <data name="TransportMasterVolumeTip" xml:space="preserve">
+    <value>マスターボリューム（オーディオプラグインのみ）: {0} dB
+ダブルクリックで 0 dB</value>
   </data>
   <data name="TransportNext" xml:space="preserve">
     <value>次の曲</value>

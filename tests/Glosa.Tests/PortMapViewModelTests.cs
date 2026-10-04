@@ -49,6 +49,70 @@ public class PortMapViewModelTests
     }
 
     [Fact]
+    public void AnAudioPluginChosenBesideAPortOfItsNameIsStoredAsThePluginAndStaysOnIt()
+    {
+        var port = new MidiDeviceInfo("3", "SC-8850 1");
+        var plugin = new MidiDeviceInfo("brack:0:sc", "SC-8850 1", Kind: MidiDeviceKind.AudioPlugin);
+        var model = new PortMap();
+        PortMapViewModel map = Open(model, port, plugin);
+
+        map.Ports[0].Device = plugin;
+
+        Assert.Equal(new Dictionary<string, string> { ["A"] = "plugin:SC-8850 1" }, model.Ports);
+        Assert.Equal(plugin, map.Ports[0].Device);
+        Assert.Equal(plugin, Open(model, port, plugin).Ports[0].Device);
+        Assert.Equal(string.Format(Strings.DeviceMissing, "SC-8850 1"), Open(model, port).Ports[0].Placeholder);
+    }
+
+    [Fact]
+    public void AMapUsesAnAudioPluginWhileAPortNamesOneEvenIfItIsNotHere()
+    {
+        var port = new MidiDeviceInfo("3", "SC-8850 1");
+        var plugin = new MidiDeviceInfo("brack:0:sc", "SC-8850 1", Kind: MidiDeviceKind.AudioPlugin);
+        var model = new PortMap();
+        PortMapViewModel map = Open(model, port, plugin);
+        Assert.False(map.UsesAudioPlugin);
+
+        map.Ports[0].Device = port;
+        Assert.False(map.UsesAudioPlugin);
+        map.Ports[1].Device = plugin;
+        Assert.True(map.UsesAudioPlugin);
+        Assert.True(Open(model, port).UsesAudioPlugin);
+
+        map.Ports[1].Device = null;
+        Assert.False(map.UsesAudioPlugin);
+    }
+
+    [Fact]
+    public void ClearingAPortLetsGoOfAMissingDeviceToo()
+    {
+        var model = new PortMap { Ports = { ["A"] = "SC-88", ["B"] = "MU80" } };
+        PortMapViewModel map = Open(model, Mu80);
+
+        map.Ports[0].Clear();
+        map.Ports[1].Clear();
+        map.Ports[2].Clear();
+
+        Assert.Empty(model.Ports);
+        Assert.Equal(Strings.PortUnused, map.Ports[0].Placeholder);
+        Assert.Null(map.Ports[1].Device);
+        // Each port that had something told once; the unused one, not at all.
+        Assert.Equal(2, _changes);
+    }
+
+    [Fact]
+    public void PortsFollowARenamedDeviceToItsNewName()
+    {
+        var model = new PortMap { Ports = { ["A"] = "SC-88", ["B"] = "MU80", ["C"] = "sc-88" } };
+        PortMapViewModel map = Open(model, Sc88, Mu80);
+
+        map.RenameDevice("SC-88", "Lead");
+
+        Assert.Equal(new Dictionary<string, string> { ["A"] = "Lead", ["B"] = "MU80", ["C"] = "Lead" }, model.Ports);
+        Assert.Equal(0, _changes);
+    }
+
+    [Fact]
     public void ChoosingADeviceByHandIsWrittenThroughAndTold()
     {
         var model = new PortMap { Ports = { ["A"] = "SC-88" } };

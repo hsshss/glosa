@@ -81,6 +81,10 @@ public sealed partial class PortMapViewModel : ViewModelBase
     public bool Claims(string module)
         => Modules.Any(m => m.Equals(module, StringComparison.OrdinalIgnoreCase));
 
+    /// <summary>Whether a port names an audio plugin, here now or not.</summary>
+    public bool UsesAudioPlugin
+        => Model.Ports.Values.Any(name => DeviceName.Parse(name).Kind == MidiDeviceKind.AudioPlugin);
+
     /// <summary>
     /// The device each port names, whether or not it is here now; null for an unused port.
     /// </summary>
@@ -99,7 +103,7 @@ public sealed partial class PortMapViewModel : ViewModelBase
     {
         DeviceName?[] names = DeviceName.ForPorts([.. Ports.Select(p => p.Name)], _devices);
         for (int i = 0; i < Ports.Count; i++)
-            if (names[i] is { } name) Ports[i].Restore(name.Find(_devices), name.Name);
+            if (names[i] is { } name) Ports[i].Restore(name.Find(_devices), name.Key);
     }
 
     /// <summary>The devices to open, with the unused tail dropped.</summary>
@@ -129,10 +133,21 @@ public sealed partial class PortMapViewModel : ViewModelBase
          : Ports[port].Device is null ? string.Format(Strings.DeviceMissing, name)
          : name.ToString();
 
+    /// <summary>
+    /// Repoints ports from one stored key (<see cref="DeviceName.Key"/>) to another, for a
+    /// renamed device; <see cref="Resolve"/> afterwards.
+    /// </summary>
+    public void RenameDevice(string from, string to)
+    {
+        foreach (PortSlotViewModel port in Ports)
+            if (string.Equals(port.Name, from, StringComparison.OrdinalIgnoreCase)) port.Restore(null, to);
+        WritePorts();
+    }
+
     /// <summary>Puts a device on a port without telling anyone, for setting one up.</summary>
     public void Lay(int index, MidiDeviceInfo? device)
     {
-        Ports[index].Restore(device, device?.Name ?? string.Empty);
+        Ports[index].Restore(device, device is { } chosen ? DeviceName.KeyOf(chosen) : string.Empty);
         WritePorts();
         Resolve();
     }

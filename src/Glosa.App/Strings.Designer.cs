@@ -94,6 +94,249 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Crashed.
+        /// </summary>
+        public static string AudioPluginCrashed {
+            get {
+                return ResourceManager.GetString("AudioPluginCrashed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not load.
+        /// </summary>
+        public static string AudioPluginFailed {
+            get {
+                return ResourceManager.GetString("AudioPluginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading.
+        /// </summary>
+        public static string AudioPluginLoading {
+            get {
+                return ResourceManager.GetString("AudioPluginLoading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} MIDI ports.
+        /// </summary>
+        public static string AudioPluginPorts {
+            get {
+                return ResourceManager.GetString("AudioPluginPorts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add.
+        /// </summary>
+        public static string AudioPluginsAdd {
+            get {
+                return ResourceManager.GetString("AudioPluginsAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to From File....
+        /// </summary>
+        public static string AudioPluginsAddFile {
+            get {
+                return ResourceManager.GetString("AudioPluginsAddFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading {0}....
+        /// </summary>
+        public static string AudioPluginsAdding {
+            get {
+                return ResourceManager.GetString("AudioPluginsAdding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System default.
+        /// </summary>
+        public static string AudioPluginsDefaultDevice {
+            get {
+                return ResourceManager.GetString("AudioPluginsDefaultDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device.
+        /// </summary>
+        public static string AudioPluginsDevice {
+            get {
+                return ResourceManager.GetString("AudioPluginsDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Editor.
+        /// </summary>
+        public static string AudioPluginsEditor {
+            get {
+                return ResourceManager.GetString("AudioPluginsEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Instruments.
+        /// </summary>
+        public static string AudioPluginsFound {
+            get {
+                return ResourceManager.GetString("AudioPluginsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The instruments found in the standard CLAP, VST3 and VST2 folders. To load a plugin kept somewhere else, use From File..
+        /// </summary>
+        public static string AudioPluginsFoundTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsFoundTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level.
+        /// </summary>
+        public static string AudioPluginsLevel {
+            get {
+                return ResourceManager.GetString("AudioPluginsLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CPU.
+        /// </summary>
+        public static string AudioPluginsLoad {
+            get {
+                return ResourceManager.GetString("AudioPluginsLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The share of the time the plugins take to render. Near 100%, the sound breaks up..
+        /// </summary>
+        public static string AudioPluginsLoadTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsLoadTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio Output.
+        /// </summary>
+        public static string AudioPluginsOutput {
+            get {
+                return ResourceManager.GetString("AudioPluginsOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rack.
+        /// </summary>
+        public static string AudioPluginsRack {
+            get {
+                return ResourceManager.GetString("AudioPluginsRack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Each MIDI port of a plugin here is an output device named after the plugin: choose it for a port in Port Map Settings. A plugin renamed keeps its place in the port maps. Drag to reorder; the devices are listed in this order. What is set in a plugin&apos;s editor is saved with the rack..
+        /// </summary>
+        public static string AudioPluginsRackTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsRackTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload.
+        /// </summary>
+        public static string AudioPluginsReload {
+            get {
+                return ResourceManager.GetString("AudioPluginsReload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reloading {0}....
+        /// </summary>
+        public static string AudioPluginsReloading {
+            get {
+                return ResourceManager.GetString("AudioPluginsReloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string AudioPluginsRemove {
+            get {
+                return ResourceManager.GetString("AudioPluginsRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rename....
+        /// </summary>
+        public static string AudioPluginsRename {
+            get {
+                return ResourceManager.GetString("AudioPluginsRename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New name.
+        /// </summary>
+        public static string AudioPluginsRenamePrompt {
+            get {
+                return ResourceManager.GetString("AudioPluginsRenamePrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rename Plugin.
+        /// </summary>
+        public static string AudioPluginsRenameTitle {
+            get {
+                return ResourceManager.GetString("AudioPluginsRenameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scan Again.
+        /// </summary>
+        public static string AudioPluginsRescan {
+            get {
+                return ResourceManager.GetString("AudioPluginsRescan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Looking for plugins....
+        /// </summary>
+        public static string AudioPluginsScanning {
+            get {
+                return ResourceManager.GetString("AudioPluginsScanning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio Plugins.
+        /// </summary>
+        public static string AudioPluginsTitle {
+            get {
+                return ResourceManager.GetString("AudioPluginsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Auto-detect.
         /// </summary>
         public static string AutoDetect {
@@ -168,6 +411,28 @@ namespace Glosa.App {
         public static string CannotOpenTitle {
             get {
                 return ResourceManager.GetString("CannotOpenTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not read the rack of audio plugins, so it starts empty.
+        ///
+        ///{0}
+        ///
+        ///The file has been kept as {1}..
+        /// </summary>
+        public static string CannotReadAudioPlugins {
+            get {
+                return ResourceManager.GetString("CannotReadAudioPlugins", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not read the audio plugins.
+        /// </summary>
+        public static string CannotReadAudioPluginsTitle {
+            get {
+                return ResourceManager.GetString("CannotReadAudioPluginsTitle", resourceCulture);
             }
         }
         
@@ -357,6 +622,15 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Audio plugin.
+        /// </summary>
+        public static string DeviceAudioPlugin {
+            get {
+                return ResourceManager.GetString("DeviceAudioPlugin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (not found).
         /// </summary>
         public static string DeviceMissing {
@@ -371,6 +645,15 @@ namespace Glosa.App {
         public static string ExportM3u {
             get {
                 return ResourceManager.GetString("ExportM3u", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio plugins.
+        /// </summary>
+        public static string FileTypeAudioPlugins {
+            get {
+                return ResourceManager.GetString("FileTypeAudioPlugins", resourceCulture);
             }
         }
         
@@ -452,6 +735,15 @@ namespace Glosa.App {
         public static string MenuAddSongs {
             get {
                 return ResourceManager.GetString("MenuAddSongs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Audio Plugins....
+        /// </summary>
+        public static string MenuAudioPlugins {
+            get {
+                return ResourceManager.GetString("MenuAudioPlugins", resourceCulture);
             }
         }
         
@@ -699,6 +991,15 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Audio plugins cannot be used: {0}.
+        /// </summary>
+        public static string NoteAudioPluginsUnavailable {
+            get {
+                return ResourceManager.GetString("NoteAudioPluginsUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unrecognized argument: {0}.
         /// </summary>
         public static string NoteBadArgument {
@@ -713,6 +1014,33 @@ namespace Glosa.App {
         public static string NoteBadConfig {
             get {
                 return ResourceManager.GetString("NoteBadConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brack: {0}.
+        /// </summary>
+        public static string NoteBrackLog {
+            get {
+                return ResourceManager.GetString("NoteBrackLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brack error: {0}.
+        /// </summary>
+        public static string NoteBrackLogError {
+            get {
+                return ResourceManager.GetString("NoteBrackLogError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brack warning: {0}.
+        /// </summary>
+        public static string NoteBrackLogWarning {
+            get {
+                return ResourceManager.GetString("NoteBrackLogWarning", resourceCulture);
             }
         }
         
@@ -1244,6 +1572,15 @@ namespace Glosa.App {
         public static string PaneMonitor {
             get {
                 return ResourceManager.GetString("PaneMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Audio Plugin.
+        /// </summary>
+        public static string PickAudioPlugin {
+            get {
+                return ResourceManager.GetString("PickAudioPlugin", resourceCulture);
             }
         }
         
@@ -2261,6 +2598,25 @@ namespace Glosa.App {
         public static string ToneMapInForce {
             get {
                 return ResourceManager.GetString("ToneMapInForce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Master volume (audio plugins only).
+        /// </summary>
+        public static string TransportMasterVolume {
+            get {
+                return ResourceManager.GetString("TransportMasterVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Master volume (audio plugins only): {0} dB
+        ///Double-click for 0 dB.
+        /// </summary>
+        public static string TransportMasterVolumeTip {
+            get {
+                return ResourceManager.GetString("TransportMasterVolumeTip", resourceCulture);
             }
         }
         

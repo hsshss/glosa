@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Glosa.App.Controls;
 using Glosa.App.Services;
 using Glosa.App.ViewModels;
 using Glosa.App.Views;
@@ -24,6 +25,7 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        MenuFit.Install();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -34,6 +36,9 @@ public partial class App : Application
 
             // Before anything is worded, and the settings are where the language is kept.
             Languages.Apply(AppSettings.Load(out _).Language);
+#if BRACK
+            Backends.StartAudioPlugins();
+#endif
 
             var model = new MainViewModel();
 

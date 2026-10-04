@@ -24,6 +24,9 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, Window> _panes = [];
     private SettingsWindow? _settings;
     private PortMapWindow? _portMaps;
+#if BRACK
+    private AudioPluginsWindow? _audioPlugins;
+#endif
 
     /// <summary>
     /// True once the player is on its way out.
@@ -68,8 +71,11 @@ public partial class MainWindow : Window
             foreach (Window pane in _panes.Values.ToArray()) pane.Close();
             _settings?.Close();
             _portMaps?.Close();
+#if BRACK
+            _audioPlugins?.Close();
+#endif
 
-            // Every window has written its placement down by now: the panes and the two
+            // Every window has written its placement down by now: the panes and the
             // settings windows as they were closed just above, this one on its own Closing.
             (DataContext as MainViewModel)?.Dispose();
         };
@@ -170,6 +176,11 @@ public partial class MainWindow : Window
         bar.AddHandler(KeyUpEvent, OnSeekKeyUp, RoutingStrategies.Tunnel);
     }
 
+    private void OnMasterVolumeDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (Model is { } model) model.MasterVolume = 0;
+    }
+
     private void OnSeekPressed(object? sender, PointerPressedEventArgs e)
     {
         if (Model is { } model) model.Scrubbing = true;
@@ -268,6 +279,22 @@ public partial class MainWindow : Window
         Placement.Attach(_portMaps, "portMaps", () => Model?.Settings);
         _portMaps.Closed += (_, _) => _portMaps = null;
         _portMaps.Show(this);
+    }
+
+    private void OnOpenAudioPlugins(object? sender, RoutedEventArgs e)
+    {
+#if BRACK
+        if (Backends.AudioPlugins is not { } rack) return;
+        if (_audioPlugins is not null) { _audioPlugins.Activate(); return; }
+
+        _audioPlugins = new AudioPluginsWindow
+        {
+            DataContext = new AudioPluginsViewModel(rack, renamed => Model?.FollowRenamedDevices(renamed)),
+        };
+        Placement.Attach(_audioPlugins, "audioPlugins", () => Model?.Settings);
+        _audioPlugins.Closed += (_, _) => _audioPlugins = null;
+        _audioPlugins.Show(this);
+#endif
     }
 
     private async void OnOpenAbout(object? sender, RoutedEventArgs e) => await new AboutWindow().ShowDialog(this);

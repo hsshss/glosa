@@ -12,6 +12,9 @@ using Glosa.Core.Emulation;
 using Glosa.Core.Playback;
 using Glosa.Core.Smf;
 using Glosa.Midi;
+#if BRACK
+using Brack;
+#endif
 
 namespace Glosa.App.ViewModels;
 
@@ -34,6 +37,9 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             Note(Backends.MidiServicesUnavailable is { } why
                 ? string.Format(Strings.NoteMidiApiFallback, outputs.BackendName, why)
                 : string.Format(Strings.NoteMidiApi, outputs.BackendName));
+#if BRACK
+        WatchAudioPlugins();
+#endif
 
         _player.Controller.Loading += OnSongLoading;
         _player.Controller.CurrentChanged += _ =>
@@ -55,6 +61,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         LoadModuleDefinition();
         AppSettings settings = LoadSettings(out bool read);
         Restore(settings);
+        NoteAudioPluginUse();
+        PortMaps.CollectionChanged += (_, _) => NoteAudioPluginUse();
         BuildMenus();
 
         // What the file already says is not written again; the first change is.
@@ -442,6 +450,94 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     /// <summary>The MIDI outputs there are, as last asked (<see cref="RefreshDevices"/>).</summary>
     public ObservableCollection<MidiDeviceInfo> Devices { get; } = [];
+
+    /// <summary>Whether there are audio plugins to set up, which are outputs too.</summary>
+#if BRACK
+    public bool HasAudioPlugins => Backends.AudioPlugins is not null;
+
+    /// <summary>Follows the rack in the device list, and reports once if its file was set aside.</summary>
+    private void WatchAudioPlugins()
+    {
+        if (Backends.AudioPlugins is not { } rack)
+        {
+            if (Backends.BrackUnavailable is { } why) Note(string.Format(Strings.NoteAudioPluginsUnavailable, why));
+            return;
+        }
+
+        // Into the debug window rather than a console the player does not have.
+        rack.TakeLog((level, message) =>
+        {
+            string? format = level switch
+            {
+                BrackLogLevel.Error => Strings.NoteBrackLogError,
+                BrackLogLevel.Warning => Strings.NoteBrackLogWarning,
+                BrackLogLevel.Info => Strings.NoteBrackLog,
+                _ => null,
+            };
+            if (format is not null) Dispatcher.UIThread.Post(() => Note(string.Format(format, message)));
+        });
+
+        bool told = false;
+        rack.Changed += () => Dispatcher.UIThread.Post(() =>
+        {
+            RefreshDevices();
+            // The session's, once it has loaded.
+            OnPropertyChanged(nameof(MasterVolume));
+            OnPropertyChanged(nameof(MasterVolumeTip));
+            if (told || rack.SetAside is not { } aside) return;
+            told = true;
+            HoldError(Strings.CannotReadAudioPluginsTitle,
+                      string.Format(Strings.CannotReadAudioPlugins, aside.Why, aside.Path));
+        });
+    }
+
+    private static float MasterGain
+    {
+        get => Backends.AudioPlugins?.MasterGain ?? 1;
+        set
+        {
+            if (Backends.AudioPlugins is { } rack) rack.MasterGain = value;
+        }
+    }
+#else
+    public bool HasAudioPlugins => false;
+
+    private static float MasterGain { get => 1; set { } }
+#endif
+
+    /// <summary>Whether a port map has a port on an audio plugin, which is when the master volume shows.</summary>
+    public bool UsesAudioPlugins
+    {
+        get => _usesAudioPlugins;
+        private set => SetProperty(ref _usesAudioPlugins, value);
+    }
+
+    private bool _usesAudioPlugins;
+
+    private void NoteAudioPluginUse()
+        => UsesAudioPlugins = HasAudioPlugins && PortMaps.Any(map => map.UsesAudioPlugin);
+
+    /// <summary>The master volume's range in dB; the floor mutes.</summary>
+    public const double MasterVolumeFloor = -60, MasterVolumeCeiling = 12;
+
+    /// <summary>
+    /// The audio plugins' master volume in dB, which the MIDI ports do not hear; kept in the
+    /// rack's session.
+    /// </summary>
+    public double MasterVolume
+    {
+        get => MasterGain > 0 ? Math.Max(20 * Math.Log10(MasterGain), MasterVolumeFloor) : MasterVolumeFloor;
+        set
+        {
+            MasterGain = value <= MasterVolumeFloor ? 0 : (float)Math.Pow(10, Math.Min(value, MasterVolumeCeiling) / 20);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MasterVolumeTip));
+        }
+    }
+
+    public string MasterVolumeTip
+        => string.Format(Strings.TransportMasterVolumeTip,
+                         MasterVolume <= MasterVolumeFloor ? "-∞" : MasterVolume.ToString("+0.0;-0.0;0.0"));
 
     public IReadOnlyList<RepeatMode> RepeatModes { get; } = Enum.GetValues<RepeatMode>();
 
@@ -1605,13 +1701,24 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         string said = Glosa.Core.Text.TitleText.Tidy(
             sequence.Copyright.Length > 0 ? sequence.Copyright : sequence.Comment);
 
-        bool routed = Dispatcher.UIThread.Invoke(() =>
+        // Until the plugins load, their ports are not all listed. Waited for here, off the UI thread.
+        Backends.MidiOutputs?.WaitUntilListed();
+
+        // The outputs first, and whatever is known about the song: it goes somewhere even when
+        // nothing says what it was written for. The map is chosen on the UI thread, and its
+        // devices opened here: opening one can take a while (an audio device and its plugins).
+        (PortMapViewModel map, DeviceName?[]? toOpen) = Dispatcher.UIThread.Invoke(() =>
         {
             SongInfo = said.Length > 0 ? said : NothingSaid;
+            RefreshDevices();
+            PortMapViewModel chosen = MapFor(module);
+            return (chosen, OutputsToOpen(chosen));
+        });
+        if (toOpen is not null) _player.Route(toOpen);
 
-            // The outputs first, and whatever is known about the song: it goes somewhere
-            // even when nothing says what it was written for.
-            if (!RouteThrough(MapFor(module))) return false;
+        bool routed = Dispatcher.UIThread.Invoke(() =>
+        {
+            if (!TookOutputs(map, rerouted: toOpen is not null)) return false;
 
             // Nothing to go on — the DEF's keywords were asked for and there is no DEF — is
             // the same as nothing found: THRU, and the machine still reset for it.
@@ -2162,32 +2269,43 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private string? _routed;
 
     /// <summary>
-    /// Sends the ports through a map's devices, so a song's FF 21 meta events land where
-    /// they say. The devices not open yet are opened; the rest are kept.
+    /// Makes <paramref name="map"/> the one in use, and gives the devices to route the ports
+    /// through (<see cref="PlayerService.Route"/>), so a song's FF 21 meta events land where
+    /// they say; null when they are routed through them already.
     /// </summary>
-    /// <returns>False when a device would not open, and the song is being stopped.</returns>
-    private bool RouteThrough(PortMapViewModel map)
+    private DeviceName?[]? OutputsToOpen(PortMapViewModel map)
     {
         ActiveMap = map;
 
         DeviceName?[] names = map.OpenList();
-        string signature = string.Join('\u001F', names.Select(name => name is { } n ? $"{n.Name}\u001E{n.Nth}" : ""));
-        if (signature == _routed) return _lastRouteWasWhole;
+        string signature = string.Join('\u001F', names.Select(name => name is { } n ? $"{n.Key}\u001E{n.Nth}" : ""));
+        if (signature == _routed) return null;
 
-        _player.Route(names);
         _routed = signature;
-        RefreshPortStates();
+        return names;
+    }
 
-        foreach (string problem in _player.OpenProblems) Note(string.Format(Strings.NoteCannotOpenOutput, problem));
+    /// <summary>
+    /// Takes in how the ports were routed through <paramref name="map"/>'s devices, if they
+    /// were just now (<see cref="OutputsToOpen"/>).
+    /// </summary>
+    /// <returns>False when a device would not open, and the song is being stopped.</returns>
+    private bool TookOutputs(PortMapViewModel map, bool rerouted)
+    {
+        if (!rerouted) return _lastRouteWasWhole;
+
+        RefreshPortStates();
+        IReadOnlyList<string> problems = _player.OpenProblems;
+        foreach (string problem in problems) Note(string.Format(Strings.NoteCannotOpenOutput, problem));
         string listed = map.Describe();
         Note(string.Format(Strings.NoteOutputs, listed.Length > 0 ? listed : Strings.None));
 
-        _lastRouteWasWhole = _player.OpenProblems.Count == 0;
+        _lastRouteWasWhole = problems.Count == 0;
         if (_lastRouteWasWhole) return true;
 
         StopAndShow(Strings.CannotOpenTitle, Strings.CannotOpenOutputs
             + Environment.NewLine + Environment.NewLine
-            + string.Join(Environment.NewLine, _player.OpenProblems));
+            + string.Join(Environment.NewLine, problems));
         return false;
     }
 
@@ -2328,6 +2446,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private void OnMapPortsChanged(PortMapViewModel map)
     {
         RefreshPortStates();
+        NoteAudioPluginUse();
         if (ReferenceEquals(map, ActiveMap) && _player.Controller.State != TransportState.Stopped)
             Note(Strings.NoteOutputsNextSong);
     }
@@ -2339,7 +2458,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     public void EditPortMaps() => EditedMap = ActiveMap ?? StartingMap;
 
     /// <summary>
-    /// Asks the system again which MIDI outputs there are, as the port map window opens.
+    /// Asks the system again which MIDI outputs there are, as the port map window opens and
+    /// as a song is set up.
     /// </summary>
     /// <remarks>
     /// Every port lets go of its device while the list changes and takes it back by name
@@ -2356,6 +2476,23 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
         Devices.Clear();
         foreach (MidiDeviceInfo device in found) Devices.Add(device);
+
+        foreach (PortMapViewModel map in PortMaps) map.Resolve();
+        RefreshPortStates();
+    }
+
+    /// <summary>Moves port assignments to renamed devices' new names.</summary>
+    /// <remarks>Not where another device of the same kind keeps the old name: which was meant is unknown.</remarks>
+    public void FollowRenamedDevices(IReadOnlyList<(MidiDeviceInfo From, MidiDeviceInfo To)> renamed)
+    {
+        RefreshDevices();
+        foreach ((MidiDeviceInfo from, MidiDeviceInfo to) in renamed)
+        {
+            string was = DeviceName.KeyOf(from);
+            if (Devices.Any(device => string.Equals(DeviceName.KeyOf(device), was, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            foreach (PortMapViewModel map in PortMaps) map.RenameDevice(was, DeviceName.KeyOf(to));
+        }
 
         foreach (PortMapViewModel map in PortMaps) map.Resolve();
         RefreshPortStates();
@@ -2477,7 +2614,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private static void ClearPort(PortSlotViewModel? slot)
     {
-        if (slot is not null) slot.Device = null;
+        slot?.Clear();
     }
 
     partial void OnEditedMapChanged(PortMapViewModel? value)
@@ -2630,6 +2767,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _saveTimer.Stop();
         SaveChanges(closing: true);
         _player.Dispose();
+#if BRACK
+        // After the player, which closes the plugins' outputs.
+        Backends.AudioPlugins?.Dispose();
+#endif
     }
 }
 

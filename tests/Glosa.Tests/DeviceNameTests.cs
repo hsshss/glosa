@@ -123,4 +123,34 @@ public class DeviceNameTests
         Assert.Equal("0", names[0]!.Value.Find(twins)?.Id);
         Assert.Equal("1", names[1]!.Value.Find(twins)?.Id);
     }
+
+    /// <summary>A MIDI port and an audio plugin's port going by the same name, the port listed first.</summary>
+    private static readonly MidiDeviceInfo[] PortAndPlugin =
+    [
+        new("3", "SC-8850 1"),
+        new("brack:0:sc", "SC-8850 1", Kind: MidiDeviceKind.AudioPlugin),
+    ];
+
+    [Fact]
+    public void AnAudioPluginIsStoredAsOneAndFindsOnlyItselfBesideAPortOfItsName()
+    {
+        string plugin = DeviceName.KeyOf(PortAndPlugin[1]);
+
+        Assert.Equal("plugin:SC-8850 1", plugin);
+        Assert.Equal("brack:0:sc", DeviceName.ForPorts([plugin], PortAndPlugin)[0]!.Value.Find(PortAndPlugin)?.Id);
+        Assert.Equal("3", DeviceName.ForPorts(["SC-8850 1"], PortAndPlugin)[0]!.Value.Find(PortAndPlugin)?.Id);
+    }
+
+    [Fact]
+    public void APortAndAPluginOfOneNameAreNotCountedTogether()
+    {
+        DeviceName?[] names = DeviceName.ForPorts(["plugin:SC-8850 1", "SC-8850 1"], PortAndPlugin);
+
+        Assert.Equal("brack:0:sc", names[0]!.Value.Find(PortAndPlugin)?.Id);
+        Assert.Equal("3", names[1]!.Value.Find(PortAndPlugin)?.Id);
+    }
+
+    [Fact]
+    public void AnAudioPluginThatIsNotThereIsNotTakenForAPortOfItsName()
+        => Assert.Null(DeviceName.ForPorts(["plugin:SC-8850 1"], [PortAndPlugin[0]])[0]!.Value.Find([PortAndPlugin[0]]));
 }

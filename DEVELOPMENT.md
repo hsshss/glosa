@@ -18,6 +18,7 @@ out, and how the releases are made. The design decisions and the reasons for the
 | `src/Glosa.Midi.Windows` | The Windows MIDI Services backend (called through raw vtables), the WinMM backend (P/Invoke) and a high-resolution timer |
 | `src/Glosa.Midi.MacOS` | The CoreMIDI backend (P/Invoke) |
 | `src/Glosa.Midi.Linux` | The ALSA sequencer backend (P/Invoke) |
+| `src/Glosa.Midi.Brack` | The backend that makes the audio plugins Brack hosts outputs, on any system; empty in a build without Brack |
 | `src/Glosa.App` | The Avalonia GUI |
 | `src/Glosa.Cli` | A console harness for trying things out |
 | `tests/Glosa.Tests` | xUnit |
@@ -36,6 +37,17 @@ dotnet test
 On every push and pull request, `.github/workflows/ci.yml` builds the whole solution and runs
 the tests on Windows, macOS and Linux. Each MIDI backend goes only into its own system's
 build, so a change that breaks the build on another system shows up here too.
+
+A build on any system takes Brack, the audio plugin host, from the first of these it finds,
+and then defines `BRACK` (`Directory.Build.props`). What refers to it is
+`src/Glosa.Midi.Brack`, which the app refers to only when there is Brack. A checkout of
+Brack beside this repository (`../brack`) has its .NET binding built from source, and the
+native library Brack has built (on Windows, `brack.dll` in `build\bin` and
+`build-x86\bin`) copied to the output. Otherwise it takes the NuGet package of the version
+in `BrackVersion`. With `BrackVersion` empty it takes neither, and builds without Brack. To
+try the package with a checkout beside, add `-p:UseBrackPackage=true`. Built from source,
+Brack is also played by the tests through its test instrument
+(`build/bin/brack-test-synth.clap`), so build Brack with its tests.
 
 GUI:
 
