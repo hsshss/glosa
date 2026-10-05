@@ -55,7 +55,10 @@ public partial class AudioPluginsWindow : Window
 
     private async void OnAddFile(object? sender, RoutedEventArgs e)
     {
-        IReadOnlyList<string> files = await Dialogs.OpenAsync(this, Strings.PickAudioPlugin, Dialogs.AudioPluginFiles);
+        // On macOS every format is a bundle, a folder, which the file picker will not choose.
+        IReadOnlyList<string> files = OperatingSystem.IsMacOS()
+            ? await Dialogs.OpenFoldersAsync(this, Strings.PickAudioPlugin, multiple: false)
+            : await Dialogs.OpenAsync(this, Strings.PickAudioPlugin, Dialogs.AudioPluginFiles);
         if (files.Count > 0 && Model is { } model) await model.AddFile(files[0]);
     }
 

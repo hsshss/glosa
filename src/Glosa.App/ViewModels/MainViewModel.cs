@@ -2769,9 +2769,27 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _player.Dispose();
 #if BRACK
         // After the player, which closes the plugins' outputs.
-        Backends.AudioPlugins?.Dispose();
+        if (Backends.AudioPlugins is { } rack)
+        {
+            RunUntil(rack.Loaded);
+            rack.Dispose();
+        }
 #endif
     }
+
+#if BRACK
+    /// <summary>
+    /// Keeps the UI thread's loop running until <paramref name="task"/> ends: on macOS Brack
+    /// loads the rack on the main thread, which this is, so blocking it would wait forever.
+    /// </summary>
+    private static void RunUntil(Task task)
+    {
+        if (task.IsCompleted) return;
+        var frame = new DispatcherFrame();
+        task.ContinueWith(_ => Dispatcher.UIThread.Post(() => frame.Continue = false), TaskScheduler.Default);
+        Dispatcher.UIThread.PushFrame(frame);
+    }
+#endif
 }
 
 public sealed partial class PlaylistItemViewModel(PlaylistItem item, Func<PlaylistItem, string> label)

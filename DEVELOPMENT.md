@@ -47,7 +47,9 @@ native library Brack has built (on Windows, `brack.dll` in `build\bin` and
 in `BrackVersion`. With `BrackVersion` empty it takes neither, and builds without Brack. To
 try the package with a checkout beside, add `-p:UseBrackPackage=true`. Built from source,
 Brack is also played by the tests through its test instrument
-(`build/bin/brack-test-synth.clap`), so build Brack with its tests.
+(`build/bin/brack-test-synth.clap`), so build Brack with its tests. On macOS, where Brack
+works on the main thread, the tests' own entry point (`tests/Glosa.Tests/Program.cs`) runs them
+on another thread and keeps the main thread's run loop running.
 
 GUI:
 

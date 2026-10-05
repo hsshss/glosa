@@ -136,7 +136,14 @@ public sealed class BrackRack : IDisposable
     public SetAsideFile? SetAside { get; private set; }
 
     /// <summary>Waits until the session file has been loaded.</summary>
+    /// <remarks>
+    /// Never on the macOS main thread before <see cref="Loaded"/> ends: Brack loads it on that
+    /// thread, which would be waiting.
+    /// </remarks>
     public void WaitLoaded() => _loaded.Wait();
+
+    /// <summary>Ends once the session file has been loaded; never faults.</summary>
+    public Task Loaded => _loaded;
 
     public RackPlugin? Find(string id) => _plugins.FirstOrDefault(plugin => plugin.Id == id);
 
@@ -477,6 +484,7 @@ public sealed class BrackRack : IDisposable
     }
 
     /// <summary>Saves the rack and unloads the plugins.</summary>
+    /// <remarks>Waits for <see cref="Loaded"/>, as <see cref="WaitLoaded"/> does.</remarks>
     public void Dispose()
     {
         if (_disposed) return;

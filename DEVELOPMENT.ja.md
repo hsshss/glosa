@@ -36,7 +36,7 @@ push と pull request のたびに、`.github/workflows/ci.yml` が Windows・ma
 無ければ、`BrackVersion` に書いたバージョンの NuGet パッケージを使う。
 `BrackVersion` が空ならどちらも使わず、Brack 無しでビルドする。
 隣にリポジトリがあってもパッケージで確かめたいときは、`-p:UseBrackPackage=true` を付ける。
-ソースから参照しているときは、テストが Brack のテスト用の音源（`build/bin/brack-test-synth.clap`）でプラグインを鳴らすので、Brack をテスト込みでビルドしておく。
+ソースから参照しているときは、テストが Brack のテスト用の音源（`build/bin/brack-test-synth.clap`）でプラグインを鳴らすので、Brack をテスト込みでビルドしておく。macOS では Brack がメインスレッドで動くので、テストは自前のエントリポイント（`tests/Glosa.Tests/Program.cs`）で別のスレッドに移し、メインスレッドではランループを回す。
 
 GUI:
 

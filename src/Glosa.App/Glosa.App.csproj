@@ -99,9 +99,13 @@
           DestinationFiles="$(PublishDir)licenses\dotnet-runtime-THIRD-PARTY-NOTICES.txt" />
   </Target>
 
-  <!-- Published, the libraries go in libs/; these stay beside the executable with it. -->
+  <!--
+    Published, the libraries go in libs/; these stay beside the executable with it. runtimes/
+    holds Brack's native library and plugin hosts from a checkout beside, which Brack looks for
+    there, not through the deps.json that MoveToLibs rewrites.
+  -->
   <PropertyGroup>
-    <MoveToLibsKeep>define.yaml;docs;LICENSE;THIRD_PARTY_NOTICES.md;licenses</MoveToLibsKeep>
+    <MoveToLibsKeep>define.yaml;docs;LICENSE;THIRD_PARTY_NOTICES.md;licenses;runtimes</MoveToLibsKeep>
   </PropertyGroup>
   <Import Project="MoveToLibs.targets" />
 

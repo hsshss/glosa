@@ -251,23 +251,28 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Why the last change failed; null if it did not.</summary>
+    /// <remarks>Kept apart from the rack's problem, which the refresh the change set off would show over it.</remarks>
+    private string? _changeFailed;
+
     /// <summary>Makes one rack change off the UI thread, showing its status.</summary>
     private async Task Change(string? doing, Action change)
     {
         Busy = true;
         Status = doing;
+        _changeFailed = null;
         try
         {
             await Task.Run(change);
-            Status = _rack.Problem;
         }
         catch (BrackException ex)
         {
-            Status = ex.Message;
+            _changeFailed = ex.Message;
         }
         finally
         {
             Busy = false;
+            Status = _changeFailed ?? _rack.Problem;
         }
     }
 
@@ -280,7 +285,7 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
         Plugins.Clear();
         foreach (RackPlugin plugin in _rack.Plugins) Plugins.Add(new RackRow(plugin));
         SelectedPlugin = Plugins.FirstOrDefault(row => row.Plugin.Id == selected);
-        if (!Busy) Status = _rack.Problem;
+        if (!Busy) Status = _changeFailed ?? _rack.Problem;
     }
 }
 #endif
