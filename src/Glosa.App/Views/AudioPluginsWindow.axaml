@@ -5,7 +5,7 @@
         xmlns:c="using:Glosa.App.Controls"
         x:Class="Glosa.App.Views.AudioPluginsWindow"
         x:DataType="vm:AudioPluginsViewModel"
-        Width="640" Height="480" MinWidth="520" MinHeight="360"
+        Width="640" Height="520" MinWidth="520" MinHeight="360"
         Title="{x:Static l:Strings.AudioPluginsTitle}">
 
     <Window.Styles>
@@ -118,11 +118,12 @@
                                 Header="{x:Static l:Strings.AudioPluginsOutput}">
             <!--
               The device left, narrower when it must; how the audio is doing right, read a few
-              times a second. The device's column takes the room first, up to its width, and
-              the gap after it the rest: a box held narrower than its column would sit in the
-              middle of it.
+              times a second; the plugins' rate and the buffer below. The device's column takes
+              the room first, up to its width, and the gap after it the rest: a box held
+              narrower than its column would sit in the middle of it. The settings wait for the
+              rack to load, before which they are Brack's defaults.
             -->
-            <Grid>
+            <Grid RowDefinitions="Auto,Auto">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1000*" MinWidth="120" MaxWidth="280" />
@@ -133,6 +134,7 @@
                            Opacity="0.75" Margin="0,0,6,0" />
                 <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                           ItemsSource="{Binding AudioDevices}" SelectedItem="{Binding AudioDevice}"
+                          IsEnabled="{Binding SettingsShown}"
                           AutomationProperties.Name="{x:Static l:Strings.AudioPluginsDevice}" />
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0">
                     <TextBlock Text="{x:Static l:Strings.AudioPluginsLoad}" VerticalAlignment="Center" Opacity="0.75"
@@ -156,6 +158,22 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static l:Strings.AudioPluginsSampleRate}"
+                           VerticalAlignment="Center" Opacity="0.75" Margin="0,8,6,0"
+                           ToolTip.Tip="{x:Static l:Strings.AudioPluginsSampleRateTip}" />
+                <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="6"
+                            Margin="0,8,0,0">
+                    <ComboBox MinWidth="120" ItemsSource="{Binding SampleRates}" SelectedItem="{Binding SampleRate}"
+                              IsEnabled="{Binding SettingsShown}"
+                              ToolTip.Tip="{x:Static l:Strings.AudioPluginsSampleRateTip}"
+                              AutomationProperties.Name="{x:Static l:Strings.AudioPluginsSampleRate}" />
+                    <TextBlock Text="{x:Static l:Strings.AudioPluginsBuffer}" VerticalAlignment="Center"
+                               Opacity="0.75" Margin="12,0,0,0" ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}" />
+                    <ComboBox MinWidth="120" ItemsSource="{Binding BufferSizes}" SelectedItem="{Binding BufferSize}"
+                              IsEnabled="{Binding SettingsShown}"
+                              ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}"
+                              AutomationProperties.Name="{x:Static l:Strings.AudioPluginsBuffer}" />
                 </StackPanel>
             </Grid>
         </HeaderedContentControl>

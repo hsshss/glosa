@@ -54,6 +54,15 @@
   <data name="AudioPluginsAdding" xml:space="preserve">
     <value>{0} を読み込んでいます...</value>
   </data>
+  <data name="AudioPluginsBuffer" xml:space="preserve">
+    <value>バッファ</value>
+  </data>
+  <data name="AudioPluginsBufferMilliseconds" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="AudioPluginsBufferTip" xml:space="preserve">
+    <value>音声デバイスに1回に渡す長さです。長いほど重いプラグインやほかの処理があっても音が途切れにくくなります。代わりにプラグインの音は MIDI ポートの先の機械より遅れて鳴ります。</value>
+  </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>システムの既定</value>
   </data>
@@ -107,6 +116,15 @@
   </data>
   <data name="AudioPluginsRescan" xml:space="preserve">
     <value>探し直す</value>
+  </data>
+  <data name="AudioPluginsSampleRate" xml:space="preserve">
+    <value>サンプリングレート</value>
+  </data>
+  <data name="AudioPluginsSampleRateOutput" xml:space="preserve">
+    <value>出力と同じ</value>
+  </data>
+  <data name="AudioPluginsSampleRateTip" xml:space="preserve">
+    <value>プラグインを動かすサンプリングレートです。出力デバイスのレートと違うときは、変換して出力します。出力デバイスのレートはOSの設定で決まります。</value>
   </data>
   <data name="AudioPluginsScanning" xml:space="preserve">
     <value>プラグインを探しています...</value>

@@ -57,6 +57,15 @@
   <data name="AudioPluginsAdding" xml:space="preserve">
     <value>Loading {0}...</value>
   </data>
+  <data name="AudioPluginsBuffer" xml:space="preserve">
+    <value>Buffer</value>
+  </data>
+  <data name="AudioPluginsBufferMilliseconds" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="AudioPluginsBufferTip" xml:space="preserve">
+    <value>How much audio goes to the device at a time. The longer it is, the less the sound breaks up under heavy plugins or a busy computer, but the later the plugins sound than machines on MIDI ports.</value>
+  </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>System default</value>
   </data>
@@ -110,6 +119,15 @@
   </data>
   <data name="AudioPluginsRescan" xml:space="preserve">
     <value>Scan Again</value>
+  </data>
+  <data name="AudioPluginsSampleRate" xml:space="preserve">
+    <value>Sample rate</value>
+  </data>
+  <data name="AudioPluginsSampleRateOutput" xml:space="preserve">
+    <value>Same as output</value>
+  </data>
+  <data name="AudioPluginsSampleRateTip" xml:space="preserve">
+    <value>The rate the plugins run at. When the output device runs at another, the sound is converted to its rate. The device's rate is set in the system's settings.</value>
   </data>
   <data name="AudioPluginsScanning" xml:space="preserve">
     <value>Looking for plugins...</value>

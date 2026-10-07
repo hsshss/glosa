@@ -54,6 +54,9 @@ public sealed class BrackRack : IDisposable
     /// <summary>How long a plugin's change waits for the next before it is saved.</summary>
     private static readonly TimeSpan SaveDelay = TimeSpan.FromSeconds(3);
 
+    /// <summary>A new rack's device period, longer than Brack's (IMPLEMENTATION.md, "Brack バックエンド").</summary>
+    private static readonly TimeSpan DefaultBuffer = TimeSpan.FromMilliseconds(20);
+
     private readonly BrackEngine _engine;
     private readonly string _sessionPath;
     private readonly Task _loaded;
@@ -159,13 +162,68 @@ public sealed class BrackRack : IDisposable
     public static IReadOnlyList<AudioDeviceInfo> AudioDevices() => BrackLibrary.ListAudioDevices();
 
     /// <summary>The audio output device; null or empty for the system's default.</summary>
+    /// <remarks>The buffer keeps its length, in frames at the new device's rate.</remarks>
     public string? AudioDevice
     {
         get => _engine.GetConfig().AudioDevice;
         set
         {
             WaitLoaded();
-            Run(() => _engine.SetConfig(_engine.GetConfig() with { AudioDevice = value }));
+            Run(() =>
+            {
+                TimeSpan buffer = Buffer;
+                _engine.SetConfig(_engine.GetConfig() with
+                {
+                    AudioDevice = value,
+                    BufferFrames = Frames(buffer, ListedRate(value)),
+                });
+            });
+        }
+    }
+
+    /// <summary>
+    /// The audio device's period, kept in the session in frames: as many as last this long at the
+    /// device's rate when set, and as long as they last at its rate now when read.
+    /// </summary>
+    public TimeSpan Buffer
+    {
+        get => TimeSpan.FromSeconds((double)_engine.GetConfig().BufferFrames / DeviceRate());
+        set
+        {
+            WaitLoaded();
+            Run(() => _engine.SetConfig(BufferOf(value)));
+        }
+    }
+
+    private BrackConfig BufferOf(TimeSpan buffer) => _engine.GetConfig() with { BufferFrames = Frames(buffer, DeviceRate()) };
+
+    private static uint Frames(TimeSpan buffer, int rate) => (uint)Math.Round(buffer.TotalSeconds * rate);
+
+    /// <summary>The rate the output device runs at, or would if started now.</summary>
+    private int DeviceRate()
+        => _engine.GetCachedStatus() is { Mode: not EngineMode.Stopped, OutputSampleRate: > 0 and uint running }
+            ? (int)running
+            : ListedRate(_engine.GetConfig().AudioDevice);
+
+    /// <summary>The rate an output device would run at, as the system lists it; null or empty for the default.</summary>
+    private static int ListedRate(string? name)
+    {
+        IReadOnlyList<AudioDeviceInfo> devices = BrackLibrary.ListAudioDevices();
+        AudioDeviceInfo? device = name is { Length: > 0 }
+            ? devices.FirstOrDefault(info => info.Name == name)
+            : devices.FirstOrDefault(info => info.IsDefault);
+        // Shared, a device runs at its mixer's one rate; a device that is gone, at a common one.
+        return device?.SampleRates is { Count: > 0 } rates ? (int)rates.Max() : 48000;
+    }
+
+    /// <summary>The rate the plugins run at, converted to the device's; 0 for the device's own. Kept in the session.</summary>
+    public int PluginSampleRate
+    {
+        get => (int)_engine.GetConfig().ProcessSampleRate;
+        set
+        {
+            WaitLoaded();
+            Run(() => _engine.SetConfig(_engine.GetConfig() with { ProcessSampleRate = (uint)value }));
         }
     }
 
@@ -334,11 +392,13 @@ public sealed class BrackRack : IDisposable
     /// <remarks>Never throws: opening an output and closing the player wait for it.</remarks>
     private void Load()
     {
+        bool loaded = false;
         if (File.Exists(_sessionPath))
         {
             try
             {
                 _engine.LoadSession(_sessionPath);
+                loaded = true;
             }
             catch (BrackException ex)
             {
@@ -354,6 +414,16 @@ public sealed class BrackRack : IDisposable
                 {
                 }
             }
+        }
+
+        try
+        {
+            // A player's settings rather than Brack's (IMPLEMENTATION.md, "Brack バックエンド").
+            if (!loaded) _engine.SetConfig(BufferOf(DefaultBuffer) with { ResamplerQuality = ResamplerQuality.Ultra });
+        }
+        catch (BrackException ex)
+        {
+            Problem = ex.Message;
         }
 
         _savedChanges = _engine.ChangeCount;

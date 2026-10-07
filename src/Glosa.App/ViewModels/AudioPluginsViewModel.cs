@@ -61,12 +61,7 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
         _rack.Changed += OnRackChanged;
         ShowRack();
 
-        string? chosen = rack.AudioDevice;
-        AudioDevices = [Strings.AudioPluginsDefaultDevice, .. BrackRack.AudioDevices().Select(device => device.Name)];
-        // A device that is gone stays chosen, so opening the window does not move the sound.
-        if (chosen is { Length: > 0 } && !AudioDevices.Contains(chosen)) AudioDevices = [.. AudioDevices, chosen];
-        _audioDevice = chosen is { Length: > 0 } ? chosen : AudioDevices[0];
-
+        _ = ShowSettingsAsync();
         _ = ScanAsync();
 
         _meters = new DispatcherTimer(TimeSpan.FromMilliseconds(66), DispatcherPriority.Background, (_, _) => ShowMeters());
@@ -111,8 +106,6 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ScanStatus { get; set; }
 
-    /// <summary>The output devices, the system's default first.</summary>
-    public IReadOnlyList<string> AudioDevices { get; }
 
     private readonly DispatcherTimer _meters;
 
@@ -140,7 +133,53 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
     private static int Level(float peak)
         => peak <= 0 ? 0 : (int)Math.Round(Math.Clamp((20 * Math.Log10(peak) + 60) / 60, 0, 1) * 127);
 
-    private string _audioDevice;
+    /// <summary>Whether the rack's settings are shown, which waits for its session to load.</summary>
+    [ObservableProperty]
+    public partial bool SettingsShown { get; set; }
+
+    /// <summary>The output devices, the system's default first.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<string> AudioDevices { get; set; } = [];
+
+    /// <summary>The device periods offered, in milliseconds.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<Choice> BufferSizes { get; set; } = [];
+
+    /// <summary>The rates the plugins may run at, the output's own first.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<Choice> SampleRates { get; set; } = [];
+
+    private async Task ShowSettingsAsync()
+    {
+        await _rack.Loaded;
+
+        string? device = _rack.AudioDevice;
+        string[] devices = [Strings.AudioPluginsDefaultDevice, .. BrackRack.AudioDevices().Select(info => info.Name)];
+        // A device that is gone stays chosen, so opening the window does not move the sound.
+        if (device is { Length: > 0 } && !devices.Contains(device)) devices = [.. devices, device];
+        AudioDevices = devices;
+        _audioDevice = device is { Length: > 0 } ? device : devices[0];
+        OnPropertyChanged(nameof(AudioDevice));
+
+        int milliseconds = (int)Math.Round(_rack.Buffer.TotalMilliseconds);
+        BufferSizes = Offered([10, 20, 40, 80], milliseconds, value => string.Format(Strings.AudioPluginsBufferMilliseconds, value));
+        _bufferSize = BufferSizes.First(choice => (int)choice.Value == milliseconds);
+        OnPropertyChanged(nameof(BufferSize));
+
+        int rate = _rack.PluginSampleRate;
+        SampleRates = Offered([0, 44100, 48000, 88200, 96000], rate,
+                              value => value == 0 ? Strings.AudioPluginsSampleRateOutput : $"{value / 1000.0:0.#} kHz");
+        _sampleRate = SampleRates.First(choice => (int)choice.Value == rate);
+        OnPropertyChanged(nameof(SampleRate));
+
+        SettingsShown = true;
+    }
+
+    /// <summary>The values offered, and the rack's own where it is none of them, in order.</summary>
+    private static Choice[] Offered(int[] values, int chosen, Func<int, string> label)
+        => [.. values.Append(chosen).Distinct().Order().Select(value => new Choice(value, label(value)))];
+
+    private string _audioDevice = string.Empty;
 
     public string AudioDevice
     {
@@ -152,6 +191,36 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
             OnPropertyChanged();
             string? device = value == AudioDevices[0] ? null : value;
             _ = Change(null, () => _rack.AudioDevice = device);
+        }
+    }
+
+    private Choice? _bufferSize;
+
+    public Choice? BufferSize
+    {
+        get => _bufferSize;
+        set
+        {
+            if (value is null || value == _bufferSize) return;
+            _bufferSize = value;
+            OnPropertyChanged();
+            var buffer = TimeSpan.FromMilliseconds((int)value.Value);
+            _ = Change(null, () => _rack.Buffer = buffer);
+        }
+    }
+
+    private Choice? _sampleRate;
+
+    public Choice? SampleRate
+    {
+        get => _sampleRate;
+        set
+        {
+            if (value is null || value == _sampleRate) return;
+            _sampleRate = value;
+            OnPropertyChanged();
+            int rate = (int)value.Value;
+            _ = Change(null, () => _rack.PluginSampleRate = rate);
         }
     }
 

@@ -157,6 +157,33 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Buffer.
+        /// </summary>
+        public static string AudioPluginsBuffer {
+            get {
+                return ResourceManager.GetString("AudioPluginsBuffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} ms.
+        /// </summary>
+        public static string AudioPluginsBufferMilliseconds {
+            get {
+                return ResourceManager.GetString("AudioPluginsBufferMilliseconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How much audio goes to the device at a time. The longer it is, the less the sound breaks up under heavy plugins or a busy computer, but the later the plugins sound than machines on MIDI ports..
+        /// </summary>
+        public static string AudioPluginsBufferTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsBufferTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System default.
         /// </summary>
         public static string AudioPluginsDefaultDevice {
@@ -315,6 +342,33 @@ namespace Glosa.App {
         public static string AudioPluginsRescan {
             get {
                 return ResourceManager.GetString("AudioPluginsRescan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sample rate.
+        /// </summary>
+        public static string AudioPluginsSampleRate {
+            get {
+                return ResourceManager.GetString("AudioPluginsSampleRate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Same as output.
+        /// </summary>
+        public static string AudioPluginsSampleRateOutput {
+            get {
+                return ResourceManager.GetString("AudioPluginsSampleRateOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The rate the plugins run at. When the output device runs at another, the sound is converted to its rate. The device&apos;s rate is set in the system&apos;s settings..
+        /// </summary>
+        public static string AudioPluginsSampleRateTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsSampleRateTip", resourceCulture);
             }
         }
         

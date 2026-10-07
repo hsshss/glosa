@@ -187,6 +187,23 @@ public sealed class BrackRackTests : IDisposable
     }
 
     [Fact]
+    public void ANewRackConvertsAtTheBestAndItsBufferIsLongAndTheBufferAndThePluginsRateAreKept()
+    {
+        using (BrackRack rack = Rack())
+        {
+            Assert.Equal(20, Math.Round(rack.Buffer.TotalMilliseconds));
+            Assert.Equal(0, rack.PluginSampleRate);
+            Assert.Equal(ResamplerQuality.Ultra, rack.Engine.GetConfig().ResamplerQuality);
+
+            rack.Buffer = TimeSpan.FromMilliseconds(40);
+            rack.PluginSampleRate = 96000;
+        }
+
+        using BrackRack again = Rack();
+        Assert.Equal((40, 96000), (Math.Round(again.Buffer.TotalMilliseconds), again.PluginSampleRate));
+    }
+
+    [Fact]
     public void TheMasterGainIsKept()
     {
         // Not Rack(), whose gain is a change.
