@@ -154,7 +154,7 @@ internal sealed class UmpEncoder(byte group = 0)
     /// How many data bytes follow <paramref name="status"/>; -1 for what is not a message on
     /// its own (a data byte, F0, F7) or is undefined.
     /// </summary>
-    private static int DataBytes(byte status) => status switch
+    internal static int DataBytes(byte status) => status switch
     {
         < 0x80 => -1,
         < 0xC0 => 2,

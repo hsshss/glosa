@@ -56,6 +56,9 @@
                           Icon="{StaticResource IconPortMap}" />
                 <MenuItem Header="{x:Static l:Strings.MenuPortMapSettings}" Click="OnOpenPortMaps"
                           Icon="{StaticResource IconPortMapSettings}" />
+                <!-- Only where the player can host plugins (Windows, with Brack). -->
+                <MenuItem Header="{x:Static l:Strings.MenuAudioPlugins}" Click="OnOpenAudioPlugins"
+                          IsVisible="{Binding HasAudioPlugins}" Icon="{StaticResource IconModule}" />
                 <Separator />
                 <MenuItem Header="{x:Static l:Strings.MenuOrder}" ItemsSource="{Binding OrderChoices}"
                           ItemContainerTheme="{StaticResource ChoiceItem}"
@@ -97,7 +100,7 @@
                   The display next to it sets the height of the row; the slack goes between
                   what the song is (top) and the controls (bottom).
                 -->
-                <Grid RowDefinitions="Auto,*,Auto">
+                <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto">
                     <!--
                       Fixed at two lines of the taller font: Japanese and English titles are
                       drawn from fonts that disagree about line height, and a block sized to
@@ -116,10 +119,29 @@
                     </StackPanel>
 
                     <!--
+                      The audio plugins' master volume, shown while a port map uses one.
+                      Across the slack below as well, so the title's fixed height holds.
+                      Double-click goes back to 0 dB (see the code-behind).
+                    -->
+                    <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal"
+                                Margin="12,0,0,0" VerticalAlignment="Top"
+                                IsVisible="{Binding UsesAudioPlugins}"
+                                ToolTip.Tip="{Binding MasterVolumeTip}">
+                        <PathIcon Data="{StaticResource IconVolume}" Width="16" Height="16"
+                                  VerticalAlignment="Center" />
+                        <Slider Width="96" Margin="6,0,0,0"
+                                Minimum="{x:Static vm:MainViewModel.MasterVolumeFloor}"
+                                Maximum="{x:Static vm:MainViewModel.MasterVolumeCeiling}"
+                                Value="{Binding MasterVolume, Mode=TwoWay}"
+                                DoubleTapped="OnMasterVolumeDoubleTapped"
+                                AutomationProperties.Name="{x:Static l:Strings.TransportMasterVolume}" />
+                    </StackPanel>
+
+                    <!--
                       Stop, play, pause (the song's states), then previous and next (moving
                       along the list). The seek bar takes whatever width the buttons leave.
                     -->
-                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+                    <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
                         <!--
                           Each button is named by its tooltip: its face is a symbol, which is
                           what it would be read out as.

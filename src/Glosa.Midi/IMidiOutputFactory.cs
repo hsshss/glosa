@@ -8,6 +8,12 @@ public interface IMidiOutputFactory
 
     IReadOnlyList<MidiDeviceInfo> Enumerate();
 
+    /// <summary>
+    /// Waits until <see cref="Enumerate"/> is complete, before a device is opened by name.
+    /// Most backends have nothing to wait for.
+    /// </summary>
+    void WaitUntilListed() { }
+
     /// <summary>Creates an unopened output for <paramref name="deviceId"/>.</summary>
     /// <exception cref="MidiDeviceException">No device with that id exists.</exception>
     IMidiOutput Create(string deviceId);

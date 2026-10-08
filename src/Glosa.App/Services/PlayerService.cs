@@ -35,6 +35,12 @@ public sealed class PlayerService : IDisposable
 
     /// <summary>Devices that would not open, and why; until playback comes to rest.</summary>
     private readonly Dictionary<DeviceName, string> _failed = [];
+
+    /// <summary>
+    /// Guards <see cref="_open"/>, <see cref="_failed"/> and <see cref="_openProblems"/>, which
+    /// the UI reads while the transport's thread opens devices. Never held while one opens.
+    /// </summary>
+    private readonly Lock _devices = new();
     private readonly PortSink _ports;
 
     /// <summary>
@@ -114,6 +120,8 @@ public sealed class PlayerService : IDisposable
     /// Sends each port to a device, opening the ones not open yet and keeping the rest.
     /// </summary>
     /// <remarks>
+    /// On the transport's thread, as a song is set up: opening a device can take a while.
+    ///
     /// Nothing already open is closed; a device stays open until <see cref="ReleaseDevices"/>.
     ///
     /// A port with no device keeps its place in the list as a null, so the list stays
@@ -127,8 +135,7 @@ public sealed class PlayerService : IDisposable
     /// </remarks>
     public void Route(IReadOnlyList<DeviceName?> devices)
     {
-        _openProblems.Clear();
-
+        var problems = new List<string>();
         var routed = new List<IMidiOutput?>(devices.Count);
         for (int port = 0; port < devices.Count; port++)
         {
@@ -139,8 +146,14 @@ public sealed class PlayerService : IDisposable
             }
 
             IMidiOutput? output = Opened(name, out string? problem);
-            if (output is null) _openProblems.Add(string.Format(Strings.PortOpenProblem, PortName(port), name, problem));
+            if (output is null) problems.Add(string.Format(Strings.PortOpenProblem, PortName(port), name, problem));
             routed.Add(output);
+        }
+
+        lock (_devices)
+        {
+            _openProblems.Clear();
+            _openProblems.AddRange(problems);
         }
 
         if (routed.SequenceEqual(_outputs)) return;
@@ -157,7 +170,9 @@ public sealed class PlayerService : IDisposable
     private IMidiOutput? Opened(DeviceName name, out string? problem)
     {
         problem = null;
-        if (_open.TryGetValue(name, out IMidiOutput? output)) return output;
+        IMidiOutput? output;
+        lock (_devices)
+            if (_open.TryGetValue(name, out output)) return output;
 
         if (Backends.MidiOutputs is not { } outputs)
         {
@@ -173,14 +188,17 @@ public sealed class PlayerService : IDisposable
             output = outputs.Create(device.Id);
             output.Silenced += () => OutputSilenced?.Invoke(device.Name);
             output.Open();
-            _open[name] = output;
-            _failed.Remove(name);
+            lock (_devices)
+            {
+                _open[name] = output;
+                _failed.Remove(name);
+            }
             return output;
         }
         catch (MidiDeviceException ex)
         {
             problem = ex.Message;
-            _failed[name] = ex.Message;
+            lock (_devices) _failed[name] = ex.Message;
             return null;
         }
     }
@@ -197,14 +215,17 @@ public sealed class PlayerService : IDisposable
         Sequencer.Stop();
         RestoreMapsOnTheWayOut();
         CloseDevices();
-        _openProblems.Clear();
+        lock (_devices) _openProblems.Clear();
     }
 
     /// <summary>Whether a device is open, would not open, or has not been asked for.</summary>
     public (OutputState State, string? Why) StateOf(DeviceName name)
-        => _open.ContainsKey(name) ? (OutputState.Open, null)
-         : _failed.TryGetValue(name, out string? why) ? (OutputState.Failed, why)
-         : (OutputState.Closed, null);
+    {
+        lock (_devices)
+            return _open.ContainsKey(name) ? (OutputState.Open, null)
+                 : _failed.TryGetValue(name, out string? why) ? (OutputState.Failed, why)
+                 : (OutputState.Closed, null);
+    }
 
     private readonly List<string> _openProblems = [];
 
@@ -214,7 +235,13 @@ public sealed class PlayerService : IDisposable
     /// <remarks>
     /// All of them, not the last one, so they can be fixed in one go.
     /// </remarks>
-    public IReadOnlyList<string> OpenProblems => _openProblems;
+    public IReadOnlyList<string> OpenProblems
+    {
+        get
+        {
+            lock (_devices) return [.. _openProblems];
+        }
+    }
 
     /// <summary>The letter a port wears on the port map screen.</summary>
     private static string PortName(int port) => string.Format(Strings.PortName, (char)('A' + port));
@@ -425,7 +452,15 @@ public sealed class PlayerService : IDisposable
     {
         LastCloseProblem = null;
 
-        foreach (IMidiOutput output in _open.Values)
+        IMidiOutput[] open;
+        lock (_devices)
+        {
+            open = [.. _open.Values];
+            _open.Clear();
+            _failed.Clear();
+        }
+
+        foreach (IMidiOutput output in open)
         {
             try
             {
@@ -444,8 +479,6 @@ public sealed class PlayerService : IDisposable
                 LastCloseProblem =
                     string.Format(Strings.ProblemSysExDropped, output.Device.Name, output.DroppedLongMessages);
         }
-        _open.Clear();
-        _failed.Clear();
         _outputs.Clear();
     }
 

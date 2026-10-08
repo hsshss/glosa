@@ -3,6 +3,10 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+#if BRACK
+using Brack;
+using Glosa.App.Services;
+#endif
 
 namespace Glosa.App.Views;
 
@@ -33,9 +37,24 @@ public partial class AboutWindow : Window
         post.Content = Strings.AboutPostOnX;
         post.NavigateUri = new Uri(PostOnX);
 
-        this.FindControl<SelectableTextBlock>("Runtime")!.Text =
+        this.FindControl<SelectableTextBlock>("Runtime")!.Text = AudioPlugins() +
             $"{RuntimeInformation.FrameworkDescription}, {RuntimeInformation.OSDescription} " +
             $"({RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()})";
+    }
+
+    /// <summary>
+    /// Which Brack hosts the audio plugins, or why none does, on a line of its own; nothing in a
+    /// build without it.
+    /// </summary>
+    private static string AudioPlugins()
+    {
+#if BRACK
+        return (Backends.AudioPlugins is not null
+            ? $"{BrackLibrary.VersionString} (API {BrackLibrary.ApiVersion})"
+            : $"Brack: {Backends.BrackUnavailable}") + Environment.NewLine;
+#else
+        return string.Empty;
+#endif
     }
 
     /// <summary>

@@ -27,6 +27,10 @@ internal static class Dialogs
     internal static readonly FilePickerFileType DefinitionFiles =
         new(Strings.FileTypeDefinitions) { Patterns = AnyCase("*.def") };
 
+    /// <summary>CLAP, VST3 (the file inside a bundle) and VST2, as Windows names them.</summary>
+    internal static readonly FilePickerFileType AudioPluginFiles =
+        new(Strings.FileTypeAudioPlugins) { Patterns = AnyCase("*.clap", "*.vst3", "*.dll") };
+
     /// <summary>
     /// Each pattern in lower case and in upper case.
     /// </summary>
@@ -56,14 +60,16 @@ internal static class Dialogs
         return [.. files.Select(f => f.Path.LocalPath)];
     }
 
-    internal static async Task<IReadOnlyList<string>> OpenFoldersAsync(Visual? owner, string title)
+    /// <remarks>On macOS a bundle can be chosen too, as the folder it is.</remarks>
+    internal static async Task<IReadOnlyList<string>> OpenFoldersAsync(Visual? owner, string title, bool multiple = true)
     {
         if (TopLevel.GetTopLevel(owner) is not { } top) return [];
 
         IReadOnlyList<IStorageFolder> folders = await top.StorageProvider.OpenFolderPickerAsync(
-            new FolderPickerOpenOptions { Title = title, AllowMultiple = true });
+            new FolderPickerOpenOptions { Title = title, AllowMultiple = multiple });
 
-        return [.. folders.Select(f => f.Path.LocalPath)];
+        // macOS ends each with a slash, which a bundle's path must not have.
+        return [.. folders.Select(f => Path.TrimEndingDirectorySeparator(f.Path.LocalPath))];
     }
 
     internal static async Task<string?> SaveAsync(
