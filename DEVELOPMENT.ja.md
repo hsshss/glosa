@@ -33,7 +33,7 @@ push と pull request のたびに、`.github/workflows/ci.yml` が Windows・ma
 
 ビルドは、どの OS でも、オーディオプラグインのホスト Brack を次の順に探して参照し、見つかれば定数 `BRACK` を定義する（`Directory.Build.props`）。参照するのは `src/Glosa.Midi.Brack` で、App はそれを Brack があるときだけ参照する。
 このリポジトリの隣に Brack のリポジトリ（`../brack`）があれば、その .NET バインディングをソースからビルドし、Brack がビルド済みのネイティブライブラリ（Windows では `build\bin` と `build-x86\bin` の `brack.dll`）を出力にコピーする。
-無ければ、`BrackVersion` に書いたバージョンの NuGet パッケージを使う。
+無ければ、`BrackVersion` に書いたバージョンの NuGet パッケージを nuget.org から取る。隣にリポジトリの無い CI とリリースは、これを使う。
 `BrackVersion` が空ならどちらも使わず、Brack 無しでビルドする。
 隣にリポジトリがあってもパッケージで確かめたいときは、`-p:UseBrackPackage=true` を付ける。
 ソースから参照しているときは、テストが Brack のテスト用の音源（`build/bin/brack-test-synth.clap`）でプラグインを鳴らすので、Brack をテスト込みでビルドしておく。macOS では Brack がメインスレッドで動くので、テストは自前のエントリポイント（`tests/Glosa.Tests/Program.cs`）で別のスレッドに移し、メインスレッドではランループを回す。
