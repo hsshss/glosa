@@ -666,6 +666,12 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="PortMapUseModuleTip" xml:space="preserve">
     <value>Choose the sound module connected to this map’s ports.</value>
   </data>
+  <data name="PortMapSplitParts" xml:space="preserve">
+    <value>Distribute parts over other ports, 16 each</value>
+  </data>
+  <data name="PortMapSplitPartsTip" xml:space="preserve">
+    <value>Turn this on when each port of this map leads to a 16-part sound module of its own. Messages for the 32 parts of an SC-88 or SC-88Pro, or for XG parts from the 17th on, are sent to the module on the port that takes that part. Leave it off when a real SC-88 or SC-88Pro is connected to two ports.</value>
+  </data>
   <data name="PortName" xml:space="preserve">
     <value>Port {0}</value>
   </data>

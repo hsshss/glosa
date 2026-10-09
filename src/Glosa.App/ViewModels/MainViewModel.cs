@@ -1972,6 +1972,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         SoundCanvasTones? tones = CapitalToneFallback ? SoundCanvasTones.Of(UseModule) : null;
         _player.UseFallback(tones);
         if (tones is not null) Note(string.Format(Strings.NoteFallbackTables, tones.Model));
+        _player.UseSplit(ActiveMap?.SplitParts ?? false);
 
         // With no DEF: the reset define.yaml's initializeType names, and the tone map of the
         // model the song was written for where the module carries it (ToneMap).

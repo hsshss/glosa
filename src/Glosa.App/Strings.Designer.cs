@@ -1882,6 +1882,24 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Distribute parts over other ports, 16 each.
+        /// </summary>
+        public static string PortMapSplitParts {
+            get {
+                return ResourceManager.GetString("PortMapSplitParts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn this on when each port of this map leads to a 16-part sound module of its own. Messages for the 32 parts of an SC-88 or SC-88Pro, or for XG parts from the 17th on, are sent to the module on the port that takes that part. Leave it off when a real SC-88 or SC-88Pro is connected to two ports..
+        /// </summary>
+        public static string PortMapSplitPartsTip {
+            get {
+                return ResourceManager.GetString("PortMapSplitPartsTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Target Modules.
         /// </summary>
         public static string PortMapTargetModules {

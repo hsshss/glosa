@@ -18,10 +18,11 @@ public readonly record struct ToneMapChoice(ToneMap Maps, byte Map, IReadOnlyLis
 /// </summary>
 /// <remarks>
 /// The chain is the one the console harness builds:
-/// <c>Sequencer → EmulationFilter → CapitalToneFallback → PortSink → IMidiOutput</c>. The
-/// filter is always in it, even with no DEF loaded, because the panel state the display reads
-/// lives there. The fallback is always in it too, and does nothing until it is given a
-/// machine's tables (<see cref="UseFallback"/>).
+/// <c>Sequencer → EmulationFilter → [PartSplitter] → CapitalToneFallback → PortSink → IMidiOutput</c>.
+/// The filter is always in it, even with no DEF loaded, because the panel state the display
+/// reads lives there. The fallback is always in it too, and does nothing until it is given a
+/// machine's tables (<see cref="UseFallback"/>). The splitter is in it only for a port map
+/// that asks for it (<see cref="UseSplit"/>).
 /// </remarks>
 public sealed class PlayerService : IDisposable
 {
@@ -43,11 +44,14 @@ public sealed class PlayerService : IDisposable
     private readonly Lock _devices = new();
     private readonly PortSink _ports;
 
-    /// <summary>
-    /// What reaches the machines: the ports, behind the Capital Tone Fallback. The emulation
-    /// layer sends here, and so does the initialisation. Kept from song to song.
-    /// </summary>
+    /// <summary>The ports, behind the Capital Tone Fallback. Kept from song to song.</summary>
     private readonly CapitalToneFallback _fallback;
+
+    /// <summary>
+    /// What reaches the machines: <see cref="_fallback"/>, or a <see cref="PartSplitter"/> in
+    /// front of it. The emulation layer sends here, and so does the initialisation.
+    /// </summary>
+    private volatile IEventSink _machines;
     private EmulationFilter _filter;
     private DefDocument? _definition;
 
@@ -55,7 +59,8 @@ public sealed class PlayerService : IDisposable
     {
         _ports = new PortSink(_outputs);
         _fallback = new CapitalToneFallback(_ports);
-        _filter = new EmulationFilter(_fallback, new EmulationSettings(), new PatchMapSet());
+        _machines = _fallback;
+        _filter = new EmulationFilter(_machines, new EmulationSettings(), new PatchMapSet());
         Options = new PlaybackOptions();
         Sequencer = new Sequencer(_filter, Options, Backends.Timer);
         // Recomposer data has its endless loops played out as it is read, so the setting
@@ -77,7 +82,12 @@ public sealed class PlayerService : IDisposable
     /// thread allowed to send while a song is going. An output that refuses is treated as
     /// any other send that fails there.
     /// </remarks>
-    private void SendInitAgain() => MidiScript.Run(_init, _fallback);
+    private void SendInitAgain()
+    {
+        IEventSink machines = _machines;
+        if (machines is PartSplitter splitter) splitter.Reset();
+        MidiScript.Run(_init, machines);
+    }
 
     public PlaybackOptions Options { get; }
 
@@ -281,8 +291,19 @@ public sealed class PlayerService : IDisposable
 
         EmulationSettings settings =
             map is { } choice ? choice.Maps.Settings(choice.Map) ?? new() : new();
-        UseFilter(new EmulationFilter(_fallback, settings, new PatchMapSet()));
+        UseFilter(new EmulationFilter(_machines, settings, new PatchMapSet()));
         EmulationLabel = "(no definition)";
+    }
+
+    /// <summary>
+    /// Puts a part splitter in front of the machines, a new one for the song being set up, or
+    /// takes it out. Before the emulation layer is built (<see cref="UseInit"/>,
+    /// <see cref="ApplyEmulation"/>), which sends to it.
+    /// </summary>
+    public void UseSplit(bool split)
+    {
+        Sequencer.Stop();
+        _machines = split ? new PartSplitter(_fallback) : _fallback;
     }
 
     /// <summary>
@@ -393,9 +414,10 @@ public sealed class PlayerService : IDisposable
     /// and is done on the transport's thread as the song is set up.
     ///
     /// Past the emulation layer: the initialisation is its own output and must not be run
-    /// back through it. Through the Capital Tone Fallback, which has to see the resets and
-    /// the map the parts are put on as the machine does. A refusal is returned rather than
-    /// thrown: the emulation is in place either way, and the caller decides what to tell.
+    /// back through it. Through the part splitter and the Capital Tone Fallback, which have to
+    /// see the resets and the map the parts are put on as the machine does. A refusal is
+    /// returned rather than thrown: the emulation is in place either way, and the caller
+    /// decides what to tell.
     /// </remarks>
     public string? SendInit()
     {
@@ -406,7 +428,7 @@ public sealed class PlayerService : IDisposable
             ToneMapChoice? map = _map;
             RestoreMaps(map is { Maps.Lasting: true } chosen ? DevicesOn(chosen.Ports) : []);
 
-            MidiScript.Run(_init, _fallback);
+            MidiScript.Run(_init, _machines);
             RememberMaps(map);
             return null;
         }
@@ -427,7 +449,7 @@ public sealed class PlayerService : IDisposable
         EmulationSetup setup = new EmulationBuilder(_definition)
             .Build(useModule, targetModule, filterSection: "NONE");
 
-        UseFilter(new EmulationFilter(_fallback, setup.Settings, setup.Patches));
+        UseFilter(new EmulationFilter(_machines, setup.Settings, setup.Patches));
 
         EmulationLabel = $"[{setup.Resolution.Key}] {setup.Resolution.Commands}";
         _init = setup.InitActions;

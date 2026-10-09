@@ -56,6 +56,7 @@ static int Usage()
           --use <module>    output module (needs --def, except for --ctf)
           --target <module> module the data was written for (needs --def)
           --ctf             Capital Tone Fallback for the --use module (SC-55mk2 and later SCs)
+          --split           lay parts beyond 16 out over the ports, a 16-part module on each
 
         detect options (define.yaml only):
           --sources <list>  the words searched, in order: folder, name, title, document
@@ -242,6 +243,7 @@ static int Play(string[] args)
     string useModule = "THRU";
     string targetModule = "THRU";
     bool fallback = false;
+    bool split = false;
     var options = new PlaybackOptions();
 
     for (int i = 2; i < args.Length; i++)
@@ -250,6 +252,7 @@ static int Play(string[] args)
         {
             case "--device": deviceId = args[++i]; break;
             case "--ctf": fallback = true; break;
+            case "--split": split = true; break;
             case "--devices":
                 deviceList = args[++i].Split(',', StringSplitOptions.TrimEntries);
                 break;
@@ -321,6 +324,12 @@ static int Play(string[] args)
             : $"capital tone fallback: {tones.Model}");
         sink = new Glosa.Core.Emulation.CapitalToneFallback(sink) { Tones = tones };
     }
+    if (split)
+    {
+        // In front of the fallback, behind the emulation layer and its initialisation.
+        Console.WriteLine("part splitter: on");
+        sink = new Glosa.Core.Emulation.PartSplitter(sink);
+    }
     if (defPath is not null)
     {
         var def = Glosa.Core.Definition.DefDocument.Load(defPath);
@@ -391,23 +400,36 @@ static int Play(string[] args)
 }
 
 
-/// <summary>Counts the short and long messages sent.</summary>
+/// <summary>Counts the short and long messages sent, by port.</summary>
 internal sealed class TimingProbe(IEventSink inner) : IEventSink
 {
     private readonly IEventSink _inner = inner;
-    private long _short, _long;
+    private readonly long[] _short = new long[IEventSink.PortCount + 1];
+    private readonly long[] _long = new long[IEventSink.PortCount + 1];
 
     public void SendShort(int port, uint packedMessage)
     {
-        _short++;
+        _short[Slot(port)]++;
         _inner.SendShort(port, packedMessage);
     }
 
     public void SendLong(int port, ReadOnlySpan<byte> sysEx)
     {
-        _long++;
+        _long[Slot(port)]++;
         _inner.SendLong(port, sysEx);
     }
 
-    public void Report() => Console.WriteLine($"sent: {_short} short, {_long} sysex");
+    /// <summary>Where a port is counted: its own place, or the last for one past F.</summary>
+    private static int Slot(int port) => (uint)port < IEventSink.PortCount ? port : IEventSink.PortCount;
+
+    public void Report()
+    {
+        Console.WriteLine($"sent: {_short.Sum()} short, {_long.Sum()} sysex");
+        for (int port = 0; port <= IEventSink.PortCount; port++)
+        {
+            if (_short[port] + _long[port] == 0) continue;
+            string name = port < IEventSink.PortCount ? ((char)('A' + port)).ToString() : "beyond F";
+            Console.WriteLine($"  port {name}: {_short[port]} short, {_long[port]} sysex");
+        }
+    }
 }

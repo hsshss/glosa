@@ -178,6 +178,19 @@ public class PortMapViewModelTests
     }
 
     [Fact]
+    public void SplittingThePartsIsStoredAndReadBack()
+    {
+        var model = new PortMap();
+        PortMapViewModel map = Open(model);
+        Assert.False(map.SplitParts);
+
+        map.SplitParts = true;
+
+        Assert.True(model.SplitParts);
+        Assert.True(Open(model).SplitParts);
+    }
+
+    [Fact]
     public void TheResetPortsAreWrittenOnlyWhenEditedByHand()
     {
         var model = new PortMap { ResetPorts = ["A", "C"] };

@@ -663,6 +663,12 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="PortMapUseModuleTip" xml:space="preserve">
     <value>このマップのポートに接続されている音源を指定してください。</value>
   </data>
+  <data name="PortMapSplitParts" xml:space="preserve">
+    <value>パートを16ずつ別のポートへ振り分ける</value>
+  </data>
+  <data name="PortMapSplitPartsTip" xml:space="preserve">
+    <value>このマップの各ポートに16パートの音源を1台ずつつないでいるときにチェックを入れてください。SC-88・SC-88Pro の32パートや XG の17番目以降のパートに宛てたメッセージを、そのパートを受け持つポートの音源へ送ります。SC-88・SC-88Pro の実機を2つのポートにつないでいるときは外してください。</value>
+  </data>
   <data name="PortName" xml:space="preserve">
     <value>ポート {0}</value>
   </data>

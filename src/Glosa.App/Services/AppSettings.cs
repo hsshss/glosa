@@ -53,6 +53,13 @@ public sealed class PortMap
     /// </summary>
     /// <remarks>THRU, no emulation, is what a map with nothing said about it plays as.</remarks>
     public string UseModule { get; set; } = "THRU";
+
+    /// <summary>
+    /// Whether each port leads to a 16-part machine of its own, so a song's parts beyond 16
+    /// are laid out over the ports (<see cref="PartSplitter"/>).
+    /// </summary>
+    /// <remarks>Off for a 32-part machine on two ports, which takes them as they are.</remarks>
+    public bool SplitParts { get; set; }
 }
 
 /// <summary>One of the words a song is detected from, and whether it is searched.</summary>
