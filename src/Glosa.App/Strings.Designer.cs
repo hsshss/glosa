@@ -1927,6 +1927,15 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Transfer rate limit.
+        /// </summary>
+        public static string PortMapTransferRate {
+            get {
+                return ResourceManager.GetString("PortMapTransferRate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module.
         /// </summary>
         public static string PortMapUseModule {
@@ -2463,15 +2472,6 @@ namespace Glosa.App {
         public static string SettingsTooNew {
             get {
                 return ResourceManager.GetString("SettingsTooNew", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Transfer rate limit.
-        /// </summary>
-        public static string SettingsTransferRate {
-            get {
-                return ResourceManager.GetString("SettingsTransferRate", resourceCulture);
             }
         }
         

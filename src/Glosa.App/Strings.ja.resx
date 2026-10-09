@@ -669,6 +669,9 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="PortMapSplitPartsTip" xml:space="preserve">
     <value>このマップの各ポートに16パートの音源を1台ずつつないでいるときにチェックを入れてください。SC-88・SC-88Pro の32パートや XG の17番目以降のパートに宛てたメッセージを、そのパートを受け持つポートの音源へ送ります。SC-88・SC-88Pro の実機を2つのポートにつないでいるときは外してください。</value>
   </data>
+  <data name="PortMapTransferRate" xml:space="preserve">
+    <value>転送レート上限</value>
+  </data>
   <data name="PortName" xml:space="preserve">
     <value>ポート {0}</value>
   </data>
@@ -839,9 +842,6 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="SettingsTooNew" xml:space="preserve">
     <value>ファイルの形式がバージョン {0} で、この Glosa が読めるバージョン {1} より新しいです</value>
-  </data>
-  <data name="SettingsTransferRate" xml:space="preserve">
-    <value>転送レート上限</value>
   </data>
   <data name="SettingsTrimTitles" xml:space="preserve">
     <value>タイトルの余分なスペースをカットする</value>

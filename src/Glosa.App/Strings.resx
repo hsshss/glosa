@@ -672,6 +672,9 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="PortMapSplitPartsTip" xml:space="preserve">
     <value>Turn this on when each port of this map leads to a 16-part sound module of its own. Messages for the 32 parts of an SC-88 or SC-88Pro, or for XG parts from the 17th on, are sent to the module on the port that takes that part. Leave it off when a real SC-88 or SC-88Pro is connected to two ports.</value>
   </data>
+  <data name="PortMapTransferRate" xml:space="preserve">
+    <value>Transfer rate limit</value>
+  </data>
   <data name="PortName" xml:space="preserve">
     <value>Port {0}</value>
   </data>
@@ -842,9 +845,6 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="SettingsTooNew" xml:space="preserve">
     <value>The file is in format version {0}, newer than version {1}, which this Glosa reads</value>
-  </data>
-  <data name="SettingsTransferRate" xml:space="preserve">
-    <value>Transfer rate limit</value>
   </data>
   <data name="SettingsTrimTitles" xml:space="preserve">
     <value>Trim extra spaces in titles</value>

@@ -72,14 +72,6 @@
                     <CheckBox Content="{x:Static l:Strings.SettingsMidiOutReset}" IsChecked="{Binding UseMidiOutReset}" />
                     <CheckBox Content="{x:Static l:Strings.SettingsAllSoundOff}"
                               IsChecked="{Binding SendAllNotesOffOnStop}" />
-
-                    <StackPanel Classes="row">
-                        <TextBlock Classes="label" Text="{x:Static l:Strings.SettingsTransferRate}" />
-                        <ComboBox Width="168" ItemsSource="{Binding TransferRates}"
-                                  AutomationProperties.Name="{x:Static l:Strings.SettingsTransferRate}"
-                                  SelectedValueBinding="{ReflectionBinding Value}"
-                                  SelectedValue="{Binding TransferRate}" />
-                    </StackPanel>
                 </StackPanel>
             </HeaderedContentControl>
 

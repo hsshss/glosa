@@ -172,6 +172,15 @@
                                       AutomationProperties.Name="{x:Static l:Strings.PortMapSplitParts}" />
                             <c:InfoTip Text="{x:Static l:Strings.PortMapSplitPartsTip}" />
                         </c:TipRow>
+
+                        <StackPanel Classes="row" Margin="0,6,0,0">
+                            <TextBlock Text="{x:Static l:Strings.PortMapTransferRate}" VerticalAlignment="Center"
+                                       Opacity="0.75" />
+                            <ComboBox Width="220" ItemsSource="{Binding TransferRates}"
+                                      AutomationProperties.Name="{x:Static l:Strings.PortMapTransferRate}"
+                                      SelectedValueBinding="{ReflectionBinding Value}"
+                                      SelectedValue="{Binding EditedMap.TransferRate}" />
+                        </StackPanel>
                     </StackPanel>
                 </HeaderedContentControl>
 

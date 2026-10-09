@@ -60,6 +60,12 @@ public sealed class PortMap
     /// </summary>
     /// <remarks>Off for a 32-part machine on two ports, which takes them as they are.</remarks>
     public bool SplitParts { get; set; }
+
+    /// <summary>
+    /// The most bytes a second handed to each of this map's ports, for hardware that cannot
+    /// keep up. 0 is unlimited.
+    /// </summary>
+    public int TransferRate { get; set; }
 }
 
 /// <summary>One of the words a song is detected from, and whether it is searched.</summary>
@@ -215,12 +221,6 @@ public sealed class AppSettings
 
     /// <summary>The priority of the thread that sends the song.</summary>
     public PlaybackPriority Priority { get; set; } = PlaybackPriority.High;
-
-    /// <summary>
-    /// The most bytes a second handed to each port, for hardware that cannot keep up. 0 is
-    /// unlimited.
-    /// </summary>
-    public int TransferRate { get; set; }
 
     /// <summary>Whether stopping also resets the output devices, besides All Notes Off.</summary>
     public bool UseMidiOutReset { get; set; } = true;

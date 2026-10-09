@@ -178,6 +178,19 @@ public class PortMapViewModelTests
     }
 
     [Fact]
+    public void TheTransferRateIsStoredAndReadBack()
+    {
+        var model = new PortMap();
+        PortMapViewModel map = Open(model);
+        Assert.Equal(0, map.TransferRate);
+
+        map.TransferRate = 3125;
+
+        Assert.Equal(3125, model.TransferRate);
+        Assert.Equal(3125, Open(model).TransferRate);
+    }
+
+    [Fact]
     public void SplittingThePartsIsStoredAndReadBack()
     {
         var model = new PortMap();

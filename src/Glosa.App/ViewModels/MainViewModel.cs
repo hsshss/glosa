@@ -131,7 +131,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
         LoopRepeatCount = saved.LoopRepeatCount;
         Priority = saved.Priority;
-        TransferRate = saved.TransferRate;
         UseDefKeywords = saved.UseDefKeywords;
         DetectionSources.Clear();
         foreach (DetectionSourceSetting s in DetectionSourceSetting.Tidy(saved.DetectionSources))
@@ -245,7 +244,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _settings.XgPlaysAs = XgPlaysAs;
         _settings.LoopRepeatCount = LoopRepeatCount;
         _settings.Priority = Priority;
-        _settings.TransferRate = TransferRate;
         _settings.UseMidiOutReset = UseMidiOutReset;
         _settings.SendAllNotesOffOnStop = SendAllNotesOffOnStop;
         _settings.CapitalToneFallback = CapitalToneFallback;
@@ -809,9 +807,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     public partial PlaybackPriority Priority { get; set; } = PlaybackPriority.High;
-
-    [ObservableProperty]
-    public partial int TransferRate { get; set; }
 
     [ObservableProperty]
     public partial bool UseMidiOutReset { get; set; } = true;
@@ -1973,6 +1968,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _player.UseFallback(tones);
         if (tones is not null) Note(string.Format(Strings.NoteFallbackTables, tones.Model));
         _player.UseSplit(ActiveMap?.SplitParts ?? false);
+        _player.Options.TransferRateBytesPerSecond = ActiveMap?.TransferRate ?? 0;
 
         // With no DEF: the reset define.yaml's initializeType names, and the tone map of the
         // model the song was written for where the module carries it (ToneMap).
@@ -2074,8 +2070,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     partial void OnPriorityChanged(PlaybackPriority value) => _player.Options.Priority = value;
 
-    partial void OnTransferRateChanged(int value)
-        => _player.Options.TransferRateBytesPerSecond = value;
 
     partial void OnUseMidiOutResetChanged(bool value) => _player.Options.UseMidiOutReset = value;
 
@@ -2534,6 +2528,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             Ports = new(EditedMap?.Model.Ports ?? []),
             ResetPorts = [.. EditedMap?.Model.ResetPorts ?? [PortMap.PortKey(0)]],
             UseModule = EditedMap?.Model.UseModule ?? Thru,
+            TransferRate = EditedMap?.Model.TransferRate ?? 0,
         };
 
         EditedMap = Adopt(model);
