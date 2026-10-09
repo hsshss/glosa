@@ -26,7 +26,7 @@ public class AppSettingsTests : ConfigFolder
     {
         var settings = new AppSettings
         {
-            PortMaps = [new PortMap { Title = "Studio", Ports = { ["A"] = "SC-88", ["C"] = "MU80" } }],
+            PortMaps = [new PortMap { Title = "Studio", Ports = { ["A"] = "SC-88", ["C"] = "MU80" }, SplitParts = true, TransferRate = 3125 }],
             PinnedPortMap = 0,
             Repeat = RepeatMode.All,
             OpenPlaylists = [new OpenPlaylist { Path = "a.yaml", LastPlayed = 3 }],
@@ -41,11 +41,29 @@ public class AppSettingsTests : ConfigFolder
         Assert.Equal(AppSettings.FormatVersion, read.Version);
         Assert.Equal("Studio", read.PortMaps[0].Title);
         Assert.Equal("MU80", read.PortMaps[0].Ports["C"]);
+        Assert.True(read.PortMaps[0].SplitParts);
+        Assert.Equal(3125, read.PortMaps[0].TransferRate);
         Assert.Equal(0, read.PinnedPortMap);
         Assert.Equal(RepeatMode.All, read.Repeat);
         Assert.Equal(3, read.OpenPlaylists[0].LastPlayed);
         Assert.Equal(800, read.Windows["main"].Width);
         Assert.False(read.HardwareRendering);
+    }
+
+    [Fact]
+    public void TheTransferRateOnceSetForAllMapsIsNotTakenOver()
+    {
+        Write("""
+            version: 1
+            transferRate: 3125
+            portMaps:
+            - title: Studio
+            """);
+
+        AppSettings read = AppSettings.Load(out string? problem);
+
+        Assert.Null(problem);
+        Assert.Equal(0, Assert.Single(read.PortMaps).TransferRate);
     }
 
     [Fact]
@@ -80,6 +98,8 @@ public class AppSettingsTests : ConfigFolder
         Assert.Equal([PortMap.PortKey(0)], map.ResetPorts);
         Assert.Empty(map.Modules);
         Assert.Equal("THRU", map.UseModule);
+        Assert.False(map.SplitParts);
+        Assert.Equal(0, map.TransferRate);
         Assert.Equal(string.Empty, read.DefinitionPath);
         Assert.Equal(string.Empty, read.Language);
         Assert.NotEmpty(read.DetectionSources);

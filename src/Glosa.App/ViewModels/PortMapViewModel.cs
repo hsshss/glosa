@@ -28,6 +28,8 @@ public sealed partial class PortMapViewModel : ViewModelBase
         Model = map;
         Title = map.Title;
         UseModule = map.UseModule.Length > 0 ? map.UseModule : null;
+        SplitParts = map.SplitParts;
+        TransferRate = map.TransferRate;
         Modules = [.. map.Modules];
         Modules.CollectionChanged += (_, _) => Model.Modules = [.. Modules];
         _devices = devices;
@@ -63,6 +65,16 @@ public sealed partial class PortMapViewModel : ViewModelBase
     /// </remarks>
     [ObservableProperty]
     public partial string? UseModule { get; set; }
+
+    /// <summary>
+    /// Whether a song's parts beyond 16 are laid out over the ports (<see cref="PortMap.SplitParts"/>).
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SplitParts { get; set; }
+
+    /// <summary>The most bytes a second handed to each port (<see cref="PortMap.TransferRate"/>).</summary>
+    [ObservableProperty]
+    public partial int TransferRate { get; set; }
 
     /// <summary>The target modules that hand the outputs to this map.</summary>
     public ObservableCollection<string> Modules { get; }
@@ -164,6 +176,10 @@ public sealed partial class PortMapViewModel : ViewModelBase
     public void RestoreUseModule() => UseModule = Model.UseModule.Length > 0 ? Model.UseModule : null;
 
     partial void OnTitleChanged(string value) => Model.Title = value;
+
+    partial void OnSplitPartsChanged(bool value) => Model.SplitParts = value;
+
+    partial void OnTransferRateChanged(int value) => Model.TransferRate = value;
 
     /// <remarks>
     /// An empty answer is dropped rather than stored. A combo box clears its selection when

@@ -153,6 +153,61 @@ public class SequencerTests
     }
 
     /// <summary>
+    /// Key 37 held on channel 2 of port B for a long while, key 40 played and let go before it.
+    /// </summary>
+    private static MidiSequence AKeyHeld()
+    {
+        var track = new TrackBuilder();
+        track.Meta(0, 0x21, [1]);
+        track.Short(0, 0x91, 40, 100);
+        track.Short(0, 0x81, 40, 0);
+        track.Short(0, 0x91, 37, 127);
+        track.Short(4800, 0x81, 37, 0);
+        track.End(0);
+        return SmfReader.Read(new SmfBuilder(division: 480).Track(track).Build());
+    }
+
+    /// <summary>What was sent from the first note off on: "1:81 25" for a note off, "cc 78" for a controller.</summary>
+    private static List<string> FromTheFirstNoteOff(RecordingSink sink)
+    {
+        List<string> sent;
+        lock (sink.Shorts)
+            sent = [.. sink.Shorts.Select(s => (s.Packed & 0xF0) == 0xB0
+                ? $"cc {(s.Packed >> 8) & 0x7F:X2}"
+                : $"{s.Port}:{s.Packed & 0xFF:X2} {(s.Packed >> 8) & 0x7F:X2}")];
+        return sent[sent.IndexOf("1:81 28")..];
+    }
+
+    [Theory]
+    [InlineData("stop")]
+    [InlineData("pause")]
+    [InlineData("seek")]
+    public void AKeyStillDownIsLetGoBeforeTheChannelsAreSilenced(string how)
+    {
+        // An All Sound Off alone leaves a part in mono mode broken in Sound Canvas VA.
+        var sink = new RecordingSink();
+        using var seq = new Sequencer(sink, new PlaybackOptions { SendAllNotesOffOnStop = true });
+        seq.Load(AKeyHeld());
+        seq.Play();
+        Assert.True(SpinWait.SpinUntil(() => { lock (sink.Shorts) return sink.Shorts.Count >= 3; }, 5000));
+
+        switch (how)
+        {
+            case "stop": seq.Stop(); break;
+            case "pause": seq.Pause(); break;
+            case "seek":
+                seq.Seek(TimeSpan.FromSeconds(1));
+                Assert.True(SpinWait.SpinUntil(() => sink.IndexOf("cc 78") >= 0, 5000));
+                break;
+        }
+
+        List<string> sent = FromTheFirstNoteOff(sink);
+        Assert.Equal(["1:81 28", "1:91 25", "1:81 25", "cc 78"], sent[..4]);
+        Assert.Single(sent, "1:81 25");
+        seq.Stop();
+    }
+
+    /// <summary>
     /// An output that holds the first wait for what it was handed until let go, the way a
     /// driver that has stopped answering does.
     /// </summary>

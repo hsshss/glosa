@@ -78,6 +78,9 @@ In **Settings → Port Map Settings...**, assign MIDI devices to ports A to F.
 - For **Module**, choose the model of the module connected at the other end of that port (the output module).
   It is used for emulation and for the reset sent before each song.
 - Ports with **Reset** checked are sent the output module's reset (GS Reset, XG System On and so on) before each song.
+- Turn on **Distribute parts over other ports, 16 each** when each port leads to its own 16-part module.
+  Messages for the 32 parts of an SC-88 or SC-88Pro, or for XG parts 17 and up, are then sent to the module on the port that plays that part.
+  Leave it off when the ports lead to the two inputs of a real SC-88 or SC-88Pro.
 - Several **port maps** can be made. Making one for each set of equipment is handy.
   - The top map is the default map. It cannot be deleted, and songs no other map fits are played with it.
   - Add **Target Modules** to a map, and songs for those modules are played with that map.

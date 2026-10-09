@@ -110,6 +110,12 @@ public sealed class Sequencer : IDisposable
 
     private static readonly byte[] EndOfExclusive = [0xF7];
 
+    /// <summary>
+    /// How many times each key is down, per port, channel and key, as sent: what
+    /// <see cref="ReleaseKeys"/> lets go of. Under the gate, as every send is.
+    /// </summary>
+    private readonly byte[] _keysDown = new byte[IEventSink.PortCount * 16 * 128];
+
     // What a catch-up holds back (Hold): per port and channel the 128 controllers, then pitch
     // bend and channel pressure, linked in the order they were last set. Sized once so the
     // playback loop still allocates nothing.
@@ -244,6 +250,7 @@ public sealed class Sequencer : IDisposable
             _pausedAtUs = 0;
             _seekRequestUs = -1;
             Array.Clear(_sysExOpen);
+            Array.Clear(_keysDown);
             DropHeld();
             ResetLoopState();
         }
@@ -460,6 +467,7 @@ public sealed class Sequencer : IDisposable
             if (_state == PlaybackState.Stopped || HeldByPause(catchingUp)) return false;
             _sink.SendShort(port, packed);
             Spend(port, ShortLength(packed), RateFor(catchingUp));
+            CountKey(port, packed);
             // A status byte ends a SysEx on the cable, so the device takes it as closed.
             if ((uint)port < (uint)_sysExOpen.Length) _sysExOpen[port] = false;
             return true;
@@ -946,7 +954,38 @@ public sealed class Sequencer : IDisposable
     {
         int ports = PortsUsed();
         for (int port = 0; port < ports; port++) _sink.WaitUntilSent(port);
+        ReleaseKeys(RateFor(catchingUp: true));
         SweepChannels(ports, RateFor(catchingUp: true), 0x78, 0x7B);  // All Sound Off, All Notes Off
+    }
+
+    /// <summary>Keeps <see cref="_keysDown"/> up with a channel message sent.</summary>
+    private void CountKey(int port, uint packed)
+    {
+        uint kind = packed & 0xF0;
+        if ((uint)port >= IEventSink.PortCount || kind is not (0x80 or 0x90)) return;
+
+        int key = ((port * 16) + (int)(packed & 0x0F)) * 128 + (int)(packed >> 8 & 0x7F);
+        if (kind == 0x90 && (packed >> 16 & 0x7F) > 0)
+        {
+            if (_keysDown[key] < byte.MaxValue) _keysDown[key]++;
+        }
+        else if (_keysDown[key] > 0) _keysDown[key]--;
+    }
+
+    /// <summary>
+    /// Sends a Note Off for each key still down, before the controllers that silence the
+    /// channels (IMPLEMENTATION.md, "シーク").
+    /// </summary>
+    private void ReleaseKeys(int rate)
+    {
+        for (int key = 0; key < _keysDown.Length; key++)
+        {
+            for (; _keysDown[key] > 0; _keysDown[key]--)
+            {
+                int port = key / (16 * 128), channel = key / 128 % 16;
+                SendPaced(port, (uint)(0x80 | channel | (key % 128) << 8 | 0x40 << 16), rate);
+            }
+        }
     }
 
     /// <summary>
@@ -1060,12 +1099,17 @@ public sealed class Sequencer : IDisposable
     /// </remarks>
     private void SilenceAllChannels(bool resetControllers = true)
     {
-        if (!_options.SendAllNotesOffOnStop) return;
+        if (!_options.SendAllNotesOffOnStop)
+        {
+            Array.Clear(_keysDown);
+            return;
+        }
 
         CloseOpenSysEx();
         try
         {
             int ports = PortsUsed(), rate = RateFor(catchingUp: false);
+            ReleaseKeys(rate);
             // All Sound Off, All Notes Off, Reset All Controllers
             if (resetControllers) SweepChannels(ports, rate, 0x78, 0x7B, 0x79);
             else SweepChannels(ports, rate, 0x78, 0x7B);

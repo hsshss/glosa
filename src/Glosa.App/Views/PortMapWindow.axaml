@@ -6,7 +6,7 @@
         xmlns:m="using:Glosa.Midi"
         x:Class="Glosa.App.Views.PortMapWindow"
         x:DataType="vm:MainViewModel"
-        Width="630" Height="572" MinWidth="560" MinHeight="420"
+        Width="630" Height="598" MinWidth="560" MinHeight="420"
         Title="{x:Static l:Strings.PortMapTitle}">
 
     <Window.Styles>
@@ -111,59 +111,77 @@
                             <c:InfoTip Text="{x:Static l:Strings.PortMapPortsTip}" />
                         </StackPanel>
                     </HeaderedContentControl.Header>
-                    <ItemsControl ItemsSource="{Binding EditedMap.Ports}"
-                                  AutomationProperties.Name="{x:Static l:Strings.PortMapPorts}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:PortSlotViewModel">
-                                <!--
-                                  The device list takes whatever width the row has left, so the
-                                  button stays inside the outline at the window's narrowest and
-                                  a long device name gets the room when the window is wider.
-                                -->
-                                <Grid ColumnDefinitions="22,14,*,Auto,Auto" Margin="0,2">
-                                    <TextBlock Text="{Binding Label}" FontFamily="Consolas"
-                                               VerticalAlignment="Center" Opacity="0.75" />
-                                    <!-- Whether the device is open, per device: see StateMark. -->
-                                    <TextBlock Grid.Column="1" Text="{Binding StateMark}"
-                                               FontSize="10" VerticalAlignment="Center"
-                                               HorizontalAlignment="Center"
-                                               ToolTip.Tip="{Binding StateText}" />
-                                    <ComboBox Grid.Column="2" Margin="6,0"
-                                              HorizontalAlignment="Stretch"
-                                              AutomationProperties.Name="{Binding Label}"
-                                              ItemsSource="{Binding Devices}"
-                                              SelectedItem="{Binding Device}"
-                                              PlaceholderText="{Binding Placeholder}">
-                                        <!-- Plugins wear the Audio Plugins menu's icon, before the name so a narrow box does not clip it. -->
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate x:DataType="m:MidiDeviceInfo">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <PathIcon Data="{StaticResource IconModule}" Width="14" Height="14"
-                                                              ToolTip.Tip="{x:Static l:Strings.DeviceAudioPlugin}"
-                                                              AutomationProperties.Name="{x:Static l:Strings.DeviceAudioPlugin}"
-                                                              IsVisible="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static m:MidiDeviceKind.AudioPlugin}}" />
-                                                    <TextBlock Text="{Binding Name}" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding EditedMap.Ports}"
+                                      AutomationProperties.Name="{x:Static l:Strings.PortMapPorts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PortSlotViewModel">
                                     <!--
-                                      Off with a DEF loaded. These two reach up the tree to the
-                                      window's view model, not the slot's, and are named by their
-                                      port, since every row has the same two.
+                                      The device list takes whatever width the row has left, so the
+                                      button stays inside the outline at the window's narrowest and
+                                      a long device name gets the room when the window is wider.
                                     -->
-                                    <CheckBox Grid.Column="3" Content="{x:Static l:Strings.PortMapReset}" Margin="0,0,6,0"
-                                              AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapResetOf}}"
-                                              IsChecked="{Binding Reset}"
-                                              IsEnabled="{Binding $parent[Window].((vm:MainViewModel)DataContext).ResetPortsEditable}" />
-                                    <Button Grid.Column="4" Content="{x:Static l:Strings.PortMapClearPort}"
-                                            AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapClearPortOf}}"
-                                            Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ClearPortCommand}"
-                                            CommandParameter="{Binding}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                    <Grid ColumnDefinitions="22,14,*,Auto,Auto" Margin="0,2">
+                                        <TextBlock Text="{Binding Label}" FontFamily="Consolas"
+                                                   VerticalAlignment="Center" Opacity="0.75" />
+                                        <!-- Whether the device is open, per device: see StateMark. -->
+                                        <TextBlock Grid.Column="1" Text="{Binding StateMark}"
+                                                   FontSize="10" VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   ToolTip.Tip="{Binding StateText}" />
+                                        <ComboBox Grid.Column="2" Margin="6,0"
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="{Binding Label}"
+                                                  ItemsSource="{Binding Devices}"
+                                                  SelectedItem="{Binding Device}"
+                                                  PlaceholderText="{Binding Placeholder}">
+                                            <!-- Plugins wear the Audio Plugins menu's icon, before the name so a narrow box does not clip it. -->
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="m:MidiDeviceInfo">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <PathIcon Data="{StaticResource IconModule}" Width="14" Height="14"
+                                                                  ToolTip.Tip="{x:Static l:Strings.DeviceAudioPlugin}"
+                                                                  AutomationProperties.Name="{x:Static l:Strings.DeviceAudioPlugin}"
+                                                                  IsVisible="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static m:MidiDeviceKind.AudioPlugin}}" />
+                                                        <TextBlock Text="{Binding Name}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <!--
+                                          Off with a DEF loaded. These two reach up the tree to the
+                                          window's view model, not the slot's, and are named by their
+                                          port, since every row has the same two.
+                                        -->
+                                        <CheckBox Grid.Column="3" Content="{x:Static l:Strings.PortMapReset}" Margin="0,0,6,0"
+                                                  AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapResetOf}}"
+                                                  IsChecked="{Binding Reset}"
+                                                  IsEnabled="{Binding $parent[Window].((vm:MainViewModel)DataContext).ResetPortsEditable}" />
+                                        <Button Grid.Column="4" Content="{x:Static l:Strings.PortMapClearPort}"
+                                                AutomationProperties.Name="{Binding Label, StringFormat={x:Static l:Strings.PortMapClearPortOf}}"
+                                                Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ClearPortCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <c:TipRow Margin="0,6,0,0">
+                            <CheckBox Content="{x:Static l:Strings.PortMapSplitParts}"
+                                      IsChecked="{Binding EditedMap.SplitParts}"
+                                      AutomationProperties.Name="{x:Static l:Strings.PortMapSplitParts}" />
+                            <c:InfoTip Text="{x:Static l:Strings.PortMapSplitPartsTip}" />
+                        </c:TipRow>
+
+                        <StackPanel Classes="row" Margin="0,6,0,0">
+                            <TextBlock Text="{x:Static l:Strings.PortMapTransferRate}" VerticalAlignment="Center"
+                                       Opacity="0.75" />
+                            <ComboBox Width="220" ItemsSource="{Binding TransferRates}"
+                                      AutomationProperties.Name="{x:Static l:Strings.PortMapTransferRate}"
+                                      SelectedValueBinding="{ReflectionBinding Value}"
+                                      SelectedValue="{Binding EditedMap.TransferRate}" />
+                        </StackPanel>
+                    </StackPanel>
                 </HeaderedContentControl>
 
                 <!--

@@ -178,6 +178,32 @@ public class PortMapViewModelTests
     }
 
     [Fact]
+    public void TheTransferRateIsStoredAndReadBack()
+    {
+        var model = new PortMap();
+        PortMapViewModel map = Open(model);
+        Assert.Equal(0, map.TransferRate);
+
+        map.TransferRate = 3125;
+
+        Assert.Equal(3125, model.TransferRate);
+        Assert.Equal(3125, Open(model).TransferRate);
+    }
+
+    [Fact]
+    public void SplittingThePartsIsStoredAndReadBack()
+    {
+        var model = new PortMap();
+        PortMapViewModel map = Open(model);
+        Assert.False(map.SplitParts);
+
+        map.SplitParts = true;
+
+        Assert.True(model.SplitParts);
+        Assert.True(Open(model).SplitParts);
+    }
+
+    [Fact]
     public void TheResetPortsAreWrittenOnlyWhenEditedByHand()
     {
         var model = new PortMap { ResetPorts = ["A", "C"] };
