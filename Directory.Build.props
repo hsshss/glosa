@@ -26,7 +26,7 @@
     defined. Whether it runs on this system is found at run time.
   -->
   <PropertyGroup>
-    <BrackVersion>1.0.0</BrackVersion>
+    <BrackVersion>1.1.0</BrackVersion>
     <BrackProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../brack/bindings/dotnet/Brack/Brack.csproj'))</BrackProject>
     <BrackSource Condition="'$(UseBrackPackage)' != 'true' and Exists('$(BrackProject)')">Project</BrackSource>
     <BrackSource Condition="'$(BrackSource)' == '' and '$(BrackVersion)' != ''">Package</BrackSource>

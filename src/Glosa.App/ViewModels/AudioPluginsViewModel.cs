@@ -172,6 +172,9 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
         _sampleRate = SampleRates.First(choice => (int)choice.Value == rate);
         OnPropertyChanged(nameof(SampleRate));
 
+        _loadSerially = _rack.LoadPluginsSerially;
+        OnPropertyChanged(nameof(LoadSerially));
+
         SettingsShown = true;
     }
 
@@ -206,6 +209,21 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
             OnPropertyChanged();
             var buffer = TimeSpan.FromMilliseconds((int)value.Value);
             _ = Change(null, () => _rack.Buffer = buffer);
+        }
+    }
+
+    private bool _loadSerially;
+
+    /// <summary>Whether the rack's plugins load one after another, from the next start.</summary>
+    public bool LoadSerially
+    {
+        get => _loadSerially;
+        set
+        {
+            if (value == _loadSerially) return;
+            _loadSerially = value;
+            OnPropertyChanged();
+            _ = Change(null, () => _rack.LoadPluginsSerially = value);
         }
     }
 

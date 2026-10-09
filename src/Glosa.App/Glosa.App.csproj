@@ -87,6 +87,16 @@
           CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
+  <!-- Brack's notices, from the checkout or the package the app was published with. -->
+  <Target Name="CopyBrackNotices" AfterTargets="Publish" Condition="'$(BrackSource)' != ''">
+    <PropertyGroup>
+      <_BrackNotices Condition="'$(BrackSource)' == 'Project'">$([System.IO.Path]::GetFullPath('$(BrackProject)/../../../../THIRD_PARTY_NOTICES.md'))</_BrackNotices>
+      <_BrackNotices Condition="'$(BrackSource)' == 'Package'">$(NuGetPackageRoot)brack.net/$(BrackVersion)/THIRD_PARTY_NOTICES.md</_BrackNotices>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_BrackNotices)')" Text="Brack's THIRD_PARTY_NOTICES.md was not found at $(_BrackNotices)." />
+    <Copy SourceFiles="$(_BrackNotices)" DestinationFiles="$(PublishDir)licenses\Brack-THIRD_PARTY_NOTICES.md" />
+  </Target>
+
   <!-- The runtime's own notices, from the runtime pack the app was published with. -->
   <Target Name="CopyRuntimeNotices" AfterTargets="Publish" Condition="'$(SelfContained)' == 'true'">
     <ItemGroup>

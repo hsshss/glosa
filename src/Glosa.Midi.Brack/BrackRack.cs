@@ -227,6 +227,20 @@ public sealed class BrackRack : IDisposable
         }
     }
 
+    /// <summary>
+    /// Whether the session's plugins load one after another rather than all at once; kept in the
+    /// session, so it takes effect from the next load (IMPLEMENTATION.md, "Brack バックエンド").
+    /// </summary>
+    public bool LoadPluginsSerially
+    {
+        get => _engine.GetConfig().LoadPluginsSerially;
+        set
+        {
+            WaitLoaded();
+            Run(() => _engine.SetConfig(_engine.GetConfig() with { LoadPluginsSerially = value }));
+        }
+    }
+
     /// <summary>The gain on all the plugins' sound, linear (1 = 0 dB); kept in the session.</summary>
     /// <remarks>Never blocks. Set before the session has loaded, it gives way to the session's.</remarks>
     public float MasterGain

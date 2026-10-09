@@ -19,6 +19,7 @@ It also emulates one module on another, using TMIDI Player's definition files.
   Which of these are used, and in what order, is chosen in Preferences. When the names give no answer, the song's MIDI data is looked at too.
 - **Port maps** — Connects a different MIDI device to each of the six outputs, ports A to F.
   Several arrangements can be kept under their own names, and switched automatically to suit each song's target module.
+- **Audio plugins** — CLAP, VST3 and VST2 instrument plugins connect to the ports just as MIDI devices do.
 - **Automatic tone map switching** — Plays songs made for older models with that model's tone map.
   - With an SC-88 or later as the output module, songs for the SC-55, SC-88 and so on are played with that model's map.
   - With an MU100 or later as the output module, songs for the MU50, MU80 and MU90 are played with MU Basic.
@@ -48,6 +49,7 @@ A song written for a different module is played with the differences converted (
   - On Windows, virtual MIDI ports such as loopMIDI can be used.
   - On macOS, the IAC Driver in Audio MIDI Setup and the virtual ports software synthesizers create can be used.
   - On Linux, ALSA sequencer ports can be used (USB MIDI devices, ports software synthesizers create, and Midi Through).
+- Or CLAP, VST3 and VST2 instrument plugins ([Audio plugins](#audio-plugins))
 
 No .NET runtime is needed (the release carries its own).
 
@@ -88,6 +90,24 @@ In **Settings → Port Map Settings...**, assign MIDI devices to ports A to F.
 Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for each song from its target module; choosing a map fixes it to that map.
 
 <img src="images/port-map-settings.png" width="560" alt="Port Map Settings: a map for the MU2000, used for songs whose target module is the MU2000, MU1000 or MU128">
+
+### Audio plugins
+
+**Settings → Audio Plugins...** sets up the rack of instrument plugins to use.
+
+- Instruments in the standard CLAP, VST3 and VST2 folders are listed on the right.
+  A double click or **Add** puts one in the rack.
+  One kept anywhere else is added with **From File...**.
+- The MIDI ports of the plugins in the rack can be chosen in Port Map Settings just like other MIDI devices.
+  The list marks them as plugins.
+- Right-clicking a plugin offers to open its editor, rename it, reload it and remove it.
+  Port maps follow a renamed plugin.
+- What is changed in an editor is saved with the rack.
+- Plugins built for another architecture than Glosa's work too (32-bit plugins in the x64 build on Windows, for example).
+- **Audio Output** in the settings chooses the output device, the sample rate and the buffer length.
+  When a plugin fails because several load at once, turn on **Load plugins one at a time**.
+- While any port map uses a plugin, a master volume shows above the seek bar.
+  It acts on the plugins' sound only.
 
 ### Adding and playing songs
 
@@ -161,6 +181,8 @@ Linux    ~/.config/glosa/
 
 - `settings.yaml` — settings
 - `playlists\*.yaml` — playlists (one file each)
+- `brack-session.json` — the audio plugins' rack, with each plugin's settings
+- `brack-plugin-cache.json` — what the search for instrument plugins found
 
 When started with `--config`, that folder is used instead.
 

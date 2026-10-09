@@ -247,6 +247,24 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Load plugins one at a time.
+        /// </summary>
+        public static string AudioPluginsLoadSerially {
+            get {
+                return ResourceManager.GetString("AudioPluginsLoadSerially", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to For plugins that fail when several of them load at once. When on, the rack&apos;s plugins load one after another, which takes longer. Takes effect the next time Glosa starts..
+        /// </summary>
+        public static string AudioPluginsLoadSeriallyTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsLoadSeriallyTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The share of the time the plugins take to render. Near 100%, the sound breaks up..
         /// </summary>
         public static string AudioPluginsLoadTip {
