@@ -87,6 +87,12 @@
   <data name="AudioPluginsLoad" xml:space="preserve">
     <value>CPU</value>
   </data>
+  <data name="AudioPluginsLoadSerially" xml:space="preserve">
+    <value>Load plugins one at a time</value>
+  </data>
+  <data name="AudioPluginsLoadSeriallyTip" xml:space="preserve">
+    <value>For plugins that fail when several of them load at once. When on, the rack's plugins load one after another, which takes longer. Takes effect the next time Glosa starts.</value>
+  </data>
   <data name="AudioPluginsLoadTip" xml:space="preserve">
     <value>The share of the time the plugins take to render. Near 100%, the sound breaks up.</value>
   </data>

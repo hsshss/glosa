@@ -123,7 +123,7 @@
               narrower than its column would sit in the middle of it. The settings wait for the
               rack to load, before which they are Brack's defaults.
             -->
-            <Grid RowDefinitions="Auto,Auto">
+            <Grid RowDefinitions="Auto,Auto,Auto">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1000*" MinWidth="120" MaxWidth="280" />
@@ -175,6 +175,11 @@
                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}"
                               AutomationProperties.Name="{x:Static l:Strings.AudioPluginsBuffer}" />
                 </StackPanel>
+                <c:TipRow Grid.Row="2" Grid.ColumnSpan="4" Margin="0,8,0,0">
+                    <CheckBox Content="{x:Static l:Strings.AudioPluginsLoadSerially}" IsChecked="{Binding LoadSerially}"
+                              IsEnabled="{Binding SettingsShown}" />
+                    <c:InfoTip Text="{x:Static l:Strings.AudioPluginsLoadSeriallyTip}" />
+                </c:TipRow>
             </Grid>
         </HeaderedContentControl>
     </Grid>

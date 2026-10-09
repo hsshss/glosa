@@ -84,6 +84,12 @@
   <data name="AudioPluginsLoad" xml:space="preserve">
     <value>CPU</value>
   </data>
+  <data name="AudioPluginsLoadSerially" xml:space="preserve">
+    <value>プラグインを1つずつ読み込む</value>
+  </data>
+  <data name="AudioPluginsLoadSeriallyTip" xml:space="preserve">
+    <value>複数同時に読み込むとエラーになるプラグインのための設定です。チェックを入れると、ラックのプラグインを1つずつ読み込みます。読み込みは遅くなります。Glosa を次に起動したときから効きます。</value>
+  </data>
   <data name="AudioPluginsLoadTip" xml:space="preserve">
     <value>プラグインが音を作るのにかかった時間の割合です。100%に近づくと音が途切れます。</value>
   </data>

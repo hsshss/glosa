@@ -204,6 +204,19 @@ public sealed class BrackRackTests : IDisposable
     }
 
     [Fact]
+    public void LoadingThePluginsOneAtATimeIsKept()
+    {
+        using (BrackRack rack = Rack())
+        {
+            Assert.False(rack.LoadPluginsSerially);
+            rack.LoadPluginsSerially = true;
+        }
+
+        using BrackRack again = Rack();
+        Assert.True(again.LoadPluginsSerially);
+    }
+
+    [Fact]
     public void TheMasterGainIsKept()
     {
         // Not Rack(), whose gain is a change.
