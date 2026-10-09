@@ -5,13 +5,47 @@ the third-party material below, each under its own license.
 
 - **In the source** — code or data that Glosa follows or was generated from.
 - **In the published app** — the .NET runtime and the libraries a published Glosa carries
-  in its `libs` folder.
+  in its `libs` and `runtimes` folders.
 
-The runtime and two of the libraries carry notices of their own for the material they
+The runtime and three of the libraries carry notices of their own for the material they
 incorporate; those are reproduced unchanged in the `licenses` folder, beside the Apache
 License that abseil-cpp, part of ANGLE, is under.
 
 # In the source
+
+## Brack
+
+Hosts the audio plugins: `Brack.Net.dll`, and in `runtimes` its native library (`brack.dll`
+on Windows, `libbrack.dylib` on macOS, `libbrack.so` on Linux) and its plugin hosts
+(`brack-host-*`). They incorporate CLAP, the VST 3 pluginterfaces, vst2sdk, r8brain-free-src,
+miniaudio, nlohmann/json and Windows MIDI Services' interfaces; their notices are in
+`licenses/Brack-THIRD_PARTY_NOTICES.md`, copied from the Brack the app was published with.
+
+<https://github.com/hsshss/brack>
+
+```
+MIT License
+
+Copyright (c) 2026 hsshss
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## rcm2smf
 
