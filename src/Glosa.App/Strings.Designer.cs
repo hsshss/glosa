@@ -139,6 +139,24 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add Effect....
+        /// </summary>
+        public static string AudioPluginsAddEffect {
+            get {
+                return ResourceManager.GetString("AudioPluginsAddEffect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Effect to {0}.
+        /// </summary>
+        public static string AudioPluginsAddEffectTitle {
+            get {
+                return ResourceManager.GetString("AudioPluginsAddEffectTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to From File....
         /// </summary>
         public static string AudioPluginsAddFile {
@@ -153,6 +171,24 @@ namespace Glosa.App {
         public static string AudioPluginsAdding {
             get {
                 return ResourceManager.GetString("AudioPluginsAdding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Instrument....
+        /// </summary>
+        public static string AudioPluginsAddInstrument {
+            get {
+                return ResourceManager.GetString("AudioPluginsAddInstrument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Instrument.
+        /// </summary>
+        public static string AudioPluginsAddInstrumentTitle {
+            get {
+                return ResourceManager.GetString("AudioPluginsAddInstrumentTitle", resourceCulture);
             }
         }
         
@@ -184,6 +220,33 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uncheck to let the sound through this effect unprocessed..
+        /// </summary>
+        public static string AudioPluginsBypassTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsBypassTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The share of the time this instrument and its effects take to render: on average, and the most in the last second..
+        /// </summary>
+        public static string AudioPluginsChainLoadTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsChainLoadTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Went past full scale {0} times. Click to clear..
+        /// </summary>
+        public static string AudioPluginsClipTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsClipTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System default.
         /// </summary>
         public static string AudioPluginsDefaultDevice {
@@ -211,11 +274,20 @@ namespace Glosa.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Instruments.
+        ///   Looks up a localized string similar to Search by name or vendor.
         /// </summary>
-        public static string AudioPluginsFound {
+        public static string AudioPluginsFilter {
             get {
-                return ResourceManager.GetString("AudioPluginsFound", resourceCulture);
+                return ResourceManager.GetString("AudioPluginsFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The effects found in the standard CLAP, VST3 and VST2 folders that are built for {0}: an effect must be built for the same CPU as what it goes on. To load one kept somewhere else, use From File..
+        /// </summary>
+        public static string AudioPluginsFoundEffectsTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsFoundEffectsTip", resourceCulture);
             }
         }
         
@@ -229,20 +301,20 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to In.
+        /// </summary>
+        public static string AudioPluginsIn {
+            get {
+                return ResourceManager.GetString("AudioPluginsIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Level.
         /// </summary>
         public static string AudioPluginsLevel {
             get {
                 return ResourceManager.GetString("AudioPluginsLevel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CPU.
-        /// </summary>
-        public static string AudioPluginsLoad {
-            get {
-                return ResourceManager.GetString("AudioPluginsLoad", resourceCulture);
             }
         }
         
@@ -265,11 +337,83 @@ namespace Glosa.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The share of the time the plugins take to render. Near 100%, the sound breaks up..
+        ///   Looks up a localized string similar to The share of the time the plugins take to render: on average, and the most in the last second. Near 100%, the sound breaks up..
         /// </summary>
         public static string AudioPluginsLoadTip {
             get {
                 return ResourceManager.GetString("AudioPluginsLoadTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CPU {0:0.0}% (max {1:0.0}%).
+        /// </summary>
+        public static string AudioPluginsLoadValue {
+            get {
+                return ResourceManager.GetString("AudioPluginsLoadValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Master.
+        /// </summary>
+        public static string AudioPluginsMaster {
+            get {
+                return ResourceManager.GetString("AudioPluginsMaster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The share of the time the master&apos;s effects take to render: on average, and the most in the last second..
+        /// </summary>
+        public static string AudioPluginsMasterLoadTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsMasterLoadTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The master&apos;s effects process the mix of every instrument&apos;s sound, in order from the top, before the master volume. They must be built for the same CPU as Glosa..
+        /// </summary>
+        public static string AudioPluginsMasterTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsMasterTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lights while MIDI arrives. {0} messages so far..
+        /// </summary>
+        public static string AudioPluginsMidiTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsMidiTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More.
+        /// </summary>
+        public static string AudioPluginsMore {
+            get {
+                return ResourceManager.GetString("AudioPluginsMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No instruments yet. Add one with Add Instrument..
+        /// </summary>
+        public static string AudioPluginsNone {
+            get {
+                return ResourceManager.GetString("AudioPluginsNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out.
+        /// </summary>
+        public static string AudioPluginsOut {
+            get {
+                return ResourceManager.GetString("AudioPluginsOut", resourceCulture);
             }
         }
         
@@ -283,6 +427,42 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dropouts: {0}.
+        /// </summary>
+        public static string AudioPluginsOverruns {
+            get {
+                return ResourceManager.GetString("AudioPluginsOverruns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How many times since the audio device opened the plugins did not render in time. The sound can break up each time. A longer buffer makes it rarer..
+        /// </summary>
+        public static string AudioPluginsOverrunsTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsOverrunsTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}  {1} kHz  {2} ch.
+        /// </summary>
+        public static string AudioPluginsPlaying {
+            get {
+                return ResourceManager.GetString("AudioPluginsPlaying", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}  {1} kHz  {2} ch  (plugins at {3} kHz).
+        /// </summary>
+        public static string AudioPluginsPlayingConverted {
+            get {
+                return ResourceManager.GetString("AudioPluginsPlayingConverted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rack.
         /// </summary>
         public static string AudioPluginsRack {
@@ -292,7 +472,7 @@ namespace Glosa.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Each MIDI port of a plugin here is an output device named after the plugin: choose it for a port in Port Map Settings. A plugin renamed keeps its place in the port maps. Drag to reorder; the devices are listed in this order. What is set in a plugin&apos;s editor is saved with the rack..
+        ///   Looks up a localized string similar to Each MIDI port of an instrument here is an output device named after it: choose it for a port in Port Map Settings. An instrument renamed keeps its place in the port maps. An instrument&apos;s effects process its sound in order, from the top. Drag to reorder the instruments and the effects; the devices are listed in this order. What is set in a plugin&apos;s editor is saved with the rack..
         /// </summary>
         public static string AudioPluginsRackTip {
             get {
@@ -396,6 +576,24 @@ namespace Glosa.App {
         public static string AudioPluginsScanning {
             get {
                 return ResourceManager.GetString("AudioPluginsScanning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stopped.
+        /// </summary>
+        public static string AudioPluginsStopped {
+            get {
+                return ResourceManager.GetString("AudioPluginsStopped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The audio runs while a song plays through a plugin, or while an editor is open..
+        /// </summary>
+        public static string AudioPluginsStoppedTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsStoppedTip", resourceCulture);
             }
         }
         

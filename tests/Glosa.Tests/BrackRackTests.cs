@@ -7,14 +7,21 @@ using Glosa.Midi.Brack;
 namespace Glosa.Tests;
 
 /// <summary>
-/// The rack against Brack itself. Tests that play need Brack's test instrument, built beside
-/// this repository; without it they pass without running.
+/// The rack against Brack itself. Tests that play need Brack's test instrument and effect,
+/// built beside this repository; without them they pass without running.
 /// </summary>
 public sealed class BrackRackTests : IDisposable
 {
-    private static readonly string? Synth = typeof(BrackRackTests).Assembly
+    private static readonly string? Synth = Built("BrackTestSynth");
+
+    /// <summary>Halves what comes to it (<see cref="GainId"/>).</summary>
+    private static readonly string? Gain = Built("BrackTestGain");
+
+    private const string GainId = "brack.test.gain";
+
+    private static string? Built(string key) => typeof(BrackRackTests).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .FirstOrDefault(attribute => attribute.Key == "BrackTestSynth")?.Value;
+        .FirstOrDefault(attribute => attribute.Key == key)?.Value;
 
     private readonly string _folder = Path.Combine(Path.GetTempPath(), $"glosa-brack-{Guid.NewGuid():N}");
 
@@ -41,6 +48,32 @@ public sealed class BrackRackTests : IDisposable
         Assert.True(Path.Exists(Synth), $"Brack's test instrument has not been built: {Synth}");
         return true;
     }
+
+    private static bool HaveGain()
+    {
+        if (!HaveSynth() || Gain is null) return false;
+        Assert.True(Path.Exists(Gain), $"Brack's test effect has not been built: {Gain}");
+        return true;
+    }
+
+    /// <summary>Plays a held note on the rack's first instrument, returning the output that plays it.</summary>
+    private static IMidiOutput Playing(BrackRack rack)
+    {
+        IMidiOutput output = Output(rack);
+        output.Open();
+        output.SendShort(0x90 | 69 << 8 | 127 << 16);
+        return output;
+    }
+
+    /// <summary>Waits until <paramref name="level"/> settles inside a band, the meters falling away slowly.</summary>
+    private static void Settles(BrackRack rack, Func<RackMeters, float> level, float low, float high, string what)
+        => Assert.True(SpinWait.SpinUntil(() => rack.Meters() is { Running: true } meters
+                                                && level(meters) is var peak && peak >= low && peak <= high,
+                                          TimeSpan.FromSeconds(10)),
+                       $"{what}: {level(rack.Meters())}, not within {low} to {high}");
+
+    private static float InstrumentPeak(RackMeters meters, string id)
+        => meters.Instruments.TryGetValue(id, out ChainMeters? chain) ? chain.Output.Max(level => level.Peak) : 0;
 
     private static IMidiOutput Output(BrackRack rack) => rack.Outputs.Create(rack.Outputs.Enumerate()[0].Id);
 
@@ -94,15 +127,118 @@ public sealed class BrackRackTests : IDisposable
         rack.Add(Synth!);
         Assert.False(rack.Meters().Running);
 
+        string id = rack.Plugins[0].Id;
         IMidiOutput output = Output(rack);
         output.Open();
         output.SendShort(0x90 | 60 << 8 | 100 << 16);
-        Assert.True(SpinWait.SpinUntil(() => rack.Meters() is { Running: true } meters && meters.Peaks.Any(peak => peak > 0),
+        Assert.True(SpinWait.SpinUntil(() => rack.Meters() is { Running: true } meters
+                                             && meters.Output.Any(level => level.Peak > 0)
+                                             && meters.MasterInput.Any(level => level.Peak > 0)
+                                             && meters.Instruments[id] is { Active: true, MidiMessages: > 0 } chain
+                                             && chain.Output.Count == 2 && chain.Output.Any(level => level.Peak > 0),
                                        TimeSpan.FromSeconds(5)),
                     "the meters showed no sound");
+        RackMeters running = rack.Meters();
+        Assert.True(running.OutputRate > 0 && running.PluginRate > 0 && running.Channels >= 2,
+                    $"{running.OutputRate} Hz, plugins {running.PluginRate} Hz, {running.Channels} channels");
 
         output.Close();
         Assert.True(SpinWait.SpinUntil(() => !rack.Meters().Running, TimeSpan.FromSeconds(10)), "the meters did not stop");
+        Assert.Empty(rack.Meters().Instruments);
+    }
+
+    [Fact]
+    public void AnEffectAddedToAPlayingInstrumentProcessesItsSoundUnlessBypassed()
+    {
+        if (!HaveGain()) return;
+        using BrackRack rack = Rack();
+        // The second, playing the same note without the effect, is what the first is measured against.
+        rack.Add(Synth!);
+        rack.Add(Synth!);
+        string id = rack.Plugins[0].Id, dry = rack.Plugins[1].Id;
+        using IMidiOutput output = Playing(rack);
+        using IMidiOutput beside = rack.Outputs.Create(rack.Outputs.Enumerate()[1].Id);
+        beside.Open();
+        beside.SendShort(0x90 | 69 << 8 | 127 << 16);
+
+        // Straight after the note, which may arrive while Brack holds the chain to insert the effect.
+        rack.AddEffect(id, 0, Gain!, GainId);
+        RackPlugin effect = Assert.Single(rack.Plugins[0].Effects);
+        Assert.Equal((RackPluginState.Ready, false), (effect.State, effect.Bypass));
+        Assert.Empty(rack.Plugins[1].Effects);
+        Settles(rack, meters => Against(meters, id, dry), 0.4f, 0.6f, "halved");
+
+        rack.SetBypass(effect.Id, true);
+        Assert.True(rack.Plugins[0].Effects[0].Bypass);
+        Settles(rack, meters => Against(meters, id, dry), 0.9f, 1.1f, "bypassed");
+
+        static float Against(RackMeters meters, string id, string dry)
+            => InstrumentPeak(meters, dry) is > 0.1f and var reference ? InstrumentPeak(meters, id) / reference : 0;
+    }
+
+    [Fact]
+    public void TheMastersEffectProcessesTheMix()
+    {
+        if (!HaveGain()) return;
+        using BrackRack rack = Rack();
+        rack.Add(Synth!);
+        using IMidiOutput output = Playing(rack);
+
+        rack.AddEffect(null, 0, Gain!, GainId);
+
+        Assert.Equal(RackPluginState.Ready, Assert.Single(rack.MasterEffects).State);
+        Assert.Empty(rack.Plugins[0].Effects);
+        Assert.True(SpinWait.SpinUntil(() => rack.Meters() is { Running: true } meters
+                                             && meters.MasterInput.Max(level => level.Peak) is > 0.1f and var input
+                                             && meters.MasterOutput.Max(level => level.Peak) is var processed
+                                             && processed > input * 0.4f && processed < input * 0.6f,
+                                       TimeSpan.FromSeconds(10)),
+                    "the master's effect did not halve the mix");
+    }
+
+    [Fact]
+    public void TheEffectsTheirBypassAndTheirNamesAreKeptAndNamedBeforeTheRackHasLoaded()
+    {
+        if (!HaveGain()) return;
+        using (BrackRack rack = Rack())
+        {
+            rack.Add(Synth!);
+            string id = rack.Plugins[0].Id;
+            rack.AddEffect(id, 0, Gain!, GainId);
+            rack.AddEffect(id, 1, Gain!, GainId);
+            rack.AddEffect(null, 0, Gain!, GainId);
+            RackPlugin[] effects = [.. rack.Plugins[0].Effects];
+            Assert.Empty(rack.Rename(effects[0].Id, "First"));
+            rack.Rename(effects[1].Id, "Second");
+            rack.SetBypass(effects[1].Id, true);
+            rack.Move(effects[1].Id, 0);
+            rack.Rename(rack.MasterEffects[0].Id, "Master");
+        }
+
+        using BrackRack again = BrackRack.TryCreate(SessionPath, out _)!;
+        // Listed at once, loaded or not.
+        Assert.Equal([("Second", true), ("First", false)], again.Plugins[0].Effects.Select(effect => (effect.Name, effect.Bypass)));
+        Assert.Equal(["Master"], again.MasterEffects.Select(effect => effect.Name));
+        again.WaitLoaded();
+        Assert.Equal([("Second", true), ("First", false)], again.Plugins[0].Effects.Select(effect => (effect.Name, effect.Bypass)));
+        Assert.All(again.Plugins[0].Effects.Concat(again.MasterEffects),
+                   effect => Assert.Equal(RackPluginState.Ready, effect.State));
+        Assert.Single(again.Outputs.Enumerate());
+    }
+
+    [Fact]
+    public void AnInstrumentRemovedTakesItsEffectsWithIt()
+    {
+        if (!HaveGain()) return;
+        using BrackRack rack = Rack();
+        rack.Add(Synth!);
+        rack.AddEffect(rack.Plugins[0].Id, 0, Gain!, GainId);
+        string effect = rack.Plugins[0].Effects[0].Id;
+
+        rack.Remove(rack.Plugins[0].Id);
+
+        Assert.Empty(rack.Plugins);
+        Assert.Throws<BrackException>(() => rack.SetBypass(effect, true));
     }
 
     [Fact]
@@ -301,7 +437,7 @@ public sealed class BrackRackTests : IDisposable
     public void EachNotePortIsAnOutputNumberedOnlyWhenThereIsMoreThanOne()
     {
         RackPlugin Plugin(string id, string name, int ports, RackPluginState state = RackPluginState.Ready)
-            => new(id, name, "VST3", "x64", state, string.Empty, true, ports);
+            => new(id, name, "VST3", "x64", state, string.Empty, true, ports, false, []);
 
         IReadOnlyList<MidiDeviceInfo> devices = BrackOutputFactory.Devices(
             [Plugin("sc", "SC-VA", 2), Plugin("piano", "Piano", 1), Plugin("fx", "No MIDI", 0),
