@@ -237,7 +237,7 @@ public sealed class BrackRack : IDisposable
                 _engine.SetConfig(_engine.GetConfig() with
                 {
                     AudioDevice = value,
-                    BufferFrames = Frames(buffer, ListedRate(value)),
+                    BufferFrames = Frames(buffer, OpenRate(value)),
                 });
             });
         }
@@ -265,17 +265,19 @@ public sealed class BrackRack : IDisposable
     private int DeviceRate()
         => _engine.GetCachedStatus() is { Mode: not EngineMode.Stopped, OutputSampleRate: > 0 and uint running }
             ? (int)running
-            : ListedRate(_engine.GetConfig().AudioDevice);
+            : OpenRate(_engine.GetConfig().AudioDevice);
 
-    /// <summary>The rate an output device would run at, as the system lists it; null or empty for the default.</summary>
-    private static int ListedRate(string? name)
+    /// <summary>The rate an output device would run at if opened now; null or empty for the default.</summary>
+    private static int OpenRate(string? name)
     {
-        IReadOnlyList<AudioDeviceInfo> devices = BrackLibrary.ListAudioDevices();
-        AudioDeviceInfo? device = name is { Length: > 0 }
-            ? devices.FirstOrDefault(info => info.Name == name)
-            : devices.FirstOrDefault(info => info.IsDefault);
-        // Shared, a device runs at its mixer's one rate; a device that is gone, at a common one.
-        return device?.SampleRates is { Count: > 0 } rates ? (int)rates.Max() : 48000;
+        try
+        {
+            return (int)BrackLibrary.AudioDeviceRate(name);
+        }
+        catch (BrackException)
+        {
+            return 48000;  // a device that is gone: a common rate
+        }
     }
 
     /// <summary>The rate the plugins run at, converted to the device's; 0 for the device's own. Kept in the session.</summary>
