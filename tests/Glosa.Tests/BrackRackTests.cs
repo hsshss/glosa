@@ -314,6 +314,8 @@ public sealed class BrackRackTests : IDisposable
         output.SendLong([0xF0, 0x7D, 0x63, 0x01, 0xF7]);
         Assert.True(SpinWait.SpinUntil(() => rack.Find(id)?.State == RackPluginState.Crashed, TimeSpan.FromSeconds(10)),
                     "the plugin did not crash");
+        var refused = Assert.Throws<MidiDeviceException>(() => output.SendShort(0x90 | 60 << 8 | 100 << 16));
+        Assert.Contains(rack.Find(id)!.Status, refused.Message);
         rack.Reload(id);
 
         Assert.Equal(("Lead", RackPluginState.Ready), (rack.Plugins[0].Name, rack.Plugins[0].State));

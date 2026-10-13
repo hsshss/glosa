@@ -487,12 +487,11 @@ public sealed class BrackRack : IDisposable
         {
             case MidiSendResult.NotFound: return "the plugin is no longer in the rack";
             case MidiSendResult.InvalidArgument: return "not a complete MIDI message";
+            case MidiSendResult.QueueFull: return "the plugin is not taking messages as fast as they come";
         }
-        // A plugin that crashed or failed stays in the rack, and its queue fills.
+        // Not loaded: Brack's status says why.
         Refresh();
-        return Find(id) is { State: RackPluginState.Crashed or RackPluginState.Failed } plugin
-            ? plugin.Status
-            : "the plugin is not taking messages as fast as they come";
+        return Find(id)?.Status ?? "the plugin is not loaded";
     }
 
     /// <remarks>Never throws: opening an output and closing the player wait for it.</remarks>
