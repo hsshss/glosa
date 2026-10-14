@@ -48,11 +48,23 @@
   <data name="AudioPluginsAdd" xml:space="preserve">
     <value>追加</value>
   </data>
+  <data name="AudioPluginsAddEffect" xml:space="preserve">
+    <value>エフェクトを追加...</value>
+  </data>
+  <data name="AudioPluginsAddEffectTitle" xml:space="preserve">
+    <value>{0} にエフェクトを追加</value>
+  </data>
   <data name="AudioPluginsAddFile" xml:space="preserve">
     <value>ファイルから...</value>
   </data>
   <data name="AudioPluginsAdding" xml:space="preserve">
     <value>{0} を読み込んでいます...</value>
+  </data>
+  <data name="AudioPluginsAddInstrument" xml:space="preserve">
+    <value>音源を追加...</value>
+  </data>
+  <data name="AudioPluginsAddInstrumentTitle" xml:space="preserve">
+    <value>音源の追加</value>
   </data>
   <data name="AudioPluginsBuffer" xml:space="preserve">
     <value>バッファ</value>
@@ -63,6 +75,15 @@
   <data name="AudioPluginsBufferTip" xml:space="preserve">
     <value>音声デバイスに1回に渡す長さです。長いほど重いプラグインやほかの処理があっても音が途切れにくくなります。代わりにプラグインの音は MIDI ポートの先の機械より遅れて鳴ります。</value>
   </data>
+  <data name="AudioPluginsBypassTip" xml:space="preserve">
+    <value>チェックを外すと、このエフェクトを通さずに鳴らします。</value>
+  </data>
+  <data name="AudioPluginsChainLoadTip" xml:space="preserve">
+    <value>この音源とそのエフェクトが音を作るのにかかった時間の割合です。平均と、直近1秒の最大です。</value>
+  </data>
+  <data name="AudioPluginsClipTip" xml:space="preserve">
+    <value>フルスケールを {0} 回超えました。クリックで消えます。</value>
+  </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>システムの既定</value>
   </data>
@@ -72,17 +93,20 @@
   <data name="AudioPluginsEditor" xml:space="preserve">
     <value>エディタ</value>
   </data>
-  <data name="AudioPluginsFound" xml:space="preserve">
-    <value>音源</value>
+  <data name="AudioPluginsFilter" xml:space="preserve">
+    <value>名前かベンダーで絞り込み</value>
+  </data>
+  <data name="AudioPluginsFoundEffectsTip" xml:space="preserve">
+    <value>CLAP・VST3・VST2 の標準のフォルダで見つかったエフェクトのうち、{0} 用のものです。エフェクトは、かける先と同じアーキテクチャのものだけを使えます。ほかの場所にあるものは「ファイルから...」で読み込みます。</value>
   </data>
   <data name="AudioPluginsFoundTip" xml:space="preserve">
     <value>CLAP・VST3・VST2 の標準のフォルダで見つかった音源です。ほかの場所にあるプラグインは「ファイルから...」で読み込みます。</value>
   </data>
+  <data name="AudioPluginsIn" xml:space="preserve">
+    <value>入力</value>
+  </data>
   <data name="AudioPluginsLevel" xml:space="preserve">
     <value>レベル</value>
-  </data>
-  <data name="AudioPluginsLoad" xml:space="preserve">
-    <value>CPU</value>
   </data>
   <data name="AudioPluginsLoadSerially" xml:space="preserve">
     <value>プラグインを1つずつ読み込む</value>
@@ -91,16 +115,52 @@
     <value>複数同時に読み込むとエラーになるプラグインのための設定です。チェックを入れると、ラックのプラグインを1つずつ読み込みます。読み込みは遅くなります。Glosa を次に起動したときから効きます。</value>
   </data>
   <data name="AudioPluginsLoadTip" xml:space="preserve">
-    <value>プラグインが音を作るのにかかった時間の割合です。100%に近づくと音が途切れます。</value>
+    <value>プラグインが音を作るのにかかった時間の割合です。平均と、直近1秒の最大です。100%に近づくと音が途切れます。</value>
+  </data>
+  <data name="AudioPluginsLoadValue" xml:space="preserve">
+    <value>CPU {0:0.0}%（最大 {1:0.0}%）</value>
+  </data>
+  <data name="AudioPluginsMaster" xml:space="preserve">
+    <value>マスター</value>
+  </data>
+  <data name="AudioPluginsMasterLoadTip" xml:space="preserve">
+    <value>マスターのエフェクトが音を作るのにかかった時間の割合です。平均と、直近1秒の最大です。</value>
+  </data>
+  <data name="AudioPluginsMasterTip" xml:space="preserve">
+    <value>マスターのエフェクトは、すべての音源の音をミックスしたものに、上から順にかかります。マスターボリュームの前にかかります。Glosa と同じアーキテクチャのものだけを使えます。</value>
+  </data>
+  <data name="AudioPluginsMidiTip" xml:space="preserve">
+    <value>MIDI が届くと点灯します。これまでに {0} 個届きました。</value>
+  </data>
+  <data name="AudioPluginsMore" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="AudioPluginsNone" xml:space="preserve">
+    <value>音源はまだありません。「音源を追加...」で追加します。</value>
+  </data>
+  <data name="AudioPluginsOut" xml:space="preserve">
+    <value>出力</value>
   </data>
   <data name="AudioPluginsOutput" xml:space="preserve">
     <value>オーディオ出力</value>
+  </data>
+  <data name="AudioPluginsOverruns" xml:space="preserve">
+    <value>途切れ {0} 回</value>
+  </data>
+  <data name="AudioPluginsOverrunsTip" xml:space="preserve">
+    <value>音声デバイスを開いてから、プラグインが音を作るのが間に合わなかった回数です。そのたびに音が途切れることがあります。バッファを長くすると減ります。</value>
+  </data>
+  <data name="AudioPluginsPlaying" xml:space="preserve">
+    <value>{0}  {1} kHz  {2} ch</value>
+  </data>
+  <data name="AudioPluginsPlayingConverted" xml:space="preserve">
+    <value>{0}  {1} kHz  {2} ch（プラグインは {3} kHz）</value>
   </data>
   <data name="AudioPluginsRack" xml:space="preserve">
     <value>ラック</value>
   </data>
   <data name="AudioPluginsRackTip" xml:space="preserve">
-    <value>ここにあるプラグインの MIDI ポートは、それぞれがプラグインの名前の出力デバイスになります。ポートマップ設定でポートに割り当てて使います。名前を変えても、ポートマップの割り当てはそのまま付いていきます。ドラッグで並べ替えられ、デバイスもこの順に並びます。プラグインのエディタで変えた設定は、ラックと一緒に保存されます。</value>
+    <value>ここにある音源の MIDI ポートは、それぞれが音源の名前の出力デバイスになります。ポートマップ設定でポートに割り当てて使います。名前を変えても、ポートマップの割り当てはそのまま付いていきます。音源のエフェクトは、上から順にかかります。音源とエフェクトはドラッグで並べ替えられ、デバイスも音源の順に並びます。プラグインのエディタで変えた設定は、ラックと一緒に保存されます。</value>
   </data>
   <data name="AudioPluginsReload" xml:space="preserve">
     <value>読み込み直す</value>
@@ -134,6 +194,12 @@
   </data>
   <data name="AudioPluginsScanning" xml:space="preserve">
     <value>プラグインを探しています...</value>
+  </data>
+  <data name="AudioPluginsStopped" xml:space="preserve">
+    <value>停止中</value>
+  </data>
+  <data name="AudioPluginsStoppedTip" xml:space="preserve">
+    <value>プラグインで曲を演奏している間と、エディタを開いている間だけ動きます。</value>
   </data>
   <data name="AudioPluginsTitle" xml:space="preserve">
     <value>オーディオプラグイン</value>

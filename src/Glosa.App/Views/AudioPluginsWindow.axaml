@@ -5,30 +5,196 @@
         xmlns:c="using:Glosa.App.Controls"
         x:Class="Glosa.App.Views.AudioPluginsWindow"
         x:DataType="vm:AudioPluginsViewModel"
-        Width="640" Height="520" MinWidth="520" MinHeight="360"
+        Width="760" Height="660" MinWidth="600" MinHeight="440"
         Title="{x:Static l:Strings.AudioPluginsTitle}">
+
+    <Window.Resources>
+        <!-- The palette's error colour (App.axaml), for what is wrong with a plugin. -->
+        <SolidColorBrush x:Key="ProblemBrush" Color="#FFFF7A7A" />
+        <SolidColorBrush x:Key="ClipBrush" Color="#FFFF5A5A" />
+        <!-- Warm against the cool accent the sound is drawn in, so MIDI and audio read apart. -->
+        <SolidColorBrush x:Key="MidiBrush" Color="#FFE3B341" />
+
+        <!-- An effect: on or bypassed, what it is, and the buttons for it. -->
+        <DataTemplate x:Key="EffectRowTemplate" x:DataType="vm:EffectRow">
+            <DockPanel Background="Transparent" ToolTip.Tip="{Binding Tip}">
+                <DockPanel.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{x:Static l:Strings.AudioPluginsEditor}"
+                                  Command="{Binding Owner.EditorCommand}" CommandParameter="{Binding Plugin}" />
+                        <MenuItem Header="{x:Static l:Strings.AudioPluginsRename}" Click="OnRename"
+                                  IsEnabled="{Binding Owner.Idle}" Icon="{StaticResource IconRename}" />
+                        <MenuItem Header="{x:Static l:Strings.AudioPluginsReload}"
+                                  Command="{Binding Owner.ReloadCommand}" CommandParameter="{Binding Plugin}" />
+                        <Separator />
+                        <MenuItem Header="{x:Static l:Strings.AudioPluginsRemove}"
+                                  Command="{Binding Owner.RemoveCommand}" CommandParameter="{Binding Plugin}"
+                                  Icon="{StaticResource IconDelete}" />
+                    </ContextMenu>
+                </DockPanel.ContextMenu>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="small" Content="{x:Static l:Strings.AudioPluginsEditor}"
+                            Command="{Binding Owner.EditorCommand}" CommandParameter="{Binding Plugin}"
+                            IsVisible="{Binding !Wrong}" />
+                    <Button Classes="small" Content="{x:Static l:Strings.AudioPluginsReload}"
+                            Command="{Binding Owner.ReloadCommand}" CommandParameter="{Binding Plugin}"
+                            IsVisible="{Binding Wrong}" />
+                    <Button Classes="small" Content="⋯" Click="OnMore"
+                            AutomationProperties.Name="{x:Static l:Strings.AudioPluginsMore}" />
+                </StackPanel>
+                <!-- Its place is kept while it cannot be turned on, so the names line up. -->
+                <Panel DockPanel.Dock="Left" Width="28">
+                    <CheckBox IsChecked="{Binding On, Mode=OneWay}" MinWidth="0" Padding="0"
+                              Command="{Binding Owner.BypassCommand}" CommandParameter="{Binding Plugin}"
+                              IsVisible="{Binding !Wrong}" ToolTip.Tip="{x:Static l:Strings.AudioPluginsBypassTip}"
+                              AutomationProperties.Name="{Binding Name}" />
+                </Panel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                               Classes.bypassed="{Binding !On}" />
+                    <TextBlock Text="{Binding Detail}" Classes="reading" IsVisible="{Binding !Wrong}" />
+                    <TextBlock Text="{Binding Detail}" Classes="problem" IsVisible="{Binding Wrong}" />
+                </StackPanel>
+            </DockPanel>
+        </DataTemplate>
+    </Window.Resources>
 
     <Window.Styles>
         <Style Selector="StackPanel.header">
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="Spacing" Value="4" />
         </Style>
-        <Style Selector="StackPanel.buttons">
-            <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="Spacing" Value="6" />
-            <Setter Property="Margin" Value="0,6,0,0" />
-        </Style>
         <Style Selector="TextBlock.status">
             <Setter Property="Opacity" Value="0.75" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Margin" Value="0,6,0,0" />
         </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Opacity" Value="0.75" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.reading">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.75" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.problem">
+            <Setter Property="Foreground" Value="{StaticResource ProblemBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- An instrument's card, and the master's, on the window's ground. -->
+        <Style Selector="Border.slot">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppLineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,6,6,6" />
+        </Style>
+        <Style Selector="Border.slot.wrong">
+            <Setter Property="BorderBrush" Value="{StaticResource ProblemBrush}" />
+        </Style>
+        <!-- The cards are the rows, with no highlight behind them; not the effects' rows inside. -->
+        <Style Selector="ListBox.cards > ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="ListBox.cards > ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.cards > ListBoxItem:selected Border.slot">
+            <Setter Property="BorderBrush" Value="{DynamicResource AppAccentDimBrush}" />
+        </Style>
+        <Style Selector="ListBox.effects > ListBoxItem" x:DataType="vm:EffectRow">
+            <Setter Property="Padding" Value="0,1,0,1" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+        </Style>
+        <Style Selector="TextBlock.bypassed">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <!-- Small buttons along a card's edge. -->
+        <Style Selector="Button.small">
+            <Setter Property="Padding" Value="8,1,8,2" />
+            <Setter Property="MinHeight" Value="22" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4,1" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.8" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <!-- A meter is a button that clears its clip lamp; it draws as the bars alone. -->
+        <Style Selector="Button.meter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.meter:pointerover /template/ ContentPresenter#PART_ContentPresenter,
+                         Button.meter:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.lamp">
+            <Setter Property="Width" Value="5" />
+            <Setter Property="Height" Value="5" />
+            <Setter Property="CornerRadius" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{DynamicResource AppLineBrush}" />
+        </Style>
+        <Style Selector="Border.lamp.lit">
+            <Setter Property="Background" Value="{StaticResource ClipBrush}" />
+        </Style>
+        <Style Selector="Ellipse.midi">
+            <Setter Property="Width" Value="6" />
+            <Setter Property="Height" Value="6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Fill" Value="{DynamicResource AppLineBrush}" />
+        </Style>
+        <Style Selector="Ellipse.midi.lit">
+            <Setter Property="Fill" Value="{StaticResource MidiBrush}" />
+        </Style>
     </Window.Styles>
 
-    <!-- The rack left, instruments right, audio output below. -->
-    <Grid Margin="12" ColumnDefinitions="*,12,*" RowDefinitions="*,Auto">
+    <Window.DataTemplates>
+        <!-- A bar a channel, and a lamp lit past full scale until clicked, shown once there are bars. -->
+        <DataTemplate x:DataType="vm:Meter">
+            <Button Classes="meter" Command="{Binding ClearCommand}" ToolTip.Tip="{Binding ClipTip}"
+                    AutomationProperties.Name="{x:Static l:Strings.AudioPluginsLevel}">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <ItemsControl ItemsSource="{Binding Levels}" Width="120" MinHeight="9" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="2" VerticalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <c:LevelBar Value="{Binding}" Height="3"
+                                            Track="{DynamicResource AppLineBrush}"
+                                            Fill="{DynamicResource AppAccentBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Border Classes="lamp" Classes.lit="{Binding Clipped}" IsVisible="{Binding Levels.Count}" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </Window.DataTemplates>
 
-        <HeaderedContentControl Grid.Column="0" Classes="group" Margin="0">
+    <!-- The rack above, the audio output below. -->
+    <Grid Margin="12" RowDefinitions="*,Auto">
+
+        <HeaderedContentControl Grid.Row="0" Classes="group" Margin="0">
             <HeaderedContentControl.Header>
                 <StackPanel Classes="header">
                     <TextBlock Text="{x:Static l:Strings.AudioPluginsRack}" VerticalAlignment="Center" />
@@ -38,144 +204,195 @@
             <DockPanel>
                 <TextBlock DockPanel.Dock="Bottom" Classes="status" Text="{Binding Status}"
                            IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <Button DockPanel.Dock="Left" Content="{x:Static l:Strings.AudioPluginsAddInstrument}"
+                            Click="OnAddInstrument" IsEnabled="{Binding Idle}" />
+                </DockPanel>
+
                 <!--
-                  Dragging a row reorders the plugins and their devices; a double click opens the
-                  editor; the right-click menu does the rest to the row under it.
+                  Dragging a card reorders the instruments and their devices, and dragging
+                  an effect its chain; a double click opens the editor.
                 -->
-                <ListBox ItemsSource="{Binding Plugins}" SelectedItem="{Binding SelectedPlugin}"
+                <ListBox Classes="plain cards" ItemsSource="{Binding Plugins}" SelectedItem="{Binding SelectedPlugin}"
                          AutomationProperties.Name="{x:Static l:Strings.AudioPluginsRack}"
-                         Loaded="OnRackLoaded" DoubleTapped="OnRackDoubleTapped"
-                         ContextRequested="OnRackContextRequested">
-                    <ListBox.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="{x:Static l:Strings.AudioPluginsEditor}" Command="{Binding EditorCommand}" />
-                            <MenuItem Header="{x:Static l:Strings.AudioPluginsRename}" Click="OnRename"
-                                      IsEnabled="{Binding CanRename}" Icon="{StaticResource IconRename}" />
-                            <MenuItem Header="{x:Static l:Strings.AudioPluginsReload}" Command="{Binding ReloadCommand}" />
-                            <Separator />
-                            <MenuItem Header="{x:Static l:Strings.AudioPluginsRemove}" Command="{Binding RemoveCommand}"
-                                      Icon="{StaticResource IconDelete}" />
-                        </ContextMenu>
-                    </ListBox.ContextMenu>
+                         Loaded="OnRackLoaded" DoubleTapped="OnRackDoubleTapped">
                     <!-- Without a name of its own, a row is read out as its view model's type name. -->
                     <ListBox.Styles>
-                        <Style Selector="ListBoxItem" x:DataType="vm:RackRow">
+                        <Style Selector="ListBox.cards > ListBoxItem" x:DataType="vm:RackRow">
                             <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
                         </Style>
                     </ListBox.Styles>
+                    <!--
+                      The cards, then the master, scrolling together; the master is no row and is
+                      not dragged. Not virtualized: below the scroll viewer's own content a
+                      virtualizing panel misjudges what is in view.
+                    -->
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.Template>
+                        <ControlTemplate>
+                            <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="{TemplateBinding Padding}" x:DataType="vm:AudioPluginsViewModel">
+                                    <TextBlock Text="{x:Static l:Strings.AudioPluginsNone}" Opacity="0.6" Margin="2,4,2,10"
+                                               IsVisible="{Binding !Plugins.Count}" />
+                                    <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                                    <Border Classes="slot">
+                                        <StackPanel Spacing="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="{x:Static l:Strings.AudioPluginsMaster}" FontWeight="SemiBold" FontSize="13"
+                                                           VerticalAlignment="Center" />
+                                                <c:InfoTip Text="{x:Static l:Strings.AudioPluginsMasterTip}" />
+                                            </StackPanel>
+                                            <!-- The mix before its effects and after; one meter while there are none. -->
+                                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3">
+                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsIn}"
+                                                           IsVisible="{Binding MasterEffects.Count}" />
+                                                <ContentControl Content="{Binding MasterInput}" VerticalAlignment="Center" />
+                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsOut}" Margin="8,0,0,0"
+                                                           IsVisible="{Binding MasterEffects.Count}" />
+                                                <ContentControl Content="{Binding MasterOutput}" VerticalAlignment="Center"
+                                                                IsVisible="{Binding MasterEffects.Count}" />
+                                                <TextBlock Classes="reading" Text="{Binding MasterLoad}" Margin="8,0,0,0"
+                                                           ToolTip.Tip="{x:Static l:Strings.AudioPluginsMasterLoadTip}" />
+                                            </StackPanel>
+                                            <ListBox Classes="plain effects" ItemsSource="{Binding MasterEffects}"
+                                                     IsVisible="{Binding MasterEffects.Count}" Loaded="OnEffectsLoaded"
+                                                     DoubleTapped="OnEffectDoubleTapped"
+                                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                     AutomationProperties.Name="{x:Static l:Strings.AudioPluginsMaster}"
+                                                     ItemTemplate="{StaticResource EffectRowTemplate}" />
+                                            <Button Classes="link" Content="{x:Static l:Strings.AudioPluginsAddEffect}"
+                                                    Click="OnAddEffect" IsEnabled="{Binding Idle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ListBox.Template>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:RackRow">
-                            <StackPanel ToolTip.Tip="{Binding Tip}">
-                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
+                            <Border Classes="slot" Classes.wrong="{Binding Wrong}">
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="{x:Static l:Strings.AudioPluginsEditor}"
+                                                  Command="{Binding Owner.EditorCommand}" CommandParameter="{Binding Plugin}" />
+                                        <MenuItem Header="{x:Static l:Strings.AudioPluginsRename}" Click="OnRename"
+                                                  IsEnabled="{Binding Owner.Idle}" Icon="{StaticResource IconRename}" />
+                                        <MenuItem Header="{x:Static l:Strings.AudioPluginsAddEffect}" Click="OnAddEffect"
+                                                  IsVisible="{Binding Ready}" IsEnabled="{Binding Owner.Idle}" />
+                                        <MenuItem Header="{x:Static l:Strings.AudioPluginsReload}"
+                                                  Command="{Binding Owner.ReloadCommand}" CommandParameter="{Binding Plugin}" />
+                                        <Separator />
+                                        <MenuItem Header="{x:Static l:Strings.AudioPluginsRemove}"
+                                                  Command="{Binding Owner.RemoveCommand}" CommandParameter="{Binding Plugin}"
+                                                  Icon="{StaticResource IconDelete}" />
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+                                <StackPanel Spacing="3">
+                                    <!-- What it is, and the buttons for it. -->
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                                            <Button Classes="small" Content="{x:Static l:Strings.AudioPluginsEditor}"
+                                                    Command="{Binding Owner.EditorCommand}" CommandParameter="{Binding Plugin}"
+                                                    IsVisible="{Binding !Wrong}" />
+                                            <Button Classes="small" Content="{x:Static l:Strings.AudioPluginsReload}"
+                                                    Command="{Binding Owner.ReloadCommand}" CommandParameter="{Binding Plugin}"
+                                                    IsVisible="{Binding Wrong}" />
+                                            <Button Classes="small" Content="⋯" Click="OnMore"
+                                                    AutomationProperties.Name="{x:Static l:Strings.AudioPluginsMore}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Tip}">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Detail}" Classes="reading"
+                                                       IsVisible="{Binding !Wrong}" />
+                                            <TextBlock Text="{Binding Detail}" Classes="problem"
+                                                       IsVisible="{Binding Wrong}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <!-- How it is doing: MIDI coming in, its sound after its effects, its load. -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3"
+                                                IsVisible="{Binding Ready}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent"
+                                                    ToolTip.Tip="{Binding MidiTip}">
+                                            <Ellipse Classes="midi" Classes.lit="{Binding Receiving}" />
+                                            <TextBlock Classes="reading" Text="MIDI" />
+                                        </StackPanel>
+                                        <ContentControl Content="{Binding Meter}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                        <TextBlock Classes="reading" Text="{Binding Load}" Margin="8,0,0,0"
+                                                   ToolTip.Tip="{x:Static l:Strings.AudioPluginsChainLoadTip}" />
+                                    </StackPanel>
+                                    <!-- Its effects, in the order they process its sound. -->
+                                    <ListBox Classes="plain effects" ItemsSource="{Binding Effects}" Margin="0,2,0,0"
+                                             IsVisible="{Binding Effects.Count}" Loaded="OnEffectsLoaded"
+                                             DoubleTapped="OnEffectDoubleTapped"
+                                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                             AutomationProperties.Name="{Binding Name}"
+                                             ItemTemplate="{StaticResource EffectRowTemplate}" />
+                                    <Button Classes="link" Content="{x:Static l:Strings.AudioPluginsAddEffect}"
+                                            Click="OnAddEffect" IsVisible="{Binding Ready}"
+                                            IsEnabled="{Binding Owner.Idle}" />
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
             </DockPanel>
         </HeaderedContentControl>
 
-        <HeaderedContentControl Grid.Column="2" Classes="group" Margin="0">
-            <HeaderedContentControl.Header>
-                <StackPanel Classes="header">
-                    <TextBlock Text="{x:Static l:Strings.AudioPluginsFound}" VerticalAlignment="Center" />
-                    <c:InfoTip Text="{x:Static l:Strings.AudioPluginsFoundTip}" />
-                </StackPanel>
-            </HeaderedContentControl.Header>
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Bottom" Classes="status" Text="{Binding ScanStatus}"
-                           IsVisible="{Binding ScanStatus, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                <StackPanel DockPanel.Dock="Bottom" Classes="buttons">
-                    <Button Content="{x:Static l:Strings.AudioPluginsAdd}" Command="{Binding AddCommand}" />
-                    <Button Content="{x:Static l:Strings.AudioPluginsAddFile}" Click="OnAddFile"
-                            IsEnabled="{Binding !Busy}" />
-                    <Button Content="{x:Static l:Strings.AudioPluginsRescan}" Command="{Binding RescanCommand}" />
-                </StackPanel>
-                <!-- A double click adds. -->
-                <ListBox ItemsSource="{Binding Found}" SelectedItem="{Binding SelectedFound}"
-                         AutomationProperties.Name="{x:Static l:Strings.AudioPluginsFound}"
-                         DoubleTapped="OnFoundDoubleTapped">
-                    <ListBox.Styles>
-                        <Style Selector="ListBoxItem" x:DataType="vm:FoundRow">
-                            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
-                        </Style>
-                    </ListBox.Styles>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:FoundRow">
-                            <StackPanel ToolTip.Tip="{Binding Plugin.Path}">
-                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
-        </HeaderedContentControl>
-
-        <HeaderedContentControl Grid.Row="1" Grid.ColumnSpan="3" Classes="group" Margin="0,12,0,0"
+        <HeaderedContentControl Grid.Row="1" Classes="group" Margin="0,12,0,0"
                                 Header="{x:Static l:Strings.AudioPluginsOutput}">
             <!--
-              The device left, narrower when it must; how the audio is doing right, read a few
-              times a second; the plugins' rate and the buffer below. The device's column takes
+              How the audio is doing, read a few times a second; then the device left, narrower
+              when it must, and the plugins' rate and the buffer below. The device's column takes
               the room first, up to its width, and the gap after it the rest: a box held
               narrower than its column would sit in the middle of it. The settings wait for the
               rack to load, before which they are Brack's defaults.
             -->
-            <Grid RowDefinitions="Auto,Auto,Auto">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1000*" MinWidth="120" MaxWidth="280" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{x:Static l:Strings.AudioPluginsDevice}" VerticalAlignment="Center"
-                           Opacity="0.75" Margin="0,0,6,0" />
-                <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                <!-- What the device is doing, its level after the master volume, the load and the dropouts. -->
+                <WrapPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,5,0,11" Orientation="Horizontal">
+                    <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsStopped}" Margin="0,0,16,0"
+                               IsVisible="{Binding !Running}" ToolTip.Tip="{x:Static l:Strings.AudioPluginsStoppedTip}" />
+                    <TextBlock Classes="reading" Text="{Binding Playing}" Margin="0,0,16,0" IsVisible="{Binding Running}" />
+                    <ContentControl Content="{Binding Output}" Margin="0,0,16,0" VerticalAlignment="Center" />
+                    <TextBlock Classes="reading" Text="{Binding Load}" Margin="0,0,16,0"
+                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsLoadTip}" />
+                    <TextBlock Classes="problem" Text="{Binding Overruns}"
+                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsOverrunsTip}" />
+                </WrapPanel>
+                <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="{x:Static l:Strings.AudioPluginsDevice}"
+                           Margin="0,0,6,0" />
+                <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch"
                           ItemsSource="{Binding AudioDevices}" SelectedItem="{Binding AudioDevice}"
                           IsEnabled="{Binding SettingsShown}"
                           AutomationProperties.Name="{x:Static l:Strings.AudioPluginsDevice}" />
-                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0">
-                    <TextBlock Text="{x:Static l:Strings.AudioPluginsLoad}" VerticalAlignment="Center" Opacity="0.75"
-                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsLoadTip}" />
-                    <TextBlock Text="{Binding Load}" MinWidth="40" VerticalAlignment="Center"
-                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsLoadTip}" />
-                    <TextBlock Text="{x:Static l:Strings.AudioPluginsLevel}" VerticalAlignment="Center" Opacity="0.75"
-                               Margin="6,0,0,0" />
-                    <ItemsControl ItemsSource="{Binding Levels}" VerticalAlignment="Center"
-                                  AutomationProperties.Name="{x:Static l:Strings.AudioPluginsLevel}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="3" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="x:Int32">
-                                <c:LevelBar Value="{Binding}" Width="120" Height="5"
-                                            Track="{DynamicResource AppLineBrush}"
-                                            Fill="{DynamicResource AppAccentBrush}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static l:Strings.AudioPluginsSampleRate}"
-                           VerticalAlignment="Center" Opacity="0.75" Margin="0,8,6,0"
-                           ToolTip.Tip="{x:Static l:Strings.AudioPluginsSampleRateTip}" />
-                <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="6"
+                <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="{x:Static l:Strings.AudioPluginsSampleRate}"
+                           Margin="0,8,6,0" ToolTip.Tip="{x:Static l:Strings.AudioPluginsSampleRateTip}" />
+                <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="6"
                             Margin="0,8,0,0">
                     <ComboBox MinWidth="120" ItemsSource="{Binding SampleRates}" SelectedItem="{Binding SampleRate}"
                               IsEnabled="{Binding SettingsShown}"
                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsSampleRateTip}"
                               AutomationProperties.Name="{x:Static l:Strings.AudioPluginsSampleRate}" />
-                    <TextBlock Text="{x:Static l:Strings.AudioPluginsBuffer}" VerticalAlignment="Center"
-                               Opacity="0.75" Margin="12,0,0,0" ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}" />
+                    <TextBlock Classes="label" Text="{x:Static l:Strings.AudioPluginsBuffer}" Margin="12,0,0,0"
+                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}" />
                     <ComboBox MinWidth="120" ItemsSource="{Binding BufferSizes}" SelectedItem="{Binding BufferSize}"
                               IsEnabled="{Binding SettingsShown}"
                               ToolTip.Tip="{x:Static l:Strings.AudioPluginsBufferTip}"
                               AutomationProperties.Name="{x:Static l:Strings.AudioPluginsBuffer}" />
                 </StackPanel>
-                <c:TipRow Grid.Row="2" Grid.ColumnSpan="4" Margin="0,8,0,0">
+                <c:TipRow Grid.Row="3" Grid.ColumnSpan="3" Margin="0,8,0,0">
                     <CheckBox Content="{x:Static l:Strings.AudioPluginsLoadSerially}" IsChecked="{Binding LoadSerially}"
                               IsEnabled="{Binding SettingsShown}" />
                     <c:InfoTip Text="{x:Static l:Strings.AudioPluginsLoadSeriallyTip}" />

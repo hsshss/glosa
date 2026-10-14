@@ -95,13 +95,22 @@ Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for e
 
 **Settings → Audio Plugins...** sets up the rack of instrument plugins to use.
 
-- Instruments in the standard CLAP, VST3 and VST2 folders are listed on the right.
+- **Add Instrument...** lists the instruments in the standard CLAP, VST3 and VST2 folders.
   A double click or **Add** puts one in the rack.
   One kept anywhere else is added with **From File...**.
-- The MIDI ports of the plugins in the rack can be chosen in Port Map Settings just like other MIDI devices.
+- The MIDI ports of the instruments in the rack can be chosen in Port Map Settings just like other MIDI devices.
   The list marks them as plugins.
-- Right-clicking a plugin offers to open its editor, rename it, reload it and remove it.
-  Port maps follow a renamed plugin.
+- **Editor** or a double click opens a plugin's editor.
+  **⋯** or a right click offers to open its editor, rename it, add an effect, reload it and remove it.
+  Port maps follow a renamed instrument.
+- **Add Effect...** under an instrument puts an effect on its sound.
+  The effects under **Master** act on the mix of every instrument.
+  Effects act in order from the top, and dragging reorders them.
+  Unchecking an effect lets the sound through it unprocessed.
+  Only effects built for the same architecture as their instrument (under Master, as Glosa) can be used.
+- Each instrument shows whether MIDI is arriving, a level meter and its CPU load.
+  The mark beside a meter lights when the sound goes past full scale, and a click clears it.
+  The bottom of the window shows what the output device is doing and how many times the sound broke up.
 - What is changed in an editor is saved with the rack.
 - Plugins built for another architecture than Glosa's work too (32-bit plugins in the x64 build on Windows, for example).
 - **Audio Output** in the settings chooses the output device, the sample rate and the buffer length.

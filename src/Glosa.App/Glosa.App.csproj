@@ -28,9 +28,10 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
-  <!-- The audio plugins window only where there is Brack (Directory.Build.props); its code is in #if BRACK. -->
+  <!-- The audio plugins windows only where there is Brack (Directory.Build.props); their code is in #if BRACK. -->
   <ItemGroup Condition="'$(BrackSource)' == ''">
     <AvaloniaXaml Remove="Views\AudioPluginsWindow.axaml" />
+    <AvaloniaXaml Remove="Views\PluginPickerWindow.axaml" />
   </ItemGroup>
 
   <!--

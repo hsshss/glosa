@@ -33,10 +33,12 @@
     <ProjectReference Include="..\..\src\Glosa.Midi.Linux\Glosa.Midi.Linux.csproj" />
   </ItemGroup>
 
-  <!-- Brack's test instrument, built beside it, for the audio plugin tests (Directory.Build.props). -->
+  <!-- Brack's test instrument and effect, built beside it, for the audio plugin tests (Directory.Build.props). -->
   <ItemGroup Condition="'$(BrackSource)' == 'Project'">
     <AssemblyMetadata Include="BrackTestSynth"
                       Value="$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName($(BrackProject)))/../../../build/bin/brack-test-synth.clap'))" />
+    <AssemblyMetadata Include="BrackTestGain"
+                      Value="$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName($(BrackProject)))/../../../build/bin/brack-test-gain.clap'))" />
   </ItemGroup>
 
   <ItemGroup>

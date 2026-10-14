@@ -51,11 +51,23 @@
   <data name="AudioPluginsAdd" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="AudioPluginsAddEffect" xml:space="preserve">
+    <value>Add Effect...</value>
+  </data>
+  <data name="AudioPluginsAddEffectTitle" xml:space="preserve">
+    <value>Add Effect to {0}</value>
+  </data>
   <data name="AudioPluginsAddFile" xml:space="preserve">
     <value>From File...</value>
   </data>
   <data name="AudioPluginsAdding" xml:space="preserve">
     <value>Loading {0}...</value>
+  </data>
+  <data name="AudioPluginsAddInstrument" xml:space="preserve">
+    <value>Add Instrument...</value>
+  </data>
+  <data name="AudioPluginsAddInstrumentTitle" xml:space="preserve">
+    <value>Add Instrument</value>
   </data>
   <data name="AudioPluginsBuffer" xml:space="preserve">
     <value>Buffer</value>
@@ -66,6 +78,15 @@
   <data name="AudioPluginsBufferTip" xml:space="preserve">
     <value>How much audio goes to the device at a time. The longer it is, the less the sound breaks up under heavy plugins or a busy computer, but the later the plugins sound than machines on MIDI ports.</value>
   </data>
+  <data name="AudioPluginsBypassTip" xml:space="preserve">
+    <value>Uncheck to let the sound through this effect unprocessed.</value>
+  </data>
+  <data name="AudioPluginsChainLoadTip" xml:space="preserve">
+    <value>The share of the time this instrument and its effects take to render: on average, and the most in the last second.</value>
+  </data>
+  <data name="AudioPluginsClipTip" xml:space="preserve">
+    <value>Went past full scale {0} times. Click to clear.</value>
+  </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>System default</value>
   </data>
@@ -75,17 +96,20 @@
   <data name="AudioPluginsEditor" xml:space="preserve">
     <value>Editor</value>
   </data>
-  <data name="AudioPluginsFound" xml:space="preserve">
-    <value>Instruments</value>
+  <data name="AudioPluginsFilter" xml:space="preserve">
+    <value>Search by name or vendor</value>
+  </data>
+  <data name="AudioPluginsFoundEffectsTip" xml:space="preserve">
+    <value>The effects found in the standard CLAP, VST3 and VST2 folders that are built for {0}: an effect must be built for the same CPU as what it goes on. To load one kept somewhere else, use From File.</value>
   </data>
   <data name="AudioPluginsFoundTip" xml:space="preserve">
     <value>The instruments found in the standard CLAP, VST3 and VST2 folders. To load a plugin kept somewhere else, use From File.</value>
   </data>
+  <data name="AudioPluginsIn" xml:space="preserve">
+    <value>In</value>
+  </data>
   <data name="AudioPluginsLevel" xml:space="preserve">
     <value>Level</value>
-  </data>
-  <data name="AudioPluginsLoad" xml:space="preserve">
-    <value>CPU</value>
   </data>
   <data name="AudioPluginsLoadSerially" xml:space="preserve">
     <value>Load plugins one at a time</value>
@@ -94,16 +118,52 @@
     <value>For plugins that fail when several of them load at once. When on, the rack's plugins load one after another, which takes longer. Takes effect the next time Glosa starts.</value>
   </data>
   <data name="AudioPluginsLoadTip" xml:space="preserve">
-    <value>The share of the time the plugins take to render. Near 100%, the sound breaks up.</value>
+    <value>The share of the time the plugins take to render: on average, and the most in the last second. Near 100%, the sound breaks up.</value>
+  </data>
+  <data name="AudioPluginsLoadValue" xml:space="preserve">
+    <value>CPU {0:0.0}% (max {1:0.0}%)</value>
+  </data>
+  <data name="AudioPluginsMaster" xml:space="preserve">
+    <value>Master</value>
+  </data>
+  <data name="AudioPluginsMasterLoadTip" xml:space="preserve">
+    <value>The share of the time the master's effects take to render: on average, and the most in the last second.</value>
+  </data>
+  <data name="AudioPluginsMasterTip" xml:space="preserve">
+    <value>The master's effects process the mix of every instrument's sound, in order from the top, before the master volume. They must be built for the same CPU as Glosa.</value>
+  </data>
+  <data name="AudioPluginsMidiTip" xml:space="preserve">
+    <value>Lights while MIDI arrives. {0} messages so far.</value>
+  </data>
+  <data name="AudioPluginsMore" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="AudioPluginsNone" xml:space="preserve">
+    <value>No instruments yet. Add one with Add Instrument.</value>
+  </data>
+  <data name="AudioPluginsOut" xml:space="preserve">
+    <value>Out</value>
   </data>
   <data name="AudioPluginsOutput" xml:space="preserve">
     <value>Audio Output</value>
+  </data>
+  <data name="AudioPluginsOverruns" xml:space="preserve">
+    <value>Dropouts: {0}</value>
+  </data>
+  <data name="AudioPluginsOverrunsTip" xml:space="preserve">
+    <value>How many times since the audio device opened the plugins did not render in time. The sound can break up each time. A longer buffer makes it rarer.</value>
+  </data>
+  <data name="AudioPluginsPlaying" xml:space="preserve">
+    <value>{0}  {1} kHz  {2} ch</value>
+  </data>
+  <data name="AudioPluginsPlayingConverted" xml:space="preserve">
+    <value>{0}  {1} kHz  {2} ch  (plugins at {3} kHz)</value>
   </data>
   <data name="AudioPluginsRack" xml:space="preserve">
     <value>Rack</value>
   </data>
   <data name="AudioPluginsRackTip" xml:space="preserve">
-    <value>Each MIDI port of a plugin here is an output device named after the plugin: choose it for a port in Port Map Settings. A plugin renamed keeps its place in the port maps. Drag to reorder; the devices are listed in this order. What is set in a plugin's editor is saved with the rack.</value>
+    <value>Each MIDI port of an instrument here is an output device named after it: choose it for a port in Port Map Settings. An instrument renamed keeps its place in the port maps. An instrument's effects process its sound in order, from the top. Drag to reorder the instruments and the effects; the devices are listed in this order. What is set in a plugin's editor is saved with the rack.</value>
   </data>
   <data name="AudioPluginsReload" xml:space="preserve">
     <value>Reload</value>
@@ -137,6 +197,12 @@
   </data>
   <data name="AudioPluginsScanning" xml:space="preserve">
     <value>Looking for plugins...</value>
+  </data>
+  <data name="AudioPluginsStopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="AudioPluginsStoppedTip" xml:space="preserve">
+    <value>The audio runs while a song plays through a plugin, or while an editor is open.</value>
   </data>
   <data name="AudioPluginsTitle" xml:space="preserve">
     <value>Audio Plugins</value>

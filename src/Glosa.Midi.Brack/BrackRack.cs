@@ -1,5 +1,4 @@
 #if BRACK
-using System.Text.Json;
 using Brack;
 
 namespace Glosa.Midi.Brack;
@@ -20,23 +19,57 @@ public enum RackPluginState
     Crashed,
 }
 
-/// <summary>A plugin in the rack.</summary>
-/// <param name="Id">Brack's id for it, unique in the rack.</param>
-/// <param name="Name">What it is called, and what its output devices are named after.</param>
+/// <summary>An instrument in the rack, or an effect in a chain (an instrument's, or the master's).</summary>
+/// <param name="Id">Brack's id for it, unique in the rack, effects included.</param>
+/// <param name="Name">What it is called, and what an instrument's output devices are named after.</param>
 /// <param name="Format">CLAP, VST3 or VST2; empty while loading.</param>
 /// <param name="Architecture">The CPU it is built for (x86, x64, arm64), which may not be the player's; empty while loading.</param>
 /// <param name="Status">What Brack says of it: why it failed or where it crashed.</param>
-/// <param name="NotePorts">How many note ports it takes MIDI on; none until it is loaded.</param>
+/// <param name="NotePorts">How many note ports it takes MIDI on; none until it is loaded, and none for an effect.</param>
+/// <param name="Bypass">Whether an effect lets the sound through unprocessed.</param>
+/// <param name="Effects">An instrument's effects, in the order they process its main output; none for an effect.</param>
 public sealed record RackPlugin(string Id, string Name, string Format, string Architecture, RackPluginState State,
-                                string Status, bool HasEditor, int NotePorts);
+                                string Status, bool HasEditor, int NotePorts, bool Bypass,
+                                IReadOnlyList<RackPlugin> Effects);
 
 /// <summary>A session file moved out of the way, and why it would not load.</summary>
 public sealed record SetAsideFile(string Path, string Why);
 
-/// <summary>What the audio is doing, for meters.</summary>
-/// <param name="Load">How much of each period the plugins took to render, 1 being all of it.</param>
-/// <param name="Peaks">Each output channel's peak, linear, falling away after the sound.</param>
-public sealed record RackMeters(bool Running, float Load, IReadOnlyList<float> Peaks);
+/// <summary>A channel's level.</summary>
+/// <param name="Peak">Linear, falling away after the sound.</param>
+/// <param name="Clips">Blocks past full scale since the rack was made, or the instrument added; it never goes down.</param>
+public readonly record struct ChannelLevel(float Peak, ulong Clips);
+
+/// <summary>
+/// The time taken to process a block against the time the block lasts, 1 being all of it: on
+/// average, and the most in the last second.
+/// </summary>
+public readonly record struct ProcessLoad(float Average, float Peak);
+
+/// <summary>An instrument and its effects, as the audio runs.</summary>
+/// <param name="Active">Whether it is processing.</param>
+/// <param name="Load">The instrument and its effects together.</param>
+/// <param name="Output">Its main output's channels, after its effects.</param>
+/// <param name="MidiMessages">How many MIDI messages it has taken since it was added.</param>
+public sealed record ChainMeters(bool Active, ProcessLoad Load, IReadOnlyList<ChannelLevel> Output, ulong MidiMessages);
+
+/// <summary>What the audio is doing, for meters; all empty while it is stopped.</summary>
+/// <param name="Device">The output device it is playing on.</param>
+/// <param name="PluginRate">The rate the plugins run at, converted to <paramref name="OutputRate"/> when they differ.</param>
+/// <param name="Load">Everything a period takes: the plugins, the master's effects and the conversion.</param>
+/// <param name="Overruns">Periods since the device opened that took longer than they last: each can be a dropout.</param>
+/// <param name="Output">Each output channel, after the master gain.</param>
+/// <param name="MasterInput">The mix of every instrument, before the master's effects.</param>
+/// <param name="MasterOutput">The mix after the master's effects, before the master gain.</param>
+/// <param name="Instruments">By instrument id.</param>
+public sealed record RackMeters(bool Running, string Device, int OutputRate, int Channels, int PluginRate,
+                                ProcessLoad Load, ulong Overruns, IReadOnlyList<ChannelLevel> Output,
+                                IReadOnlyList<ChannelLevel> MasterInput, IReadOnlyList<ChannelLevel> MasterOutput,
+                                ProcessLoad MasterLoad, IReadOnlyDictionary<string, ChainMeters> Instruments)
+{
+    public static readonly RackMeters Stopped = new(false, string.Empty, 0, 0, 0, default, 0, [], [], [], default,
+                                                    new Dictionary<string, ChainMeters>());
+}
 
 /// <summary>
 /// A Brack engine and its rack, kept in a session file; each plugin's note port is an output
@@ -71,7 +104,9 @@ public sealed class BrackRack : IDisposable
     private readonly HashSet<string> _editors = [];
 
     private ulong _savedChanges;
-    private volatile IReadOnlyList<RackPlugin> _plugins;
+
+    /// <summary>The instruments and the master's effects, replaced together.</summary>
+    private volatile RackContents _contents;
     private bool _disposed;
 
     private readonly KeptLog _log;
@@ -81,7 +116,7 @@ public sealed class BrackRack : IDisposable
         _engine = new BrackEngine();
         _log = log;
         _sessionPath = sessionPath;
-        _plugins = Listed(sessionPath);
+        _contents = Listed(sessionPath);
         _stopTimer = new Timer(_ => StopIfIdle());
         _saveTimer = new Timer(_ => SaveQuietly());
         Outputs = new BrackOutputFactory(this);
@@ -126,10 +161,19 @@ public sealed class BrackRack : IDisposable
     /// <summary>Each note port as an output device.</summary>
     public IMidiOutputFactory Outputs { get; }
 
-    /// <summary>The plugins in rack order.</summary>
-    public IReadOnlyList<RackPlugin> Plugins => _plugins;
+    /// <summary>The instruments in rack order, each with its effects.</summary>
+    public IReadOnlyList<RackPlugin> Plugins => _contents.Instruments;
 
-    /// <summary>Raised on any thread when <see cref="Plugins"/> or <see cref="Problem"/> changes.</summary>
+    /// <summary>The effects on the mix of every instrument, in the order they process it.</summary>
+    public IReadOnlyList<RackPlugin> MasterEffects => _contents.MasterEffects;
+
+    /// <summary>The CPU the master's effects must be built for: Brack's, which is the player's.</summary>
+    public static string MasterArchitecture => BrackLibrary.Architecture;
+
+    /// <summary>
+    /// Raised on any thread when <see cref="Plugins"/>, <see cref="MasterEffects"/> or
+    /// <see cref="Problem"/> changes.
+    /// </summary>
     public event Action? Changed;
 
     /// <summary>The last problem with loading, saving or the audio device.</summary>
@@ -148,15 +192,33 @@ public sealed class BrackRack : IDisposable
     /// <summary>Ends once the session file has been loaded; never faults.</summary>
     public Task Loaded => _loaded;
 
-    public RackPlugin? Find(string id) => _plugins.FirstOrDefault(plugin => plugin.Id == id);
+    /// <summary>The instrument with this id; effects are not looked at.</summary>
+    public RackPlugin? Find(string id) => Plugins.FirstOrDefault(plugin => plugin.Id == id);
 
     /// <summary>The meters as of at most about 50 ms ago, without waiting for a plugin being loaded.</summary>
     public RackMeters Meters()
     {
-        if (_disposed) return new RackMeters(false, 0, []);
+        if (_disposed) return RackMeters.Stopped;
         EngineStatus status = _engine.GetCachedStatus();
-        return new RackMeters(status.Mode != EngineMode.Stopped, status.CpuLoad, status.OutputPeaks);
+        if (status.Mode == EngineMode.Stopped) return RackMeters.Stopped;
+
+        return new RackMeters(
+            true, status.Device, (int)status.OutputSampleRate, (int)status.OutputChannels, (int)status.ProcessSampleRate,
+            new ProcessLoad(status.CpuLoad, status.CpuPeakLoad), status.Overruns,
+            Levels(status.OutputPeaks, status.OutputClips),
+            Levels(status.MasterInputPeaks, status.MasterInputClips),
+            Levels(status.MasterOutputPeaks, status.MasterOutputClips),
+            new ProcessLoad(status.MasterLoad, status.MasterPeakLoad),
+            status.Plugins.ToDictionary(plugin => plugin.Id, plugin => new ChainMeters(
+                plugin.Active, new ProcessLoad(plugin.Load, plugin.PeakLoad), MainOutput(plugin), plugin.MidiMessages)));
     }
+
+    private static ChannelLevel[] Levels(IReadOnlyList<float> peaks, IReadOnlyList<ulong> clips)
+        => [.. peaks.Select((peak, channel) => new ChannelLevel(peak, channel < clips.Count ? clips[channel] : 0))];
+
+    /// <summary>The levels of an instrument's main output port, the one its effects process.</summary>
+    private static ChannelLevel[] MainOutput(PluginStatus plugin)
+        => plugin.AudioOutputs.FirstOrDefault(port => port.Main) is { } main ? Levels(main.Peaks, main.Clips) : [];
 
     /// <summary>The audio output devices, the system's default first.</summary>
     public static IReadOnlyList<AudioDeviceInfo> AudioDevices() => BrackLibrary.ListAudioDevices();
@@ -175,7 +237,7 @@ public sealed class BrackRack : IDisposable
                 _engine.SetConfig(_engine.GetConfig() with
                 {
                     AudioDevice = value,
-                    BufferFrames = Frames(buffer, ListedRate(value)),
+                    BufferFrames = Frames(buffer, OpenRate(value)),
                 });
             });
         }
@@ -203,17 +265,19 @@ public sealed class BrackRack : IDisposable
     private int DeviceRate()
         => _engine.GetCachedStatus() is { Mode: not EngineMode.Stopped, OutputSampleRate: > 0 and uint running }
             ? (int)running
-            : ListedRate(_engine.GetConfig().AudioDevice);
+            : OpenRate(_engine.GetConfig().AudioDevice);
 
-    /// <summary>The rate an output device would run at, as the system lists it; null or empty for the default.</summary>
-    private static int ListedRate(string? name)
+    /// <summary>The rate an output device would run at if opened now; null or empty for the default.</summary>
+    private static int OpenRate(string? name)
     {
-        IReadOnlyList<AudioDeviceInfo> devices = BrackLibrary.ListAudioDevices();
-        AudioDeviceInfo? device = name is { Length: > 0 }
-            ? devices.FirstOrDefault(info => info.Name == name)
-            : devices.FirstOrDefault(info => info.IsDefault);
-        // Shared, a device runs at its mixer's one rate; a device that is gone, at a common one.
-        return device?.SampleRates is { Count: > 0 } rates ? (int)rates.Max() : 48000;
+        try
+        {
+            return (int)BrackLibrary.AudioDeviceRate(name);
+        }
+        catch (BrackException)
+        {
+            return 48000;  // a device that is gone: a common rate
+        }
     }
 
     /// <summary>The rate the plugins run at, converted to the device's; 0 for the device's own. Kept in the session.</summary>
@@ -250,14 +314,14 @@ public sealed class BrackRack : IDisposable
     }
 
     /// <summary>
-    /// The instruments in the standard plugin folders. Blocks; files unchanged since the scan
-    /// cached in <paramref name="cachePath"/> are not loaded again.
+    /// The instruments and effects in the standard plugin folders. Blocks; files unchanged since
+    /// the scan cached in <paramref name="cachePath"/> are not loaded again.
     /// </summary>
     /// <exception cref="BrackException">The scan failed.</exception>
     public static IReadOnlyList<PluginDescription> Scan(string cachePath)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
-        return [.. BrackLibrary.ScanPlugins(cachePath).Where(plugin => plugin.Instrument)];
+        return BrackLibrary.ScanPlugins(cachePath);
     }
 
     /// <summary>Loads a plugin, routed to the first two channels. Blocks.</summary>
@@ -282,17 +346,42 @@ public sealed class BrackRack : IDisposable
         });
     }
 
+    /// <summary>
+    /// Loads an effect into a chain at <paramref name="index"/> among its effects. Blocks; the
+    /// chain plays on meanwhile.
+    /// </summary>
+    /// <param name="ownerId">The instrument; null for the master.</param>
+    /// <param name="pluginId">Which plugin in the file; null for the first.</param>
+    /// <exception cref="BrackException">
+    /// It would not load, it is built for another CPU than its chain, or the instrument is not in
+    /// the rack.
+    /// </exception>
+    public void AddEffect(string? ownerId, int index, string path, string? pluginId = null)
+    {
+        WaitLoaded();
+        Run(() => _engine.AddEffect(ownerId, index, path, pluginId));
+    }
+
+    /// <summary>Lets the sound through an effect unprocessed, or processes it again.</summary>
+    /// <exception cref="BrackException">It is not an effect in the rack.</exception>
+    public void SetBypass(string effectId, bool bypass)
+    {
+        WaitLoaded();
+        Run(() => _engine.SetEffectBypass(effectId, bypass));
+    }
+
+    /// <summary>Removes an instrument with its effects, or an effect.</summary>
     /// <exception cref="BrackException">It is not in the rack.</exception>
     public void Remove(string id)
     {
         WaitLoaded();
-        lock (_gate)
-            if (_editors.Contains(id)) _engine.ShowPluginGui(id, false);
         Run(() => _engine.RemovePlugin(id));
-        LetGoOfEditor(id);
     }
 
-    /// <summary>Loads a crashed or failed plugin again, keeping its state, name and devices. Blocks.</summary>
+    /// <summary>
+    /// Loads a crashed or failed plugin again, keeping its state, name and devices; it loads with
+    /// the rest of its chain. Blocks.
+    /// </summary>
     /// <exception cref="BrackException">It is not in the rack, or would not load.</exception>
     public void Reload(string id)
     {
@@ -300,7 +389,7 @@ public sealed class BrackRack : IDisposable
         Run(() => _engine.ReloadPlugin(id));
     }
 
-    /// <summary>Renames a plugin, and so its output devices.</summary>
+    /// <summary>Renames a plugin, and so an instrument's output devices.</summary>
     /// <returns>The devices renamed, before and after.</returns>
     /// <exception cref="BrackException">It is not in the rack.</exception>
     public IReadOnlyList<(MidiDeviceInfo From, MidiDeviceInfo To)> Rename(string id, string name)
@@ -312,7 +401,10 @@ public sealed class BrackRack : IDisposable
         return [.. before.Zip(after).Where(devices => devices.First.Name != devices.Second.Name)];
     }
 
-    /// <summary>Moves a plugin to <paramref name="index"/>, and its devices with it.</summary>
+    /// <summary>
+    /// Moves an instrument to <paramref name="index"/>, and its devices with it; or an effect to
+    /// <paramref name="index"/> among its chain's effects.
+    /// </summary>
     /// <exception cref="BrackException">It is not in the rack.</exception>
     public void Move(string id, int index)
     {
@@ -395,12 +487,11 @@ public sealed class BrackRack : IDisposable
         {
             case MidiSendResult.NotFound: return "the plugin is no longer in the rack";
             case MidiSendResult.InvalidArgument: return "not a complete MIDI message";
+            case MidiSendResult.QueueFull: return "the plugin is not taking messages as fast as they come";
         }
-        // A plugin that crashed or failed stays in the rack, and its queue fills.
+        // Not loaded: Brack's status says why.
         Refresh();
-        return Find(id) is { State: RackPluginState.Crashed or RackPluginState.Failed } plugin
-            ? plugin.Status
-            : "the plugin is not taking messages as fast as they come";
+        return Find(id)?.Status ?? "the plugin is not loaded";
     }
 
     /// <remarks>Never throws: opening an output and closing the player wait for it.</remarks>
@@ -452,25 +543,21 @@ public sealed class BrackRack : IDisposable
     }
 
     /// <summary>The plugins the session file names, as loading; none if it cannot be read.</summary>
-    private static IReadOnlyList<RackPlugin> Listed(string sessionPath)
+    private static RackContents Listed(string sessionPath)
     {
         try
         {
-            using FileStream file = File.OpenRead(sessionPath);
-            using JsonDocument session = JsonDocument.Parse(file);
-            if (!session.RootElement.TryGetProperty("plugins", out JsonElement plugins)) return [];
-            return [.. plugins.EnumerateArray().Select(plugin => new RackPlugin(
-                Text(plugin, "id"), Text(plugin, "name"), string.Empty, string.Empty, RackPluginState.Loading, string.Empty,
-                false, 0))];
+            SessionContents session = BrackLibrary.DescribeSession(sessionPath);
+            return new RackContents([.. session.Plugins.Select(Plugin)], [.. session.MasterEffects.Select(Plugin)]);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
-                                      or InvalidOperationException)
+        catch (BrackException)
         {
-            return [];
+            return RackContents.Empty;
         }
 
-        static string Text(JsonElement element, string name)
-            => element.TryGetProperty(name, out JsonElement value) ? value.GetString() ?? string.Empty : string.Empty;
+        static RackPlugin Plugin(SessionPlugin plugin) => new(
+            plugin.Id, plugin.Name, string.Empty, string.Empty, RackPluginState.Loading, string.Empty, false, 0,
+            plugin.Bypass, [.. plugin.Effects.Select(Plugin)]);
     }
 
     /// <summary>Makes a change, then saves and refreshes.</summary>
@@ -492,13 +579,16 @@ public sealed class BrackRack : IDisposable
     {
         if (_disposed) return;
 
-        _plugins = [.. _engine.GetStatus().Plugins.Select(plugin => new RackPlugin(
+        EngineStatus status = _engine.GetStatus();
+        _contents = new RackContents([.. status.Plugins.Select(Plugin)], [.. status.MasterEffects.Select(Plugin)]);
+        Changed?.Invoke();
+
+        static RackPlugin Plugin(PluginStatus plugin) => new(
             plugin.Id, plugin.Name, plugin.Format.ToString().ToUpperInvariant(), plugin.Architecture,
             plugin.Crashed ? RackPluginState.Crashed
             : plugin.Failed || !plugin.Loaded ? RackPluginState.Failed
             : RackPluginState.Ready,
-            plugin.Status, plugin.HasGui, plugin.NotePorts.Count))];
-        Changed?.Invoke();
+            plugin.Status, plugin.HasGui, plugin.NotePorts.Count, plugin.Bypass, [.. plugin.Effects.Select(Plugin)]);
     }
 
     /// <summary>Handles the engine's queued events on a pool thread; any after disposal are dropped.</summary>
@@ -553,7 +643,8 @@ public sealed class BrackRack : IDisposable
             ulong changes = _engine.ChangeCount;
             try
             {
-                if (changes == _savedChanges && !(always && _engine.GetStatus().Plugins.Count > 0)) return;
+                if (changes == _savedChanges && !(always && _engine.GetStatus() is { } status
+                                                  && status.Plugins.Count + status.MasterEffects.Count > 0)) return;
                 Directory.CreateDirectory(Path.GetDirectoryName(_sessionPath)!);
                 _engine.SaveSession(_sessionPath);
                 _savedChanges = changes;
@@ -579,6 +670,11 @@ public sealed class BrackRack : IDisposable
         lock (_gate) _disposed = true;
         _engine.Dispose();
         BrackLibrary.Log -= _log.Write;
+    }
+
+    private sealed record RackContents(IReadOnlyList<RackPlugin> Instruments, IReadOnlyList<RackPlugin> MasterEffects)
+    {
+        public static readonly RackContents Empty = new([], []);
     }
 
     /// <summary>Brack's log, kept until someone takes it (<see cref="TakeLog"/>).</summary>
