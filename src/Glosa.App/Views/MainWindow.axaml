@@ -121,19 +121,21 @@
                     <!--
                       The audio plugins' master volume, shown while a port map uses one.
                       Across the slack below as well, so the title's fixed height holds.
-                      Double-click goes back to 0 dB (see the code-behind).
+                      Double-click goes back to 0 dB (see the code-behind); the value shows while
+                      it is dragged, a tenth as far with Shift.
                     -->
                     <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal"
                                 Margin="12,0,0,0" VerticalAlignment="Top"
-                                IsVisible="{Binding UsesAudioPlugins}"
-                                ToolTip.Tip="{Binding MasterVolumeTip}">
-                        <PathIcon Data="{StaticResource IconVolume}" Width="16" Height="16"
-                                  VerticalAlignment="Center" />
-                        <Slider Width="96" Margin="6,0,0,0"
-                                Minimum="{x:Static vm:MainViewModel.MasterVolumeFloor}"
-                                Maximum="{x:Static vm:MainViewModel.MasterVolumeCeiling}"
+                                IsVisible="{Binding UsesAudioPlugins}">
+                        <ToggleButton Classes="speaker" IsChecked="{Binding MasterMute}"
+                                      ToolTip.Tip="{x:Static l:Strings.TransportMasterMuteTip}"
+                                      AutomationProperties.Name="{x:Static l:Strings.TransportMasterMute}" />
+                        <Slider Width="96" Margin="4,0,0,0"
+                                Minimum="{x:Static vm:Decibels.Floor}"
+                                Maximum="{x:Static vm:Decibels.Ceiling}"
                                 Value="{Binding MasterVolume, Mode=TwoWay}"
                                 DoubleTapped="OnMasterVolumeDoubleTapped"
+                                ToolTip.Tip="{Binding MasterVolumeTip}" c:DragTip.Show="True" c:FineDrag.Enabled="True"
                                 AutomationProperties.Name="{x:Static l:Strings.TransportMasterVolume}" />
                     </StackPanel>
 

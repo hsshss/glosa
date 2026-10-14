@@ -142,12 +142,9 @@ public sealed class WindowPlacement
     public bool Maximized { get; set; }
 
     /// <summary>
-    /// Whether the window was open when the player was last closed.
+    /// Whether the window was open when the player was last closed, to open it again. The main
+    /// window opens either way.
     /// </summary>
-    /// <remarks>
-    /// Only the panes are opened again from this. The main window opens either way, and the
-    /// two settings windows are answers to a question that was asked last time, not this one.
-    /// </remarks>
     public bool Open { get; set; }
 }
 
@@ -299,7 +296,7 @@ public sealed class AppSettings
 
     /// <summary>
     /// Where each window was, by name: <c>main</c>, <c>settings</c>, <c>portMaps</c>,
-    /// <c>monitor</c>, <c>debug</c>.
+    /// <c>audioPlugins</c>, <c>monitor</c>, <c>debug</c>.
     /// </summary>
     /// <remarks>
     /// A map rather than a field per window, since every window wants the same numbers.

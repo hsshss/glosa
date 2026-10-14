@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Headless;
+using Avalonia.Themes.Fluent;
 using Glosa.App.Services;
 
 namespace Glosa.Tests;
@@ -8,7 +9,8 @@ namespace Glosa.Tests;
 /// Runs code on a UI thread, as the player's view models expect, with no window on screen.
 /// </summary>
 /// <remarks>
-/// One application for every test: Avalonia allows one per process.
+/// One application for every test: Avalonia allows one per process. It has the Fluent theme,
+/// for the tests that drag controls about, which need their templates.
 /// </remarks>
 internal static class Headless
 {
@@ -21,6 +23,8 @@ internal static class Headless
 
     public sealed class TestApp : Application
     {
+        public override void Initialize() => Styles.Add(new FluentTheme());
+
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<TestApp>().UseHeadless(new AvaloniaHeadlessPlatformOptions());
     }

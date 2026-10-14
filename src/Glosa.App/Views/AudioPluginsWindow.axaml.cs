@@ -30,11 +30,21 @@ public partial class AudioPluginsWindow : Window
         ReorderDrag.Attach(list, Press, () => _dragging is not null, target => MoveTo(list, target), () => { });
     }
 
-    /// <remarks>A press on an effect is its own list's to drag.</remarks>
+    /// <remarks>A press on an effect is its own list's to drag, and one on a volume the volume's.</remarks>
     private bool Press(PointerPressedEventArgs e)
     {
-        _dragging = (e.Source as Control)?.FindAncestorOfType<ListBoxItem>()?.DataContext as RackRow;
+        var source = e.Source as Control;
+        _dragging = source?.FindAncestorOfType<Slider>(includeSelf: true) is null
+            ? source?.FindAncestorOfType<ListBoxItem>()?.DataContext as RackRow
+            : null;
         return _dragging is not null;
+    }
+
+    /// <summary>A double click on an instrument's volume sets it to 0 dB.</summary>
+    private void OnVolumeDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is RackRow row) row.Volume = 0;
+        e.Handled = true;
     }
 
     /// <summary>Drops the instrument into the gap, keeping it selected.</summary>

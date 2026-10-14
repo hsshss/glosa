@@ -1,5 +1,6 @@
 #if BRACK
 using Avalonia.Threading;
+using Brack;
 using Glosa.App.ViewModels;
 using Glosa.Midi.Brack;
 
@@ -38,6 +39,60 @@ public sealed class AudioPluginsViewModelTests : ConfigFolder
 
         Assert.NotNull(status);
         Assert.Contains(Folder, status);
+    }
+
+    [Fact]
+    public void AnInstrumentsVolumeInDecibelsAndItsMuteGoToTheRack()
+    {
+        if (!BrackRackTests.HaveSynth()) return;
+        using BrackRack rack = BrackRack.TryCreate(Path.Combine(Folder, "brack-session.json"), out _)!;
+        rack.WaitLoaded();
+        rack.Add(BrackRackTests.Synth!);
+
+        Headless.Run(() =>
+        {
+            var model = new AudioPluginsViewModel(rack, _ => { });
+            RackRow row = Assert.Single(model.Plugins);
+            Assert.Equal((0.0, false), (row.Volume, row.Mute));
+            row.Volume = -6;
+            row.Mute = true;
+            model.Detach();
+            // Before the folder goes, which the scan writes its cache in.
+            Assert.True(SpinWait.SpinUntil(() =>
+            {
+                Dispatcher.UIThread.RunJobs();
+                return !model.Scanning;
+            }, TimeSpan.FromMinutes(2)), "the scan did not end");
+        });
+
+        PluginStatus status = Assert.Single(rack.Engine.GetStatus().Plugins);
+        Assert.Equal(Decibels.ToGain(-6), status.Gain);
+        Assert.True(status.Mute);
+    }
+
+    [Fact]
+    public void AClickOnAnyMeterPutsOutEveryClipLamp()
+    {
+        using BrackRack rack = BrackRack.TryCreate(Path.Combine(Folder, "brack-session.json"), out _)!;
+        rack.WaitLoaded();
+
+        Headless.Run(() =>
+        {
+            var model = new AudioPluginsViewModel(rack, _ => { });
+            model.Output.Show(Levels((1.5f, 2), (0.5f, 0)));
+            model.MasterInput.Show(Levels((1.5f, 1), (0.5f, 0)));
+            Assert.True(model.Output.Clipped && model.MasterInput.Clipped);
+
+            model.MasterOutput.ClearCommand.Execute(null);
+            Assert.False(model.Output.Clipped || model.MasterInput.Clipped);
+            model.Detach();
+            // Before the folder goes, which the scan writes its cache in.
+            Assert.True(SpinWait.SpinUntil(() =>
+            {
+                Dispatcher.UIThread.RunJobs();
+                return !model.Scanning;
+            }, TimeSpan.FromMinutes(2)), "the scan did not end");
+        });
     }
 
     private static ChannelLevel[] Levels(params (float Peak, ulong Clips)[] channels)

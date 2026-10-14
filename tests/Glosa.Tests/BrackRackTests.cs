@@ -12,7 +12,7 @@ namespace Glosa.Tests;
 /// </summary>
 public sealed class BrackRackTests : IDisposable
 {
-    private static readonly string? Synth = Built("BrackTestSynth");
+    internal static readonly string? Synth = Built("BrackTestSynth");
 
     /// <summary>Halves what comes to it (<see cref="GainId"/>).</summary>
     private static readonly string? Gain = Built("BrackTestGain");
@@ -41,7 +41,7 @@ public sealed class BrackRackTests : IDisposable
         return rack;
     }
 
-    private static bool HaveSynth()
+    internal static bool HaveSynth()
     {
         if (Synth is null) return false;
         // A file, or a bundle folder on macOS.
@@ -74,6 +74,10 @@ public sealed class BrackRackTests : IDisposable
 
     private static float InstrumentPeak(RackMeters meters, string id)
         => meters.Instruments.TryGetValue(id, out ChainMeters? chain) ? chain.Output.Max(level => level.Peak) : 0;
+
+    /// <summary>An instrument's level against another's playing the same note; 0 while that one is not heard.</summary>
+    private static float Against(RackMeters meters, string id, string reference)
+        => InstrumentPeak(meters, reference) is > 0.1f and var heard ? InstrumentPeak(meters, id) / heard : 0;
 
     private static IMidiOutput Output(BrackRack rack) => rack.Outputs.Create(rack.Outputs.Enumerate()[0].Id);
 
@@ -171,9 +175,43 @@ public sealed class BrackRackTests : IDisposable
         rack.SetBypass(effect.Id, true);
         Assert.True(rack.Plugins[0].Effects[0].Bypass);
         Settles(rack, meters => Against(meters, id, dry), 0.9f, 1.1f, "bypassed");
+    }
 
-        static float Against(RackMeters meters, string id, string dry)
-            => InstrumentPeak(meters, dry) is > 0.1f and var reference ? InstrumentPeak(meters, id) / reference : 0;
+    [Fact]
+    public void AnInstrumentsVolumeAndItsMuteAreHeardOnItsMeterAndKept()
+    {
+        if (!HaveSynth()) return;
+        using (BrackRack rack = Rack())
+        {
+            // The second, playing the same note at its full volume, is what the first is measured against.
+            rack.Add(Synth!);
+            rack.Add(Synth!);
+            string id = rack.Plugins[0].Id, reference = rack.Plugins[1].Id;
+            using IMidiOutput output = Playing(rack);
+            using IMidiOutput beside = rack.Outputs.Create(rack.Outputs.Enumerate()[1].Id);
+            beside.Open();
+            beside.SendShort(0x90 | 69 << 8 | 127 << 16);
+
+            rack.SetGain(id, 0.5f);
+            Assert.Equal(0.5f, rack.Plugins[0].Gain);
+            Settles(rack, meters => Against(meters, id, reference), 0.4f, 0.6f, "halved");
+
+            // Muted, it is not heard, and it goes on taking MIDI.
+            rack.SetMute(id, true);
+            Assert.True(rack.Plugins[0].Mute);
+            Settles(rack, meters => Against(meters, id, reference), 0, 0.01f, "muted");
+            ulong taken = rack.Meters().Instruments[id].MidiMessages;
+            output.SendShort(0xB0 | 1 << 8 | 64 << 16);
+            Assert.True(SpinWait.SpinUntil(() => rack.Meters().Instruments.TryGetValue(id, out ChainMeters? chain)
+                                                 && chain.MidiMessages > taken,
+                                           TimeSpan.FromSeconds(5)),
+                        "a muted instrument took no MIDI");
+        }
+
+        using BrackRack again = BrackRack.TryCreate(SessionPath, out _)!;
+        again.WaitLoaded();
+        Assert.Equal((0.5f, true), (again.Plugins[0].Gain, again.Plugins[0].Mute));
+        Assert.Equal((1f, false), (again.Plugins[1].Gain, again.Plugins[1].Mute));
     }
 
     [Fact]
@@ -355,18 +393,19 @@ public sealed class BrackRackTests : IDisposable
     }
 
     [Fact]
-    public void TheMasterGainIsKept()
+    public void TheMasterGainAndMuteAreKept()
     {
         // Not Rack(), whose gain is a change.
         using (BrackRack rack = BrackRack.TryCreate(SessionPath, out _)!)
         {
             rack.WaitLoaded();
             rack.MasterGain = 0.5f;
+            rack.MasterMute = true;
         }
 
         using BrackRack again = BrackRack.TryCreate(SessionPath, out _)!;
         again.WaitLoaded();
-        Assert.Equal(0.5f, again.MasterGain);
+        Assert.Equal((0.5f, true), (again.MasterGain, again.MasterMute));
     }
 
     [Fact]

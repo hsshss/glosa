@@ -147,6 +147,10 @@
                          Button.meter:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
+        <!-- An instrument's volume, in a row of small readings. -->
+        <Style Selector="Slider.volume">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
         <Style Selector="Border.lamp">
             <Setter Property="Width" Value="5" />
             <Setter Property="Height" Value="5" />
@@ -318,7 +322,7 @@
                                                        IsVisible="{Binding Wrong}" />
                                         </StackPanel>
                                     </DockPanel>
-                                    <!-- How it is doing: MIDI coming in, its sound after its effects, its load. -->
+                                    <!-- In the order its sound goes: MIDI in, volume, the sound after both, load. -->
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3"
                                                 IsVisible="{Binding Ready}">
                                         <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent"
@@ -326,7 +330,15 @@
                                             <Ellipse Classes="midi" Classes.lit="{Binding Receiving}" />
                                             <TextBlock Classes="reading" Text="MIDI" />
                                         </StackPanel>
-                                        <ContentControl Content="{Binding Meter}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                        <ToggleButton Classes="speaker" IsChecked="{Binding Mute}" Margin="8,0,0,0"
+                                                      ToolTip.Tip="{x:Static l:Strings.AudioPluginsMuteTip}"
+                                                      AutomationProperties.Name="{x:Static l:Strings.AudioPluginsMute}" />
+                                        <Slider Classes="volume" Width="96"
+                                                Minimum="{x:Static vm:Decibels.Floor}" Maximum="{x:Static vm:Decibels.Ceiling}"
+                                                Value="{Binding Volume, Mode=TwoWay}" DoubleTapped="OnVolumeDoubleTapped"
+                                                ToolTip.Tip="{Binding VolumeTip}" c:DragTip.Show="True" c:FineDrag.Enabled="True"
+                                                AutomationProperties.Name="{x:Static l:Strings.AudioPluginsVolume}" />
+                                        <ContentControl Content="{Binding Meter}" Margin="2,0,0,0" VerticalAlignment="Center" />
                                         <TextBlock Classes="reading" Text="{Binding Load}" Margin="4,0,0,0"
                                                    ToolTip.Tip="{x:Static l:Strings.AudioPluginsChainLoadTip}" />
                                     </StackPanel>

@@ -28,9 +28,11 @@ public enum RackPluginState
 /// <param name="NotePorts">How many note ports it takes MIDI on; none until it is loaded, and none for an effect.</param>
 /// <param name="Bypass">Whether an effect lets the sound through unprocessed.</param>
 /// <param name="Effects">An instrument's effects, in the order they process its main output; none for an effect.</param>
+/// <param name="Gain">An instrument's volume, on its sound after its effects, linear (1 = 0 dB); 1 for an effect.</param>
+/// <param name="Mute">Whether an instrument is silenced, while it goes on taking MIDI and playing.</param>
 public sealed record RackPlugin(string Id, string Name, string Format, string Architecture, RackPluginState State,
                                 string Status, bool HasEditor, int NotePorts, bool Bypass,
-                                IReadOnlyList<RackPlugin> Effects);
+                                IReadOnlyList<RackPlugin> Effects, float Gain = 1, bool Mute = false);
 
 /// <summary>A session file moved out of the way, and why it would not load.</summary>
 public sealed record SetAsideFile(string Path, string Why);
@@ -313,6 +315,14 @@ public sealed class BrackRack : IDisposable
         set => _engine.MasterGain = value;
     }
 
+    /// <summary>Silences all the plugins' sound, keeping <see cref="MasterGain"/>, while they play on; kept in the session.</summary>
+    /// <remarks>Never blocks. Set before the session has loaded, it gives way to the session's.</remarks>
+    public bool MasterMute
+    {
+        get => _engine.MasterMute;
+        set => _engine.MasterMute = value;
+    }
+
     /// <summary>
     /// The instruments and effects in the standard plugin folders. Blocks; files unchanged since
     /// the scan cached in <paramref name="cachePath"/> are not loaded again.
@@ -368,6 +378,25 @@ public sealed class BrackRack : IDisposable
     {
         WaitLoaded();
         Run(() => _engine.SetEffectBypass(effectId, bypass));
+    }
+
+    /// <summary>Sets an instrument's volume, kept in the session.</summary>
+    /// <remarks>Never blocks.</remarks>
+    /// <param name="gain">On its sound after its effects, linear (1 = 0 dB).</param>
+    /// <exception cref="BrackException">It is not an instrument in the rack.</exception>
+    public void SetGain(string id, float gain)
+    {
+        _engine.SetPluginGain(id, gain);
+        Update(id, plugin => plugin with { Gain = gain });
+    }
+
+    /// <summary>Silences an instrument, which goes on taking MIDI and playing, or lets it be heard; kept in the session.</summary>
+    /// <remarks>Never blocks.</remarks>
+    /// <exception cref="BrackException">It is not an instrument in the rack.</exception>
+    public void SetMute(string id, bool mute)
+    {
+        _engine.SetPluginMute(id, mute);
+        Update(id, plugin => plugin with { Mute = mute });
     }
 
     /// <summary>Removes an instrument with its effects, or an effect.</summary>
@@ -560,6 +589,10 @@ public sealed class BrackRack : IDisposable
             plugin.Bypass, [.. plugin.Effects.Select(Plugin)]);
     }
 
+    /// <summary>An instrument as changed without a refresh, until the next one.</summary>
+    private void Update(string id, Func<RackPlugin, RackPlugin> change)
+        => _contents = _contents with { Instruments = [.. _contents.Instruments.Select(plugin => plugin.Id == id ? change(plugin) : plugin)] };
+
     /// <summary>Makes a change, then saves and refreshes.</summary>
     private void Run(Action change)
     {
@@ -588,7 +621,8 @@ public sealed class BrackRack : IDisposable
             plugin.Crashed ? RackPluginState.Crashed
             : plugin.Failed || !plugin.Loaded ? RackPluginState.Failed
             : RackPluginState.Ready,
-            plugin.Status, plugin.HasGui, plugin.NotePorts.Count, plugin.Bypass, [.. plugin.Effects.Select(Plugin)]);
+            plugin.Status, plugin.HasGui, plugin.NotePorts.Count, plugin.Bypass, [.. plugin.Effects.Select(Plugin)],
+            plugin.Gain, plugin.Mute);
     }
 
     /// <summary>Handles the engine's queued events on a pool thread; any after disposal are dropped.</summary>

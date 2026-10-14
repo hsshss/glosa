@@ -32,7 +32,7 @@ public partial class MainWindow : Window
     /// True once the player is on its way out.
     /// </summary>
     /// <remarks>
-    /// A pane closing because the player is closing should open again next time; one closed
+    /// A window closing because the player is closing should open again next time; one closed
     /// by hand should not. The event is the same either way.
     /// </remarks>
     private bool _leaving;
@@ -59,7 +59,7 @@ public partial class MainWindow : Window
                 StayAwake.Attach(this, model);
             }
 
-            ReopenPanes();
+            ReopenWindows();
         };
 
         // Closing, not Closed: a pane can be shut by the platform on its owner's way out,
@@ -82,27 +82,44 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Opens the panes that were open when the player was last closed.
+    /// Opens the windows that were open when the player was last closed.
     /// </summary>
     /// <remarks>
-    /// The main window is brought back to the front afterwards: showing a pane puts it
+    /// The main window is brought back to the front afterwards: showing a window puts it
     /// there, which is what opening one by hand should do and not what starting up should.
-    /// Posted rather than called, because the panes are still being brought up around us
+    /// Posted rather than called, because the windows are still being brought up around us
     /// and whichever of them lands last would otherwise take the front back.
     /// </remarks>
-    private void ReopenPanes()
+    private void ReopenWindows()
     {
         if (Model?.Settings is not { } settings) return;
 
+        (string Key, Action Open)[] windows =
+        [
+            .. Panes.Select(pane => (pane.Key, (Action)(() => OpenPane(pane.Key)))),
+            ("settings", OpenSettings),
+            ("portMaps", OpenPortMaps),
+            ("audioPlugins", OpenAudioPlugins),
+        ];
         bool any = false;
-        foreach ((string key, _, _, _) in Panes)
+        foreach ((string key, Action open) in windows)
         {
             if (settings.Windows.GetValueOrDefault(key) is not { Open: true }) continue;
-            OpenPane(key);
+            open();
             any = true;
         }
 
         if (any) Dispatcher.UIThread.Post(Activate, DispatcherPriority.Background);
+    }
+
+    /// <summary>Writes down that <paramref name="window"/> is open, and that it is not once closed by hand.</summary>
+    private void RememberOpen(Window window, string key)
+    {
+        Placement.SetOpen(key, Model?.Settings, true);
+        window.Closed += (_, _) =>
+        {
+            if (!_leaving) Placement.SetOpen(key, Model?.Settings, false);
+        };
     }
 
     private MainViewModel? Model => DataContext as MainViewModel;
@@ -229,7 +246,9 @@ public partial class MainWindow : Window
 
     private void OnCloseDefinition(object? sender, RoutedEventArgs e) => Model?.CloseDefinition();
 
-    private void OnOpenSettings(object? sender, RoutedEventArgs e)
+    private void OnOpenSettings(object? sender, RoutedEventArgs e) => OpenSettings();
+
+    private void OpenSettings()
     {
         if (_settings is not null) { _settings.Activate(); return; }
 
@@ -237,6 +256,7 @@ public partial class MainWindow : Window
         Placement.Attach(_settings, "settings", () => Model?.Settings);
         _settings.Closed += (_, _) => _settings = null;
         _settings.Show(this);
+        RememberOpen(_settings, "settings");
     }
 
     /// <summary>
@@ -267,7 +287,9 @@ public partial class MainWindow : Window
     /// It opens on whichever map the player is on rather than wherever it was left: the map
     /// in use is what someone coming here has a question about.
     /// </remarks>
-    private void OnOpenPortMaps(object? sender, RoutedEventArgs e)
+    private void OnOpenPortMaps(object? sender, RoutedEventArgs e) => OpenPortMaps();
+
+    private void OpenPortMaps()
     {
         if (Model is null) return;
 
@@ -279,9 +301,12 @@ public partial class MainWindow : Window
         Placement.Attach(_portMaps, "portMaps", () => Model?.Settings);
         _portMaps.Closed += (_, _) => _portMaps = null;
         _portMaps.Show(this);
+        RememberOpen(_portMaps, "portMaps");
     }
 
-    private void OnOpenAudioPlugins(object? sender, RoutedEventArgs e)
+    private void OnOpenAudioPlugins(object? sender, RoutedEventArgs e) => OpenAudioPlugins();
+
+    private void OpenAudioPlugins()
     {
 #if BRACK
         if (Backends.AudioPlugins is not { } rack) return;
@@ -294,6 +319,7 @@ public partial class MainWindow : Window
         Placement.Attach(_audioPlugins, "audioPlugins", () => Model?.Settings);
         _audioPlugins.Closed += (_, _) => _audioPlugins = null;
         _audioPlugins.Show(this);
+        RememberOpen(_audioPlugins, "audioPlugins");
 #endif
     }
 
@@ -319,14 +345,10 @@ public partial class MainWindow : Window
         (_, string title, Size size, Func<Control> build) = Panes.First(pane => pane.Key == key);
         var window = new PaneWindow(title, build(), Model) { Width = size.Width, Height = size.Height };
         Placement.Attach(window, key, () => Model?.Settings);
-        window.Closed += (_, _) =>
-        {
-            _panes.Remove(key);
-            if (!_leaving) Placement.SetOpen(key, Model?.Settings, false);
-        };
+        window.Closed += (_, _) => _panes.Remove(key);
         _panes[key] = window;
         window.Show(this);
-        Placement.SetOpen(key, Model.Settings, true);
+        RememberOpen(window, key);
     }
 
     private void OnExit(object? sender, RoutedEventArgs e) => Close();

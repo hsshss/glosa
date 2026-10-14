@@ -12,10 +12,11 @@ using Glosa.Midi.Brack;
 namespace Glosa.App.ViewModels;
 
 /// <summary>
-/// A few channels' levels, and whether any has gone past full scale since the meter was last
+/// A few channels' levels, and whether any has gone past full scale since a meter was last
 /// clicked.
 /// </summary>
-public sealed partial class Meter : ObservableObject
+/// <param name="clearAll">Clears every meter's lamp, for a click on this one; without it, the click clears this one's.</param>
+public sealed partial class Meter(Action? clearAll = null) : ObservableObject
 {
     /// <summary>Each channel's level, the bottom 60 dB over 0 to 127.</summary>
     public ObservableCollection<int> Levels { get; } = [];
@@ -65,6 +66,13 @@ public sealed partial class Meter : ObservableObject
 
     [RelayCommand]
     private void Clear()
+    {
+        if (clearAll is not null) clearAll();
+        else Reset();
+    }
+
+    /// <summary>Puts out its lamp; it lights again on the next block past full scale.</summary>
+    public void Reset()
     {
         Array.Clear(_past);
         Clipped = false;
@@ -130,7 +138,35 @@ public sealed partial class RackRow(RackPlugin plugin, Meter meter, AudioPlugins
 
     public IReadOnlyList<EffectRow> Effects { get; } = [.. plugin.Effects.Select(effect => new EffectRow(effect, owner))];
 
-    /// <summary>Its main output, after its effects.</summary>
+    private double _volume = Decibels.FromGain(plugin.Gain);
+
+    /// <summary>Its volume in dB, on its sound after its effects; applies at once.</summary>
+    public double Volume
+    {
+        get => _volume;
+        set
+        {
+            if (!SetProperty(ref _volume, value)) return;
+            OnPropertyChanged(nameof(VolumeTip));
+            Owner.SetGain(Plugin.Id, Decibels.ToGain(value));
+        }
+    }
+
+    public string VolumeTip => string.Format(Strings.AudioPluginsVolumeTip, Decibels.Text(Volume));
+
+    private bool _mute = plugin.Mute;
+
+    /// <summary>Whether it is silenced, while it goes on taking MIDI and playing; applies at once.</summary>
+    public bool Mute
+    {
+        get => _mute;
+        set
+        {
+            if (SetProperty(ref _mute, value)) Owner.SetMute(Plugin.Id, value);
+        }
+    }
+
+    /// <summary>Its main output, after its effects and its volume.</summary>
     public Meter Meter { get; } = meter;
 
     /// <summary>Whether MIDI came since the meters were last read.</summary>
@@ -171,6 +207,9 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
     {
         _rack = rack;
         _renamed = renamed;
+        Output = new Meter(ClearClips);
+        MasterInput = new Meter(ClearClips);
+        MasterOutput = new Meter(ClearClips);
         _rack.Changed += OnRackChanged;
         ShowRack();
 
@@ -222,13 +261,19 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
     private static readonly TimeSpan MidiLit = TimeSpan.FromMilliseconds(250);
 
     /// <summary>Every output channel, after the master gain.</summary>
-    public Meter Output { get; } = new();
+    public Meter Output { get; }
 
     /// <summary>The mix, before the master's effects.</summary>
-    public Meter MasterInput { get; } = new();
+    public Meter MasterInput { get; }
 
     /// <summary>The mix, after the master's effects.</summary>
-    public Meter MasterOutput { get; } = new();
+    public Meter MasterOutput { get; }
+
+    /// <summary>Puts out every meter's clip lamp, for a click on any of them.</summary>
+    private void ClearClips()
+    {
+        foreach (Meter meter in (Meter[])[Output, MasterInput, MasterOutput, .. _meters.Values]) meter.Reset();
+    }
 
     /// <summary>Whether the audio is running.</summary>
     [ObservableProperty]
@@ -532,6 +577,23 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
     private Task Reload(RackPlugin? plugin)
         => Change(string.Format(Strings.AudioPluginsReloading, plugin!.Name), () => _rack.Reload(plugin.Id));
 
+    /// <summary>An instrument's volume, which neither blocks nor waits for a change under way.</summary>
+    internal void SetGain(string id, float gain) => Quick(() => _rack.SetGain(id, gain));
+
+    internal void SetMute(string id, bool mute) => Quick(() => _rack.SetMute(id, mute));
+
+    private void Quick(Action change)
+    {
+        try
+        {
+            change();
+        }
+        catch (BrackException ex)
+        {
+            Status = ex.Message;
+        }
+    }
+
     private bool CanBypass(RackPlugin? effect) => effect is { State: RackPluginState.Ready } && !Busy;
 
     /// <summary>Turns an effect off, letting the sound through, or on again.</summary>
@@ -572,7 +634,7 @@ public sealed partial class AudioPluginsViewModel : ViewModelBase
         Plugins.Clear();
         foreach (RackPlugin plugin in _rack.Plugins)
         {
-            if (!_meters.TryGetValue(plugin.Id, out Meter? meter)) _meters[plugin.Id] = meter = new Meter();
+            if (!_meters.TryGetValue(plugin.Id, out Meter? meter)) _meters[plugin.Id] = meter = new Meter(ClearClips);
             Plugins.Add(new RackRow(plugin, meter, this));
         }
         SelectedPlugin = Plugins.FirstOrDefault(row => row.Plugin.Id == selected);

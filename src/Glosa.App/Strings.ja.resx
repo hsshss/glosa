@@ -82,7 +82,7 @@
     <value>この音源とそのエフェクトが音を作るのにかかった時間の割合です。平均と、直近1秒の最大です。</value>
   </data>
   <data name="AudioPluginsClipTip" xml:space="preserve">
-    <value>フルスケールを {0} 回超えました。クリックで消えます。</value>
+    <value>フルスケールを {0} 回超えました。クリックで、すべてのメーターの印が消えます。</value>
   </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>システムの既定</value>
@@ -134,6 +134,12 @@
   </data>
   <data name="AudioPluginsMore" xml:space="preserve">
     <value>その他</value>
+  </data>
+  <data name="AudioPluginsMute" xml:space="preserve">
+    <value>ミュート</value>
+  </data>
+  <data name="AudioPluginsMuteTip" xml:space="preserve">
+    <value>クリックでミュートを切り替えます。</value>
   </data>
   <data name="AudioPluginsNone" xml:space="preserve">
     <value>音源はまだありません。「音源を追加...」で追加します。</value>
@@ -203,6 +209,14 @@
   </data>
   <data name="AudioPluginsTitle" xml:space="preserve">
     <value>オーディオプラグイン</value>
+  </data>
+  <data name="AudioPluginsVolume" xml:space="preserve">
+    <value>ボリューム</value>
+  </data>
+  <data name="AudioPluginsVolumeTip" xml:space="preserve">
+    <value>ボリューム: {0} dB
+ダブルクリックで 0 dB
+Shift キーを押しながらドラッグで微調整</value>
   </data>
   <data name="AutoDetect" xml:space="preserve">
     <value>自動判別</value>
@@ -981,12 +995,19 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="ToneMapInForce" xml:space="preserve">
     <value>音色マップ: {0}</value>
   </data>
+  <data name="TransportMasterMute" xml:space="preserve">
+    <value>マスターのミュート（オーディオプラグインのみ）</value>
+  </data>
+  <data name="TransportMasterMuteTip" xml:space="preserve">
+    <value>クリックでミュートを切り替えます。</value>
+  </data>
   <data name="TransportMasterVolume" xml:space="preserve">
     <value>マスターボリューム（オーディオプラグインのみ）</value>
   </data>
   <data name="TransportMasterVolumeTip" xml:space="preserve">
-    <value>マスターボリューム（オーディオプラグインのみ）: {0} dB
-ダブルクリックで 0 dB</value>
+    <value>マスターボリューム: {0} dB
+ダブルクリックで 0 dB
+Shift キーを押しながらドラッグで微調整</value>
   </data>
   <data name="TransportNext" xml:space="preserve">
     <value>次の曲</value>

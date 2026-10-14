@@ -108,8 +108,10 @@ Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for e
   Effects act in order from the top, and dragging reorders them.
   Unchecking an effect lets the sound through it unprocessed.
   Only effects built for the same architecture as their instrument (under Master, as Glosa) can be used.
+- Each instrument's slider sets its volume (a double click resets it).
+  Clicking the speaker left of the slider mutes it.
 - Each instrument shows whether MIDI is arriving, a level meter and its CPU load.
-  The mark beside a meter lights when the sound goes past full scale, and a click clears it.
+  The mark beside a meter lights when the sound goes past full scale, and a click on any meter clears them all.
   The bottom of the window shows what the output device is doing and how many times the sound broke up.
 - What is changed in an editor is saved with the rack.
 - Plugins built for another architecture than Glosa's work too (32-bit plugins in the x64 build on Windows, for example).
@@ -117,6 +119,8 @@ Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for e
   When a plugin fails because several load at once, turn on **Load plugins one at a time**.
 - While any port map uses a plugin, a master volume shows above the seek bar.
   It acts on the plugins' sound only.
+  Clicking the speaker left of it mutes it.
+- Dragging a volume slider with Shift held moves it a tenth as far, to set it finely.
 
 ### Adding and playing songs
 
