@@ -76,9 +76,12 @@
         <x:Double x:Key="SliderHorizontalHeight">26</x:Double>
         <x:Double x:Key="SliderHorizontalThumbWidth">16</x:Double>
         <x:Double x:Key="SliderHorizontalThumbHeight">16</x:Double>
-        <!-- These two are GridLength in Fluent, not Thickness: they are row heights. -->
-        <GridLength x:Key="SliderPreContentMargin">3</GridLength>
-        <GridLength x:Key="SliderPostContentMargin">3</GridLength>
+        <!--
+          Row heights (GridLength in Fluent, not Thickness): with the thumb's, the slider's
+          height, so that the track is in its middle.
+        -->
+        <GridLength x:Key="SliderPreContentMargin">5</GridLength>
+        <GridLength x:Key="SliderPostContentMargin">5</GridLength>
 
         <x:Double x:Key="TabItemMinHeight">26</x:Double>
         <x:Double x:Key="TabItemHeaderFontSize">13</x:Double>
@@ -180,6 +183,32 @@
     </Style>
     <Style Selector="PathIcon.info:pointerover">
         <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- A volume's mute: a speaker, crossed out while muted; dim like the (i), lit under the pointer. -->
+    <Style Selector="ToggleButton.speaker">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Opacity" Value="0.8" />
+        <Setter Property="Content">
+            <Template>
+                <PathIcon Width="14" Height="14" Data="{DynamicResource IconVolume}" />
+            </Template>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleButton.speaker:pointerover">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ToggleButton.speaker:checked PathIcon">
+        <Setter Property="Data" Value="{DynamicResource IconVolumeMute}" />
+    </Style>
+    <Style Selector="ToggleButton.speaker /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
     </Style>
 
     <!-- A panel: the LCD bezel, the transport, the playlist. -->

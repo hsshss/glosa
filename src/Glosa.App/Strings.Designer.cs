@@ -238,7 +238,7 @@ namespace Glosa.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Went past full scale {0} times. Click to clear..
+        ///   Looks up a localized string similar to Went past full scale {0} times. Click to clear every meter&apos;s mark..
         /// </summary>
         public static string AudioPluginsClipTip {
             get {
@@ -396,6 +396,24 @@ namespace Glosa.App {
         public static string AudioPluginsMore {
             get {
                 return ResourceManager.GetString("AudioPluginsMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mute.
+        /// </summary>
+        public static string AudioPluginsMute {
+            get {
+                return ResourceManager.GetString("AudioPluginsMute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to mute or unmute..
+        /// </summary>
+        public static string AudioPluginsMuteTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsMuteTip", resourceCulture);
             }
         }
         
@@ -603,6 +621,26 @@ namespace Glosa.App {
         public static string AudioPluginsTitle {
             get {
                 return ResourceManager.GetString("AudioPluginsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Volume.
+        /// </summary>
+        public static string AudioPluginsVolume {
+            get {
+                return ResourceManager.GetString("AudioPluginsVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Volume: {0} dB
+        ///Double-click for 0 dB
+        ///Drag with Shift held to fine-tune.
+        /// </summary>
+        public static string AudioPluginsVolumeTip {
+            get {
+                return ResourceManager.GetString("AudioPluginsVolumeTip", resourceCulture);
             }
         }
         
@@ -2890,6 +2928,24 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Master mute (audio plugins only).
+        /// </summary>
+        public static string TransportMasterMute {
+            get {
+                return ResourceManager.GetString("TransportMasterMute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to mute or unmute..
+        /// </summary>
+        public static string TransportMasterMuteTip {
+            get {
+                return ResourceManager.GetString("TransportMasterMuteTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Master volume (audio plugins only).
         /// </summary>
         public static string TransportMasterVolume {
@@ -2899,8 +2955,9 @@ namespace Glosa.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Master volume (audio plugins only): {0} dB
-        ///Double-click for 0 dB.
+        ///   Looks up a localized string similar to Master volume: {0} dB
+        ///Double-click for 0 dB
+        ///Drag with Shift held to fine-tune.
         /// </summary>
         public static string TransportMasterVolumeTip {
             get {

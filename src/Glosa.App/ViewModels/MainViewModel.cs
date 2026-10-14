@@ -482,6 +482,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             // The session's, once it has loaded.
             OnPropertyChanged(nameof(MasterVolume));
             OnPropertyChanged(nameof(MasterVolumeTip));
+            OnPropertyChanged(nameof(MasterMute));
             if (told || rack.SetAside is not { } aside) return;
             told = true;
             HoldError(Strings.CannotReadAudioPluginsTitle,
@@ -497,10 +498,24 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             if (Backends.AudioPlugins is { } rack) rack.MasterGain = value;
         }
     }
+
+    /// <summary>Whether the audio plugins' sound is silenced, keeping the master volume; kept in the rack's session.</summary>
+    public bool MasterMute
+    {
+        get => Backends.AudioPlugins?.MasterMute ?? false;
+        set
+        {
+            if (Backends.AudioPlugins is not { } rack || rack.MasterMute == value) return;
+            rack.MasterMute = value;
+            OnPropertyChanged();
+        }
+    }
 #else
     public bool HasAudioPlugins => false;
 
     private static float MasterGain { get => 1; set { } }
+
+    public bool MasterMute { get => false; set { } }
 #endif
 
     /// <summary>Whether a port map has a port on an audio plugin, which is when the master volume shows.</summary>
@@ -515,27 +530,22 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private void NoteAudioPluginUse()
         => UsesAudioPlugins = HasAudioPlugins && PortMaps.Any(map => map.UsesAudioPlugin);
 
-    /// <summary>The master volume's range in dB; the floor mutes.</summary>
-    public const double MasterVolumeFloor = -60, MasterVolumeCeiling = 12;
-
     /// <summary>
     /// The audio plugins' master volume in dB, which the MIDI ports do not hear; kept in the
     /// rack's session.
     /// </summary>
     public double MasterVolume
     {
-        get => MasterGain > 0 ? Math.Max(20 * Math.Log10(MasterGain), MasterVolumeFloor) : MasterVolumeFloor;
+        get => Decibels.FromGain(MasterGain);
         set
         {
-            MasterGain = value <= MasterVolumeFloor ? 0 : (float)Math.Pow(10, Math.Min(value, MasterVolumeCeiling) / 20);
+            MasterGain = Decibels.ToGain(value);
             OnPropertyChanged();
             OnPropertyChanged(nameof(MasterVolumeTip));
         }
     }
 
-    public string MasterVolumeTip
-        => string.Format(Strings.TransportMasterVolumeTip,
-                         MasterVolume <= MasterVolumeFloor ? "-∞" : MasterVolume.ToString("+0.0;-0.0;0.0"));
+    public string MasterVolumeTip => string.Format(Strings.TransportMasterVolumeTip, Decibels.Text(MasterVolume));
 
     public IReadOnlyList<RepeatMode> RepeatModes { get; } = Enum.GetValues<RepeatMode>();
 

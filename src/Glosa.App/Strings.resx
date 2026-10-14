@@ -85,7 +85,7 @@
     <value>The share of the time this instrument and its effects take to render: on average, and the most in the last second.</value>
   </data>
   <data name="AudioPluginsClipTip" xml:space="preserve">
-    <value>Went past full scale {0} times. Click to clear.</value>
+    <value>Went past full scale {0} times. Click to clear every meter's mark.</value>
   </data>
   <data name="AudioPluginsDefaultDevice" xml:space="preserve">
     <value>System default</value>
@@ -137,6 +137,12 @@
   </data>
   <data name="AudioPluginsMore" xml:space="preserve">
     <value>More</value>
+  </data>
+  <data name="AudioPluginsMute" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="AudioPluginsMuteTip" xml:space="preserve">
+    <value>Click to mute or unmute.</value>
   </data>
   <data name="AudioPluginsNone" xml:space="preserve">
     <value>No instruments yet. Add one with Add Instrument.</value>
@@ -206,6 +212,14 @@
   </data>
   <data name="AudioPluginsTitle" xml:space="preserve">
     <value>Audio Plugins</value>
+  </data>
+  <data name="AudioPluginsVolume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="AudioPluginsVolumeTip" xml:space="preserve">
+    <value>Volume: {0} dB
+Double-click for 0 dB
+Drag with Shift held to fine-tune</value>
   </data>
   <data name="AutoDetect" xml:space="preserve">
     <value>Auto-detect</value>
@@ -984,12 +998,19 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="ToneMapInForce" xml:space="preserve">
     <value>Tone map: {0}</value>
   </data>
+  <data name="TransportMasterMute" xml:space="preserve">
+    <value>Master mute (audio plugins only)</value>
+  </data>
+  <data name="TransportMasterMuteTip" xml:space="preserve">
+    <value>Click to mute or unmute.</value>
+  </data>
   <data name="TransportMasterVolume" xml:space="preserve">
     <value>Master volume (audio plugins only)</value>
   </data>
   <data name="TransportMasterVolumeTip" xml:space="preserve">
-    <value>Master volume (audio plugins only): {0} dB
-Double-click for 0 dB</value>
+    <value>Master volume: {0} dB
+Double-click for 0 dB
+Drag with Shift held to fine-tune</value>
   </data>
   <data name="TransportNext" xml:space="preserve">
     <value>Next</value>

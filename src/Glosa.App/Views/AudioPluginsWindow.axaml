@@ -132,17 +132,24 @@
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
 
-        <!-- A meter is a button that clears its clip lamp; it draws as the bars alone. -->
+        <!--
+          A meter is a button that clears its clip lamp; it draws as the bars alone. Padded
+          around the lamp so a click a little off it still lands.
+        -->
         <Style Selector="Button.meter">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
+            <Setter Property="Padding" Value="0,1,4,1" />
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.meter:pointerover /template/ ContentPresenter#PART_ContentPresenter,
                          Button.meter:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- An instrument's volume, in a row of small readings. -->
+        <Style Selector="Slider.volume">
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="Border.lamp">
             <Setter Property="Width" Value="5" />
@@ -253,11 +260,11 @@
                                                 <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsIn}"
                                                            IsVisible="{Binding MasterEffects.Count}" />
                                                 <ContentControl Content="{Binding MasterInput}" VerticalAlignment="Center" />
-                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsOut}" Margin="8,0,0,0"
+                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsOut}" Margin="4,0,0,0"
                                                            IsVisible="{Binding MasterEffects.Count}" />
                                                 <ContentControl Content="{Binding MasterOutput}" VerticalAlignment="Center"
                                                                 IsVisible="{Binding MasterEffects.Count}" />
-                                                <TextBlock Classes="reading" Text="{Binding MasterLoad}" Margin="8,0,0,0"
+                                                <TextBlock Classes="reading" Text="{Binding MasterLoad}" Margin="4,0,0,0"
                                                            ToolTip.Tip="{x:Static l:Strings.AudioPluginsMasterLoadTip}" />
                                             </StackPanel>
                                             <ListBox Classes="plain effects" ItemsSource="{Binding MasterEffects}"
@@ -315,7 +322,7 @@
                                                        IsVisible="{Binding Wrong}" />
                                         </StackPanel>
                                     </DockPanel>
-                                    <!-- How it is doing: MIDI coming in, its sound after its effects, its load. -->
+                                    <!-- In the order its sound goes: MIDI in, volume, the sound after both, load. -->
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,3"
                                                 IsVisible="{Binding Ready}">
                                         <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent"
@@ -323,8 +330,16 @@
                                             <Ellipse Classes="midi" Classes.lit="{Binding Receiving}" />
                                             <TextBlock Classes="reading" Text="MIDI" />
                                         </StackPanel>
-                                        <ContentControl Content="{Binding Meter}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                        <TextBlock Classes="reading" Text="{Binding Load}" Margin="8,0,0,0"
+                                        <ToggleButton Classes="speaker" IsChecked="{Binding Mute}" Margin="8,0,0,0"
+                                                      ToolTip.Tip="{x:Static l:Strings.AudioPluginsMuteTip}"
+                                                      AutomationProperties.Name="{x:Static l:Strings.AudioPluginsMute}" />
+                                        <Slider Classes="volume" Width="96"
+                                                Minimum="{x:Static vm:Decibels.Floor}" Maximum="{x:Static vm:Decibels.Ceiling}"
+                                                Value="{Binding Volume, Mode=TwoWay}" DoubleTapped="OnVolumeDoubleTapped"
+                                                ToolTip.Tip="{Binding VolumeTip}" c:DragTip.Show="True" c:FineDrag.Enabled="True"
+                                                AutomationProperties.Name="{x:Static l:Strings.AudioPluginsVolume}" />
+                                        <ContentControl Content="{Binding Meter}" Margin="2,0,0,0" VerticalAlignment="Center" />
+                                        <TextBlock Classes="reading" Text="{Binding Load}" Margin="4,0,0,0"
                                                    ToolTip.Tip="{x:Static l:Strings.AudioPluginsChainLoadTip}" />
                                     </StackPanel>
                                     <!-- Its effects, in the order they process its sound. -->
@@ -365,7 +380,7 @@
                     <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsStopped}" Margin="0,0,16,0"
                                IsVisible="{Binding !Running}" ToolTip.Tip="{x:Static l:Strings.AudioPluginsStoppedTip}" />
                     <TextBlock Classes="reading" Text="{Binding Playing}" Margin="0,0,16,0" IsVisible="{Binding Running}" />
-                    <ContentControl Content="{Binding Output}" Margin="0,0,16,0" VerticalAlignment="Center" />
+                    <ContentControl Content="{Binding Output}" Margin="0,0,12,0" VerticalAlignment="Center" />
                     <TextBlock Classes="reading" Text="{Binding Load}" Margin="0,0,16,0"
                                ToolTip.Tip="{x:Static l:Strings.AudioPluginsLoadTip}" />
                     <TextBlock Classes="problem" Text="{Binding Overruns}"
