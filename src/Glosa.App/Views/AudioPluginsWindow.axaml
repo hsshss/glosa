@@ -132,11 +132,14 @@
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
 
-        <!-- A meter is a button that clears its clip lamp; it draws as the bars alone. -->
+        <!--
+          A meter is a button that clears its clip lamp; it draws as the bars alone. Padded
+          around the lamp so a click a little off it still lands.
+        -->
         <Style Selector="Button.meter">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
+            <Setter Property="Padding" Value="0,1,4,1" />
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
@@ -253,11 +256,11 @@
                                                 <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsIn}"
                                                            IsVisible="{Binding MasterEffects.Count}" />
                                                 <ContentControl Content="{Binding MasterInput}" VerticalAlignment="Center" />
-                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsOut}" Margin="8,0,0,0"
+                                                <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsOut}" Margin="4,0,0,0"
                                                            IsVisible="{Binding MasterEffects.Count}" />
                                                 <ContentControl Content="{Binding MasterOutput}" VerticalAlignment="Center"
                                                                 IsVisible="{Binding MasterEffects.Count}" />
-                                                <TextBlock Classes="reading" Text="{Binding MasterLoad}" Margin="8,0,0,0"
+                                                <TextBlock Classes="reading" Text="{Binding MasterLoad}" Margin="4,0,0,0"
                                                            ToolTip.Tip="{x:Static l:Strings.AudioPluginsMasterLoadTip}" />
                                             </StackPanel>
                                             <ListBox Classes="plain effects" ItemsSource="{Binding MasterEffects}"
@@ -324,7 +327,7 @@
                                             <TextBlock Classes="reading" Text="MIDI" />
                                         </StackPanel>
                                         <ContentControl Content="{Binding Meter}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                        <TextBlock Classes="reading" Text="{Binding Load}" Margin="8,0,0,0"
+                                        <TextBlock Classes="reading" Text="{Binding Load}" Margin="4,0,0,0"
                                                    ToolTip.Tip="{x:Static l:Strings.AudioPluginsChainLoadTip}" />
                                     </StackPanel>
                                     <!-- Its effects, in the order they process its sound. -->
@@ -365,7 +368,7 @@
                     <TextBlock Classes="reading" Text="{x:Static l:Strings.AudioPluginsStopped}" Margin="0,0,16,0"
                                IsVisible="{Binding !Running}" ToolTip.Tip="{x:Static l:Strings.AudioPluginsStoppedTip}" />
                     <TextBlock Classes="reading" Text="{Binding Playing}" Margin="0,0,16,0" IsVisible="{Binding Running}" />
-                    <ContentControl Content="{Binding Output}" Margin="0,0,16,0" VerticalAlignment="Center" />
+                    <ContentControl Content="{Binding Output}" Margin="0,0,12,0" VerticalAlignment="Center" />
                     <TextBlock Classes="reading" Text="{Binding Load}" Margin="0,0,16,0"
                                ToolTip.Tip="{x:Static l:Strings.AudioPluginsLoadTip}" />
                     <TextBlock Classes="problem" Text="{Binding Overruns}"
