@@ -158,6 +158,8 @@ public static class YamlFile
         public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
             Scalar scalar = parser.Consume<Scalar>();
+            // A key left without a value, as a hand edit leaves it: the default, as an absent key is.
+            if (scalar.Value.Trim().Length == 0) return Activator.CreateInstance(type);
             string? name = Enum.GetNames(type).FirstOrDefault(
                 n => string.Equals(n, scalar.Value.Trim(), StringComparison.OrdinalIgnoreCase));
 

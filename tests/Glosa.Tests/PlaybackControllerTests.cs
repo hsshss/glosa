@@ -90,7 +90,7 @@ public class PlaylistFileTests
             name: Mine
             items:
               - path: a.mid
-                rating: 5
+                stars: 5
               - path: b.mid
                 title: B
             """);
@@ -738,6 +738,178 @@ public class PlaybackControllerTests
         player.Rearranged();
 
         Assert.Equal("d.mid", player.Current?.Path);
+    }
+
+    // ------------------------------------------------------------------ by rating
+
+    /// <summary>A list whose songs are rated by the letters of <paramref name="ratings"/>: F, D or N.</summary>
+    private static Playlist Rated(string ratings)
+        => new()
+        {
+            Items = [.. ratings.Select((r, i) => new PlaylistItem
+            {
+                Path = $"{i}.mid",
+                Rating = r switch { 'F' => Rating.Favorite, 'D' => Rating.Disliked, _ => Rating.None },
+            })],
+        };
+
+    /// <summary>Plays the list through once and answers the songs that started.</summary>
+    private static List<string> PlayThrough(PlaybackController player, Action start)
+    {
+        List<string> started = Started(player);
+        var done = new ManualResetEventSlim();
+        player.Stopped += _ => done.Set();
+
+        start();
+        Assert.True(done.Wait(TimeSpan.FromSeconds(10)), "the list never ran out");
+        Done(player.WhenIdle());
+        lock (started) return [.. started];
+    }
+
+    [Theory]
+    [InlineData(PlayFilter.All, new[] { "0.mid", "1.mid", "2.mid", "3.mid" })]
+    [InlineData(PlayFilter.NotDisliked, new[] { "0.mid", "1.mid", "3.mid" })]
+    [InlineData(PlayFilter.FavoritesOnly, new[] { "0.mid", "3.mid" })]
+    public void TheFilterKeepsTheSongsItLeavesOutOfTheWalk(PlayFilter filter, string[] expected)
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        player.Filter = filter;
+        player.SetPlaylist(Rated("FNDF"));
+
+        Assert.Equal(expected, PlayThrough(player, () => player.Play()));
+    }
+
+    [Fact]
+    public void ARandomWalkTakesOnlyTheSongsTheFilterLetsThrough()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        player.Filter = PlayFilter.FavoritesOnly;
+        player.SetPlaylist(Rated("FNFDFNF"));
+
+        Assert.Equal(["0.mid", "2.mid", "4.mid", "6.mid"],
+                     PlayThrough(player, () => player.Play()).Order());
+    }
+
+    [Fact]
+    public void ASongLeftOutPlaysWhenPickedAndTheWalkGoesOnAfterIt()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        player.Filter = PlayFilter.FavoritesOnly;
+        player.SetPlaylist(Rated("FNNFF"));
+
+        Assert.Equal(["1.mid", "3.mid", "4.mid"], PlayThrough(player, () => player.Play(1)));
+    }
+
+    [Fact]
+    public void ASongLeftOutPlaysWhenPickedFromAListWithNothingElseToWalk()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny());
+        player.Filter = PlayFilter.FavoritesOnly;
+        player.SetPlaylist(Rated("NN"));
+
+        Assert.Equal(["1.mid"], PlayThrough(player, () => player.Play(1)));
+    }
+
+    [Fact]
+    public void ARandomWalkPlaysASongLeftOutWhenPickedAndThenTheRestOnce()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        player.Filter = PlayFilter.FavoritesOnly;
+        player.SetPlaylist(Rated("FNFNF"));
+
+        List<string> started = PlayThrough(player, () => player.Play(1));
+
+        Assert.Equal("1.mid", started[0]);
+        Assert.Equal(["0.mid", "2.mid", "4.mid"], started.Skip(1).Order());
+    }
+
+    [Fact]
+    public void BackFromASongLeftOutIsTheWalkedSongBeforeIt()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long());
+        player.Filter = PlayFilter.FavoritesOnly;
+        player.SetPlaylist(Rated("FNNF"));
+        Done(player.Play(2));
+
+        Done(player.Previous());
+
+        Assert.Equal("0.mid", player.Current?.Path);
+        Done(player.Stop());
+    }
+
+    [Fact]
+    public void TheSongPlayingRatedOutOfTheWalkPlaysOnAndIsFollowedByTheNextLetThrough()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long());
+        player.Filter = PlayFilter.NotDisliked;
+        Playlist list = Rated("NNDN");
+        player.SetPlaylist(list);
+        Done(player.Play(1));
+
+        list.Items[1].Rating = Rating.Disliked;
+        player.Rearranged();
+
+        Assert.Equal("1.mid", player.Current?.Path);
+        Assert.Equal(TransportState.Playing, player.State);
+        Done(player.Next());
+        Assert.Equal("3.mid", player.Current?.Path);
+        Done(player.Stop());
+    }
+
+    [Theory]
+    [InlineData(PlayOrder.Registered)]
+    [InlineData(PlayOrder.Random)]
+    public void TurningTheFilterOnKeepsTheSongPlayingAndGoesOnToOneLetThrough(PlayOrder order)
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long(), randomSeed: 1);
+        player.Order = order;
+        player.SetPlaylist(Rated("NFNF"));
+        Done(player.Play(0));
+
+        player.Filter = PlayFilter.FavoritesOnly;
+
+        Assert.Equal("0.mid", player.Current?.Path);
+        Assert.Equal(TransportState.Playing, player.State);
+        Done(player.Next());
+        Assert.Contains(player.Current?.Path, new[] { "1.mid", "3.mid" });
+        Done(player.Stop());
+    }
+
+    [Fact]
+    public void ARatingTakenBackInARandomPassDoesNotPlayTheSongPlayingAgain()
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Tiny(), randomSeed: 1);
+        player.Order = PlayOrder.Random;
+        player.Filter = PlayFilter.FavoritesOnly;
+        Playlist list = Rated("FFF");
+        player.SetPlaylist(list);
+
+        List<string> started = PlayThrough(player, () =>
+        {
+            player.Started += item =>
+            {
+                if (item.Path != "1.mid" || item.Rating != Rating.Favorite) return;
+                // Rated out and back in while it plays: still heard once in the pass.
+                item.Rating = Rating.None;
+                player.Rearranged();
+                item.Rating = Rating.Favorite;
+                player.Rearranged();
+            };
+            player.Play();
+        });
+
+        Assert.Equal(["0.mid", "1.mid", "2.mid"], started.Order());
     }
 
     // ------------------------------------------------------------------ one request at a time

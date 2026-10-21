@@ -85,9 +85,34 @@ public class OmitUnspecifiedTests
 
         Assert.DoesNotContain("title", yaml);
         Assert.DoesNotContain("module", yaml);
+        Assert.DoesNotContain("rating", yaml);
         Assert.Equal(@"D:\a.mid", read.Items[0].Path);
         Assert.Equal(1000, read.Items[0].DurationMs);
         Assert.Equal(string.Empty, read.Items[0].Module);
+        Assert.Equal(Rating.None, read.Items[0].Rating);
+    }
+
+    [Fact]
+    public void ARatingIsWrittenByNameAndReadBack()
+    {
+        var list = new Playlist
+        {
+            Items = [new PlaylistItem { Path = "a.mid", Rating = Rating.Favorite }],
+        };
+
+        string yaml = PlaylistFile.ToYaml(list);
+
+        Assert.Contains("rating: Favorite", yaml);
+        Assert.Equal(Rating.Favorite, PlaylistFile.Parse(yaml).Items[0].Rating);
+    }
+
+    [Fact]
+    public void ARatingLeftWithoutAValueIsNone()
+    {
+        // A hand edit that blanked the value rather than taking the key out.
+        Playlist read = PlaylistFile.Parse("items:\n- path: a.mid\n  rating:\n");
+
+        Assert.Equal(Rating.None, read.Items[0].Rating);
     }
 
     [Fact]

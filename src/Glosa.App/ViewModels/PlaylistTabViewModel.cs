@@ -74,12 +74,12 @@ public sealed partial class PlaylistTabViewModel : ViewModelBase
     {
         public readonly record struct Song(
             PlaylistItem Item, string Path, string Title, long DurationMs, string Module,
-            string? ModuleFromData);
+            string? ModuleFromData, Rating Rating);
 
         public static Snapshot Of(Playlist list)
             => new(list.Version, list.Name,
                    [.. list.Items.Select(i => new Song(i, i.Path, i.Title, i.DurationMs, i.Module,
-                                                       i.ModuleFromData))]);
+                                                       i.ModuleFromData, i.Rating))]);
 
         public bool Matches(Playlist list)
         {
@@ -90,7 +90,7 @@ public sealed partial class PlaylistTabViewModel : ViewModelBase
             {
                 PlaylistItem item = list.Items[i];
                 if (Songs[i] != new Song(item, item.Path, item.Title, item.DurationMs, item.Module,
-                                         item.ModuleFromData))
+                                         item.ModuleFromData, item.Rating))
                     return false;
             }
             return true;
@@ -222,6 +222,12 @@ public sealed partial class PlaylistTabViewModel : ViewModelBase
                                         .ThenBy(r => r.Item.DurationMs)],
             SongSort.LengthDescending => [.. Items.OrderBy(r => r.Item.DurationMs <= 0)
                                                   .ThenByDescending(r => r.Item.DurationMs)],
+            SongSort.Rating => [.. Items.OrderBy(r => r.Item.Rating switch
+            {
+                Rating.Favorite => 0,
+                Rating.None => 1,
+                _ => 2,
+            })],
             _ => [.. Items],
         };
         if (sorted.SequenceEqual(Items)) return false;
@@ -316,4 +322,5 @@ public enum SongSort
     Module,
     Length,
     LengthDescending,
+    Rating,
 }

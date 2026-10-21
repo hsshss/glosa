@@ -47,11 +47,33 @@ public class MainViewModelTests : ConfigFolder
             + string.Concat(lists.Select(path => $"- path: '{path}'\n")));
 
     [Fact]
+    public void ARatingGoesToTheSameFileInEveryOpenList()
+    {
+        string[] songs = [Path.Combine(Folder, "a.mid"), Path.Combine(Folder, "b.mid")];
+        WithPlayer(model =>
+        {
+            PlaylistTabViewModel first = model.SelectedPlaylist!;
+            model.AddFiles([songs[0], songs[1], songs[0]]);
+            model.NewPlaylistCommand.Execute(null);
+            PlaylistTabViewModel second = model.SelectedPlaylist!;
+            model.AddFiles([songs[1], songs[0].ToUpperInvariant()]);
+            second.Save();
+
+            model.CycleRatingCommand.Execute(first.Items[0]);
+
+            Assert.Equal([Rating.Favorite, Rating.None, Rating.Favorite], first.Items.Select(r => r.Rating));
+            Assert.Equal([Rating.None, Rating.Favorite], second.Items.Select(r => r.Rating));
+            Assert.True(second.HasChanges);
+        });
+    }
+
+    [Fact]
     public void ChangedSettingsAreWrittenOnCloseAndReadOnTheNextStart()
     {
         WithPlayer(model =>
         {
             model.Repeat = RepeatMode.All;
+            model.PlayFilter = PlayFilter.NotDisliked;
             model.LoopRepeatCount = 5;
             model.HardwareRendering = false;
         });
@@ -59,6 +81,7 @@ public class MainViewModelTests : ConfigFolder
         WithPlayer(model =>
         {
             Assert.Equal(RepeatMode.All, model.Repeat);
+            Assert.Equal(PlayFilter.NotDisliked, model.PlayFilter);
             Assert.Equal(5, model.LoopRepeatCount);
             Assert.False(model.HardwareRendering);
         });
@@ -177,6 +200,7 @@ public class MainViewModelTests : ConfigFolder
         WithPlayer(model =>
         {
             PlaylistTabViewModel original = model.Playlists[1];
+            original.List.Items[0].Rating = Rating.Favorite;
 
             model.DuplicatePlaylistCommand.Execute(original);
 
@@ -185,6 +209,7 @@ public class MainViewModelTests : ConfigFolder
             Assert.Same(copy, model.SelectedPlaylist);
             Assert.Equal(["a.mid"], copy.List.Items.Select(i => Path.GetFileName(i.Path)));
             Assert.NotSame(original.List.Items[0], copy.List.Items[0]);
+            Assert.Equal(Rating.Favorite, copy.List.Items[0].Rating);
         });
     }
 

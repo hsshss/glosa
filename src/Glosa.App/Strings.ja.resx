@@ -353,6 +353,15 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="FileTypeSongs" xml:space="preserve">
     <value>MIDI・圧縮ファイル</value>
   </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="FilterFavoritesOnly" xml:space="preserve">
+    <value>お気に入りのみ</value>
+  </data>
+  <data name="FilterNotDisliked" xml:space="preserve">
+    <value>お気に入りと未評価のみ</value>
+  </data>
   <data name="LanguageSystem" xml:space="preserve">
     <value>OSに合わせる</value>
   </data>
@@ -400,6 +409,9 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="MenuOrder" xml:space="preserve">
     <value>曲順</value>
+  </data>
+  <data name="MenuPlayFilter" xml:space="preserve">
+    <value>再生する曲</value>
   </data>
   <data name="MenuPortMap" xml:space="preserve">
     <value>ポートマップ</value>
@@ -797,6 +809,15 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   <data name="RateUnlimited" xml:space="preserve">
     <value>無制限</value>
   </data>
+  <data name="RatingDisliked" xml:space="preserve">
+    <value>好みでない</value>
+  </data>
+  <data name="RatingFavorite" xml:space="preserve">
+    <value>お気に入り</value>
+  </data>
+  <data name="RatingNone" xml:space="preserve">
+    <value>なし</value>
+  </data>
   <data name="RenamePlaylist" xml:space="preserve">
     <value>プレイリスト名の変更</value>
   </data>
@@ -979,6 +1000,9 @@ define.override.yaml を修正するか削除して Glosa を起動し直して�
   </data>
   <data name="SortPath" xml:space="preserve">
     <value>パス順</value>
+  </data>
+  <data name="SortRating" xml:space="preserve">
+    <value>お気に入り順</value>
   </data>
   <data name="SortTitle" xml:space="preserve">
     <value>タイトル順</value>

@@ -151,6 +151,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         Language = Languages.Find(saved.Language);
         Order = saved.Order;
         Repeat = saved.Repeat;
+        PlayFilter = saved.PlayFilter;
         LcdEnlarged = saved.LcdEnlarged;
         HardwareRendering = saved.HardwareRendering;
 
@@ -258,6 +259,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _settings.AutoDropPlay = AutoDropPlay;
         _settings.Order = Order;
         _settings.Repeat = Repeat;
+        _settings.PlayFilter = PlayFilter;
         _settings.LcdEnlarged = LcdEnlarged;
         _settings.HardwareRendering = HardwareRendering;
 
@@ -551,6 +553,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     public IReadOnlyList<PlayOrder> PlayOrders { get; } = Enum.GetValues<PlayOrder>();
 
+    public IReadOnlyList<PlayFilter> PlayFilters { get; } = Enum.GetValues<PlayFilter>();
+
     public IReadOnlyList<Choice> Priorities { get; } = Choices(Enum.GetValues<PlaybackPriority>());
 
     public IReadOnlyList<Choice> MatchPositions { get; } = Choices(Enum.GetValues<MatchPosition>());
@@ -668,6 +672,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     public ObservableCollection<MenuChoice> OrderChoices { get; } = [];
 
     public ObservableCollection<MenuChoice> RepeatChoices { get; } = [];
+
+    public ObservableCollection<MenuChoice> FilterChoices { get; } = [];
 
     /// <summary>The tab on screen, which is not necessarily the one playing.</summary>
     [ObservableProperty]
@@ -811,6 +817,9 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     public partial PlayOrder Order { get; set; } = PlayOrder.Registered;
+
+    [ObservableProperty]
+    public partial PlayFilter PlayFilter { get; set; } = PlayFilter.All;
 
     [ObservableProperty]
     public partial int LoopRepeatCount { get; set; } = 2;
@@ -976,6 +985,26 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         if (tab.IsPlaying) _player.Controller.Rearranged();
     }
 
+    /// <summary>Moves a song's rating round, for a click on its star.</summary>
+    /// <remarks>
+    /// The rating is the file's: every open list that has it gets the same, the paths
+    /// compared without case as the lists' own files are. The list being played is told,
+    /// as the filter may now take the song or leave it out.
+    /// </remarks>
+    [RelayCommand]
+    private void CycleRating(PlaylistItemViewModel row)
+    {
+        row.CycleRating();
+        foreach (PlaylistTabViewModel tab in Playlists)
+            foreach (PlaylistItemViewModel same in tab.Items)
+                if (string.Equals(same.Path, row.Path, StringComparison.OrdinalIgnoreCase))
+                    same.Rating = row.Rating;
+
+        if (_player.Controller.Playlist.Items.Any(
+                item => string.Equals(item.Path, row.Path, StringComparison.OrdinalIgnoreCase)))
+            _player.Controller.Rearranged();
+    }
+
     /// <summary>Tells the player the list it is walking has been rearranged.</summary>
     public void ReorderFinished()
     {
@@ -1008,6 +1037,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 DurationMs = row.Item.DurationMs,
                 ModuleFromData = row.Item.ModuleFromData,
                 Module = row.Item.Module,
+                Rating = row.Item.Rating,
             });
 
         if (move)
@@ -1072,6 +1102,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 DurationMs = item.DurationMs,
                 ModuleFromData = item.ModuleFromData,
                 Module = item.Module,
+                Rating = item.Rating,
             })],
         };
 
@@ -2195,6 +2226,12 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         MarkMenus();
     }
 
+    partial void OnPlayFilterChanged(PlayFilter value)
+    {
+        _player.Controller.Filter = value;
+        MarkMenus();
+    }
+
     /// <summary>
     /// The output module in force follows the map in force, and is written back to it.
     /// </summary>
@@ -2224,6 +2261,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         Fill(RepeatChoices, RepeatModes,
              mode => Controls.EnumLabelConverter.Text(mode),
              mode => mode == Repeat, mode => Repeat = mode);
+
+        Fill(FilterChoices, PlayFilters,
+             filter => Controls.EnumLabelConverter.Text(filter),
+             filter => filter == PlayFilter, filter => PlayFilter = filter);
     }
 
     /// <summary>
@@ -2254,7 +2295,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             if (entry is MenuChoice choice) choice.Refresh();
 
         foreach (ObservableCollection<MenuChoice> menu in
-                 new[] { OrderChoices, RepeatChoices })
+                 new[] { OrderChoices, RepeatChoices, FilterChoices })
             foreach (MenuChoice choice in menu) choice.Refresh();
     }
 
@@ -2841,6 +2882,41 @@ public sealed partial class PlaylistItemViewModel(PlaylistItem item, Func<Playli
     /// detection has not had its turn.
     /// </summary>
     public string SortModule => Item.Module.Length > 0 ? Item.Module : _detected ?? string.Empty;
+
+    public Rating Rating
+    {
+        get => Item.Rating;
+        set
+        {
+            if (Item.Rating == value) return;
+            Item.Rating = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsFavorite));
+            OnPropertyChanged(nameof(IsDisliked));
+            OnPropertyChanged(nameof(RatingText));
+        }
+    }
+
+    public bool IsFavorite => Item.Rating == Rating.Favorite;
+
+    public bool IsDisliked => Item.Rating == Rating.Disliked;
+
+    /// <summary>What the star's tool tip says, and what a screen reader calls it.</summary>
+    public string RatingText => Item.Rating switch
+    {
+        Rating.Favorite => Strings.RatingFavorite,
+        Rating.Disliked => Strings.RatingDisliked,
+        _ => Strings.RatingNone,
+    };
+
+    /// <summary>A click on the star: none, favorite, disliked, and round again.</summary>
+    public void CycleRating()
+        => Rating = Item.Rating switch
+        {
+            Rating.None => Rating.Favorite,
+            Rating.Favorite => Rating.Disliked,
+            _ => Rating.None,
+        };
 
     /// <summary>Whether detection has run for this row since the definition last changed.</summary>
     public bool Detected => _detected is not null;

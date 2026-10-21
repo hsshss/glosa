@@ -211,6 +211,45 @@
         <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
     </Style>
 
+    <!--
+      A song's rating in a playlist row: an empty star, filled when a favorite, crossed out
+      when disliked. The empty state is dimmed so a column of them stays quiet, and lit under
+      the pointer. In the row's own foreground, which a selected row keeps.
+    -->
+    <Style Selector="Button.rating">
+        <Setter Property="Padding" Value="1" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Opacity" Value="0.35" />
+        <Setter Property="Content">
+            <Template>
+                <PathIcon Width="13" Height="13" Data="{DynamicResource IconStarOutline}" />
+            </Template>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rating.favorite">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.rating.disliked">
+        <Setter Property="Opacity" Value="0.65" />
+    </Style>
+    <Style Selector="Button.rating:pointerover">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.rating.favorite PathIcon">
+        <Setter Property="Data" Value="{DynamicResource IconStar}" />
+    </Style>
+    <Style Selector="Button.rating.disliked PathIcon">
+        <Setter Property="Data" Value="{DynamicResource IconStarOff}" />
+    </Style>
+    <Style Selector="Button.rating /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    </Style>
+
     <!-- A panel: the LCD bezel, the transport, the playlist. -->
     <Style Selector="Border.card">
         <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
