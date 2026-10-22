@@ -1,3 +1,4 @@
+using Glosa.App;
 using Glosa.App.ViewModels;
 using Glosa.Core.Playback;
 
@@ -48,6 +49,22 @@ public class PlaylistTabViewModelTests : IDisposable
 
         tab.Name = "Other";
         Assert.True(tab.HasChanges);
+    }
+
+    [Fact]
+    public void ChangingARatingIsAChangeToSave()
+    {
+        PlaylistFile.Save(new Playlist { Name = "Mix", Items = [new PlaylistItem { Path = "a.mid" }] }, ListPath);
+        var tab = new PlaylistTabViewModel(PlaylistFile.Load(ListPath), ListPath, item => item.Path,
+                                           fromFile: true);
+        tab.Save();
+        Assert.False(tab.HasChanges);
+
+        tab.Items[0].Rating = Rating.Favorite;
+
+        Assert.True(tab.HasChanges);
+        tab.Save();
+        Assert.Equal(Rating.Favorite, PlaylistFile.Load(ListPath).Items[0].Rating);
     }
 
     [Fact]
@@ -117,6 +134,19 @@ public class PlaylistTabViewModelTests : IDisposable
 
         Assert.True(tab.Sort(SongSort.LengthDescending));
         Assert.Equal(["b", "d", "c", "a"], Paths(tab));
+        Assert.Equal(Paths(tab), tab.List.Items.Select(i => i.Path));
+    }
+
+    [Fact]
+    public void SortingByRatingPutsFavoritesFirstAndDislikedLastInTheirOwnOrder()
+    {
+        PlaylistTabViewModel tab = Tab("a", "b", "c", "d", "e");
+        Rating[] ratings = [Rating.Disliked, Rating.Favorite, Rating.None, Rating.Favorite, Rating.None];
+        for (int i = 0; i < ratings.Length; i++) tab.List.Items[i].Rating = ratings[i];
+
+        Assert.True(tab.Sort(SongSort.Rating));
+
+        Assert.Equal(["b", "d", "c", "e", "a"], Paths(tab));
         Assert.Equal(Paths(tab), tab.List.Items.Select(i => i.Path));
     }
 
@@ -236,6 +266,30 @@ public class PlaylistItemViewModelTests
 
         Assert.Equal(string.Empty, row.ModuleText);
         Assert.False(row.Detected);
+    }
+
+    [Fact]
+    public void AClickOnTheStarGoesRoundTheRatings()
+    {
+        PlaylistItemViewModel row = Row();
+        var changed = new List<string?>();
+        row.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        row.CycleRating();
+        Assert.Equal(Rating.Favorite, row.Item.Rating);
+        Assert.True(row.IsFavorite);
+        Assert.Equal(Strings.RatingFavorite, row.RatingText);
+        Assert.Equal([nameof(row.Rating), nameof(row.IsFavorite), nameof(row.IsDisliked), nameof(row.RatingText)],
+                     changed);
+
+        row.CycleRating();
+        Assert.Equal(Rating.Disliked, row.Item.Rating);
+        Assert.True(row.IsDisliked);
+        Assert.False(row.IsFavorite);
+
+        row.CycleRating();
+        Assert.Equal(Rating.None, row.Item.Rating);
+        Assert.Equal(Strings.RatingNone, row.RatingText);
     }
 
     [Theory]

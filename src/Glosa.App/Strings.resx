@@ -356,6 +356,15 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="FileTypeSongs" xml:space="preserve">
     <value>MIDI and archive files</value>
   </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>All Songs</value>
+  </data>
+  <data name="FilterFavoritesOnly" xml:space="preserve">
+    <value>Favorites Only</value>
+  </data>
+  <data name="FilterNotDisliked" xml:space="preserve">
+    <value>Favorites and Unrated Only</value>
+  </data>
   <data name="LanguageSystem" xml:space="preserve">
     <value>System default</value>
   </data>
@@ -403,6 +412,9 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="MenuOrder" xml:space="preserve">
     <value>Play Order</value>
+  </data>
+  <data name="MenuPlayFilter" xml:space="preserve">
+    <value>Songs to Play</value>
   </data>
   <data name="MenuPortMap" xml:space="preserve">
     <value>Port Map</value>
@@ -800,6 +812,15 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   <data name="RateUnlimited" xml:space="preserve">
     <value>Unlimited</value>
   </data>
+  <data name="RatingDisliked" xml:space="preserve">
+    <value>Disliked</value>
+  </data>
+  <data name="RatingFavorite" xml:space="preserve">
+    <value>Favorite</value>
+  </data>
+  <data name="RatingNone" xml:space="preserve">
+    <value>Not Rated</value>
+  </data>
   <data name="RenamePlaylist" xml:space="preserve">
     <value>Rename Playlist</value>
   </data>
@@ -982,6 +1003,9 @@ Fix or delete define.override.yaml, and restart Glosa.</value>
   </data>
   <data name="SortPath" xml:space="preserve">
     <value>By Path</value>
+  </data>
+  <data name="SortRating" xml:space="preserve">
+    <value>By Favorite</value>
   </data>
   <data name="SortTitle" xml:space="preserve">
     <value>By Title</value>

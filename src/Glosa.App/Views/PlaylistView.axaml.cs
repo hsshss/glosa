@@ -198,6 +198,8 @@ public partial class PlaylistView : UserControl
     private void OnPlaySelected(object? sender, TappedEventArgs e)
     {
         if ((e.Source as Visual)?.FindAncestorOfType<ListBoxItem>(includeSelf: true) is null) return;
+        // Two quick clicks on the row's star are two clicks on the star.
+        if ((e.Source as Visual)?.FindAncestorOfType<Button>(includeSelf: true) is not null) return;
         Model?.PlaySelectedCommand.Execute(null);
     }
 
@@ -461,6 +463,8 @@ public partial class PlaylistView : UserControl
         // Which rows travel is settled when the drag starts, not here: the list box is still
         // working out what this press does to the selection.
         if ((e.Source as Control)?.FindAncestorOfType<ListBoxItem>() is not { } item) return false;
+        // A press on the row's star is a click, never the start of a drag.
+        if ((e.Source as Control)?.FindAncestorOfType<Button>(includeSelf: true) is not null) return false;
 
         _pressedRows = [.. list.SelectedItems?.OfType<PlaylistItemViewModel>() ?? []];
         _pressedRow = item.DataContext as PlaylistItemViewModel;

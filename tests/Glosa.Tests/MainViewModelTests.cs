@@ -46,12 +46,97 @@ public class MainViewModelTests : ConfigFolder
             "version: 1\nportMaps:\n- title: Default\nopenPlaylists:\n"
             + string.Concat(lists.Select(path => $"- path: '{path}'\n")));
 
+    /// <summary>Songs of a few seconds each, written to the settings folder.</summary>
+    private string[] Songs(int count)
+    {
+        string folder = Path.Combine(Folder, "songs");
+        Directory.CreateDirectory(folder);
+        byte[] song = new SmfBuilder(480)
+            .Track(t => t.Short(0, 0x90, 60, 100).Short(9600, 0x80, 60, 0).End(0)).Build();
+        string[] paths = [.. Enumerable.Range(0, count).Select(i => Path.Combine(folder, $"{i:D2}.mid"))];
+        foreach (string path in paths) File.WriteAllBytes(path, song);
+        return paths;
+    }
+
+    /// <summary>
+    /// The rows the list is asked to bring on screen, in turn, until <paramref name="row"/>
+    /// is among them.
+    /// </summary>
+    /// <remarks>The posted jobs run at once, before the transport has had time, as after a click.</remarks>
+    private static List<int> RevealedUntil(MainViewModel model, PlaylistTabViewModel tab, int row, Action act)
+    {
+        var revealed = new List<int>();
+        void Moved() => revealed.Add(tab.LastPlayed);
+        model.PlayingRowMoved += Moved;
+
+        act();
+        Dispatcher.UIThread.RunJobs();
+        var wait = System.Diagnostics.Stopwatch.StartNew();
+        while (!revealed.Contains(row) && wait.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            Thread.Sleep(1);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        model.PlayingRowMoved -= Moved;
+        return revealed;
+    }
+
+    [Fact]
+    public void PlayingASongFromAnotherListBringsOnlyThatSongOnScreen()
+    {
+        string[] songs = Songs(30);
+        WithPlayer(model =>
+        {
+            PlaylistTabViewModel first = model.SelectedPlaylist!;
+            model.AddFiles(songs);
+            model.NewPlaylistCommand.Execute(null);
+            PlaylistTabViewModel second = model.SelectedPlaylist!;
+            model.AddFiles(songs);
+            second.LastPlayed = 3;
+
+            model.SelectedPlaylist = first;
+            first.Selected = first.Items[10];
+            RevealedUntil(model, first, 10, () => model.PlaySelectedCommand.Execute(null));
+
+            // The second list is handed over on the double-click, its playing mark on row 3.
+            model.SelectedPlaylist = second;
+            second.Selected = second.Items[20];
+            Assert.Equal([20], RevealedUntil(model, second, 20, () => model.PlaySelectedCommand.Execute(null))
+                                   .Distinct());
+
+            model.StopCommand.Execute(null);
+        });
+    }
+
+    [Fact]
+    public void ARatingGoesToTheSameFileInEveryOpenList()
+    {
+        string[] songs = [Path.Combine(Folder, "a.mid"), Path.Combine(Folder, "b.mid")];
+        WithPlayer(model =>
+        {
+            PlaylistTabViewModel first = model.SelectedPlaylist!;
+            model.AddFiles([songs[0], songs[1], songs[0]]);
+            model.NewPlaylistCommand.Execute(null);
+            PlaylistTabViewModel second = model.SelectedPlaylist!;
+            model.AddFiles([songs[1], songs[0].ToUpperInvariant()]);
+            second.Save();
+
+            model.CycleRatingCommand.Execute(first.Items[0]);
+
+            Assert.Equal([Rating.Favorite, Rating.None, Rating.Favorite], first.Items.Select(r => r.Rating));
+            Assert.Equal([Rating.None, Rating.Favorite], second.Items.Select(r => r.Rating));
+            Assert.True(second.HasChanges);
+        });
+    }
+
     [Fact]
     public void ChangedSettingsAreWrittenOnCloseAndReadOnTheNextStart()
     {
         WithPlayer(model =>
         {
             model.Repeat = RepeatMode.All;
+            model.PlayFilter = PlayFilter.NotDisliked;
             model.LoopRepeatCount = 5;
             model.HardwareRendering = false;
         });
@@ -59,6 +144,7 @@ public class MainViewModelTests : ConfigFolder
         WithPlayer(model =>
         {
             Assert.Equal(RepeatMode.All, model.Repeat);
+            Assert.Equal(PlayFilter.NotDisliked, model.PlayFilter);
             Assert.Equal(5, model.LoopRepeatCount);
             Assert.False(model.HardwareRendering);
         });
@@ -177,6 +263,7 @@ public class MainViewModelTests : ConfigFolder
         WithPlayer(model =>
         {
             PlaylistTabViewModel original = model.Playlists[1];
+            original.List.Items[0].Rating = Rating.Favorite;
 
             model.DuplicatePlaylistCommand.Execute(original);
 
@@ -185,6 +272,7 @@ public class MainViewModelTests : ConfigFolder
             Assert.Same(copy, model.SelectedPlaylist);
             Assert.Equal(["a.mid"], copy.List.Items.Select(i => Path.GetFileName(i.Path)));
             Assert.NotSame(original.List.Items[0], copy.List.Items[0]);
+            Assert.Equal(Rating.Favorite, copy.List.Items[0].Rating);
         });
     }
 

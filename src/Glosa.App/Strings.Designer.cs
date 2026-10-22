@@ -1002,6 +1002,33 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Songs.
+        /// </summary>
+        public static string FilterAll {
+            get {
+                return ResourceManager.GetString("FilterAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorites Only.
+        /// </summary>
+        public static string FilterFavoritesOnly {
+            get {
+                return ResourceManager.GetString("FilterFavoritesOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorites and Unrated Only.
+        /// </summary>
+        public static string FilterNotDisliked {
+            get {
+                return ResourceManager.GetString("FilterNotDisliked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System default.
         /// </summary>
         public static string LanguageSystem {
@@ -1142,6 +1169,15 @@ namespace Glosa.App {
         public static string MenuOrder {
             get {
                 return ResourceManager.GetString("MenuOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Songs to Play.
+        /// </summary>
+        public static string MenuPlayFilter {
+            get {
+                return ResourceManager.GetString("MenuPlayFilter", resourceCulture);
             }
         }
         
@@ -2334,6 +2370,33 @@ namespace Glosa.App {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disliked.
+        /// </summary>
+        public static string RatingDisliked {
+            get {
+                return ResourceManager.GetString("RatingDisliked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Favorite.
+        /// </summary>
+        public static string RatingFavorite {
+            get {
+                return ResourceManager.GetString("RatingFavorite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not Rated.
+        /// </summary>
+        public static string RatingNone {
+            get {
+                return ResourceManager.GetString("RatingNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rename Playlist.
         /// </summary>
         public static string RenamePlaylist {
@@ -2879,6 +2942,15 @@ namespace Glosa.App {
         public static string SortPath {
             get {
                 return ResourceManager.GetString("SortPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to By Favorite.
+        /// </summary>
+        public static string SortRating {
+            get {
+                return ResourceManager.GetString("SortRating", resourceCulture);
             }
         }
         

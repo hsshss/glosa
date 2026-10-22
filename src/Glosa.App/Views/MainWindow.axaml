@@ -66,6 +66,9 @@
                 <MenuItem Header="{x:Static l:Strings.MenuRepeat}" ItemsSource="{Binding RepeatChoices}"
                           ItemContainerTheme="{StaticResource ChoiceItem}"
                           Icon="{StaticResource IconRepeat}" />
+                <MenuItem Header="{x:Static l:Strings.MenuPlayFilter}" ItemsSource="{Binding FilterChoices}"
+                          ItemContainerTheme="{StaticResource ChoiceItem}"
+                          Icon="{StaticResource IconStarOutline}" />
                 <Separator />
                 <MenuItem Header="{x:Static l:Strings.MenuOpenDefinition}" Click="OnOpenDefinition"
                           Icon="{StaticResource IconDefinition}" />

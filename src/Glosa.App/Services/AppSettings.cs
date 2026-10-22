@@ -285,6 +285,9 @@ public sealed class AppSettings
     /// <summary>What happens when a song ends.</summary>
     public RepeatMode Repeat { get; set; } = RepeatMode.None;
 
+    /// <summary>Which songs the playlist is played through, by how they are rated.</summary>
+    public PlayFilter PlayFilter { get; set; } = PlayFilter.All;
+
     /// <summary>
     /// Whether the display gets room of its own instead of taking the height of the
     /// transport beside it. Off to begin with: the compact one lines the window up.

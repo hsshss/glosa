@@ -25,6 +25,15 @@ public enum RepeatMode
     All,
 }
 
+/// <summary>Which songs of the list the walk takes, by how they are rated.</summary>
+public enum PlayFilter
+{
+    All,
+    /// <summary>Every song but the disliked ones.</summary>
+    NotDisliked,
+    FavoritesOnly,
+}
+
 /// <summary>State that carries across a song and has to be put back between songs.</summary>
 public interface IPlaybackReset
 {
@@ -113,14 +122,22 @@ public sealed class PlaybackController : IDisposable
     private PlaylistItem[] _order = [];
 
     /// <summary>
+    /// Every song of the list as last told, those <see cref="Filter"/> leaves out included,
+    /// arranged as the order is, so a song left out has a place among the walked ones. For a
+    /// random walk, the list as it is.
+    /// </summary>
+    private PlaylistItem[] _listed = [];
+
+    /// <summary>
     /// Where in <see cref="_order"/> the cursor is — or, while <see cref="_detached"/>, the
     /// song the cursor goes on to next (<c>_order.Length</c> when there is none).
     /// </summary>
     private int _position = -1;
 
     /// <summary>
-    /// The song under the cursor once it has been taken out of the list while it plays, or
-    /// null. It plays on; the cursor sits where it was, between the songs either side.
+    /// The song under the cursor while it plays outside the walk, or null: taken out of the
+    /// list while it played, or picked by hand though <see cref="Filter"/> leaves it out. It
+    /// plays on; the cursor sits where it was, between the songs either side.
     /// </summary>
     private PlaylistItem? _detached;
 
@@ -128,6 +145,8 @@ public sealed class PlaybackController : IDisposable
     private PlaylistItem? _announced;
 
     private PlayOrder _playOrder = PlayOrder.Registered;
+
+    private PlayFilter _filter = PlayFilter.All;
 
     /// <summary>The requests not taken yet. Also what the thread waits on.</summary>
     private readonly Queue<Request> _queue = new();
@@ -197,6 +216,35 @@ public sealed class PlaybackController : IDisposable
             Announce();
         }
     }
+
+    /// <summary>Which songs the walk takes.</summary>
+    /// <remarks>
+    /// A song left out still plays when picked by hand. A rating changed on the list being
+    /// walked is told with <see cref="Rearranged"/>.
+    /// </remarks>
+    public PlayFilter Filter
+    {
+        get => _filter;
+        set
+        {
+            lock (_gate)
+            {
+                if (_filter == value) return;
+                _filter = value;
+                // A random walk is not dealt again: only the songs to come change.
+                if (_playOrder == PlayOrder.Random) Reconcile();
+                else BuildOrder(Current);
+            }
+            Announce();
+        }
+    }
+
+    private bool Walks(PlaylistItem item) => _filter switch
+    {
+        PlayFilter.NotDisliked => item.Rating != Rating.Disliked,
+        PlayFilter.FavoritesOnly => item.Rating == Rating.Favorite,
+        _ => true,
+    };
 
     /// <summary>The song the cursor is on, or null when the list is empty.</summary>
     public PlaylistItem? Current
@@ -299,6 +347,22 @@ public sealed class PlaybackController : IDisposable
             item = itemIndex >= 0 && itemIndex < _playlist.Items.Count
                 ? _playlist.Items[itemIndex]
                 : null;
+        }
+        return Ask(new PlayItem(item));
+    }
+
+    /// <summary>
+    /// Hands over another list and starts the song at <paramref name="itemIndex"/> in it.
+    /// </summary>
+    /// <remarks>The cursor is said to be on that song only, not anywhere on the way.</remarks>
+    public Task Play(Playlist playlist, int itemIndex)
+    {
+        PlaylistItem? item;
+        lock (_gate)
+        {
+            _playlist = playlist;
+            item = itemIndex >= 0 && itemIndex < playlist.Items.Count ? playlist.Items[itemIndex] : null;
+            BuildOrder(item);
         }
         return Ask(new PlayItem(item));
     }
@@ -446,10 +510,26 @@ public sealed class PlaybackController : IDisposable
             case PlayItem play:
             {
                 int at;
+                bool outside = false;
                 lock (_gate)
                 {
                     at = play.Item is null ? -1 : IndexOf(_order, play.Item);
                     if (at >= 0 && _playOrder == PlayOrder.Random) at = BringUp(at);
+                    else if (at < 0 && play.Item is { } item && IndexOf(_listed, item) is var listed and >= 0)
+                    {
+                        // Left out by the filter: it plays outside the walk. Preparing now, so
+                        // a rearrangement before it starts keeps it under the cursor.
+                        _position = NextAfter(listed);
+                        _detached = item;
+                        _state = TransportState.Preparing;
+                        outside = true;
+                    }
+                }
+                if (outside)
+                {
+                    Announce();
+                    Start(request);
+                    return;
                 }
                 if (at < 0)
                 {
@@ -465,6 +545,8 @@ public sealed class PlaybackController : IDisposable
                     _position = at;
                     _detached = null;
                 }
+                // Before the song is read: a list handed over with it has not said so.
+                Announce();
                 Start(request);
                 return;
             }
@@ -646,7 +728,7 @@ public sealed class PlaybackController : IDisposable
 
         // Bounded so a list of unreadable files stops instead of spinning.
         int attempts;
-        lock (_gate) attempts = _order.Length;
+        lock (_gate) attempts = _order.Length + (_detached is null ? 0 : 1);
         StopCause stop = StopCause.NothingPlayable;
 
         for (int i = 0; i < attempts; i++)
@@ -801,11 +883,9 @@ public sealed class PlaybackController : IDisposable
     /// <paramref name="keepOn"/>, or at the top when that is null.
     /// </summary>
     /// <remarks>
-    /// When <paramref name="keepOn"/> has been taken out of the list, the cursor stays where
-    /// it was: in front of the first song after it, in the order as it was, that is still
-    /// there. While the song plays it is kept as <see cref="_detached"/>, so it is still
-    /// the one under the cursor; at rest there is nothing to keep, and the cursor is simply
-    /// on the song after it.
+    /// When <paramref name="keepOn"/> is not walked, the cursor goes to the first walked song
+    /// after it: in the list when the filter leaves it out, in the old order when it has
+    /// been taken out. While it plays it stays under the cursor as <see cref="_detached"/>.
     /// </remarks>
     private void BuildOrder(PlaylistItem? keepOn)
     {
@@ -818,7 +898,7 @@ public sealed class PlaybackController : IDisposable
         PlaylistItem[] was = _order;
         int wasAt = _detached is null ? _position + 1 : _position;
 
-        PlaylistItem[] order = [.. _playlist.Items];
+        PlaylistItem[] listed = [.. _playlist.Items];
         switch (_playOrder)
         {
             case PlayOrder.Registered:
@@ -826,17 +906,19 @@ public sealed class PlaybackController : IDisposable
             case PlayOrder.FileName:
             {
                 StringComparer names = NameOrder.Comparer;
-                Array.Sort(order, (a, b) => names.Compare(
+                Array.Sort(listed, (a, b) => names.Compare(
                     System.IO.Path.GetFileName(a.Path), System.IO.Path.GetFileName(b.Path)));
                 break;
             }
             case PlayOrder.Title:
                 // Culture-aware: the titles are mostly Japanese, where ordinal order is noise.
-                Array.Sort(order, (a, b) => string.Compare(
+                Array.Sort(listed, (a, b) => string.Compare(
                     a.Display, b.Display, StringComparison.CurrentCultureIgnoreCase));
                 break;
         }
 
+        PlaylistItem[] order = [.. listed.Where(Walks)];
+        _listed = listed;
         _order = order;
         _detached = null;
 
@@ -849,17 +931,49 @@ public sealed class PlaybackController : IDisposable
         _position = IndexOf(order, keepOn);
         if (_position >= 0) return;
 
-        _position = order.Length;
-        for (int i = Math.Max(wasAt, 0); i < was.Length; i++)
-        {
-            int after = IndexOf(order, was[i]);
-            if (after < 0) continue;
-            _position = after;
-            break;
-        }
+        _position = IndexOf(listed, keepOn) is var at and >= 0 ? NextAfter(at) : FirstStill(was, wasAt);
 
         if (_state != TransportState.Stopped) _detached = keepOn;
         else if (_position >= order.Length) _position = order.Length > 0 ? 0 : -1;
+    }
+
+    /// <summary>
+    /// Where in the order the first of <paramref name="was"/> from <paramref name="from"/>
+    /// on still is, or the end of the order when none is.
+    /// </summary>
+    private int FirstStill(PlaylistItem[] was, int from)
+    {
+        for (int i = Math.Max(from, 0); i < was.Length; i++)
+        {
+            int after = IndexOf(_order, was[i]);
+            if (after >= 0) return after;
+        }
+        return _order.Length;
+    }
+
+    /// <summary>
+    /// Where the walk goes on from a song it leaves out, the one at <paramref name="listed"/>
+    /// in <see cref="_listed"/>: the first walked song after it, or the end of the order.
+    /// </summary>
+    /// <remarks>
+    /// A random walk has no after: it goes on with the songs not yet heard.
+    /// </remarks>
+    private int NextAfter(int listed)
+    {
+        if (_playOrder == PlayOrder.Random)
+        {
+            int next = _detached is not null || _state is not (TransportState.Playing or TransportState.Paused)
+                ? _position
+                : _position + 1;
+            return Math.Clamp(next, 0, _order.Length);
+        }
+
+        for (int i = listed + 1; i < _listed.Length; i++)
+        {
+            int at = IndexOf(_order, _listed[i]);
+            if (at >= 0) return at;
+        }
+        return _order.Length;
     }
 
     /// <summary>Raises <see cref="CurrentChanged"/> if the cursor has moved. Outside the lock.</summary>
@@ -938,7 +1052,8 @@ public sealed class PlaybackController : IDisposable
     /// </summary>
     private void Deal(PlaylistItem? first)
     {
-        PlaylistItem[] order = [.. _playlist.Items];
+        _listed = [.. _playlist.Items];
+        PlaylistItem[] order = [.. _listed.Where(Walks)];
         Shuffle(order, avoid: null);
         int at = first is null ? -1 : IndexOf(order, first);
         if (at > 0) (order[0], order[at]) = (order[at], order[0]);
@@ -964,22 +1079,27 @@ public sealed class PlaybackController : IDisposable
     }
 
     /// <summary>
-    /// Brings a random walk up to date with a changed list without dealing it again: songs
-    /// gone are dropped, new ones go at random among those still to come.
+    /// Brings a random walk up to date with a changed list or filter without dealing it
+    /// again: songs gone or left out are dropped, new ones go at random among those still to
+    /// come.
     /// </summary>
     private void Reconcile()
     {
-        var listed = new HashSet<PlaylistItem>(_playlist.Items, ReferenceEqualityComparer.Instance);
+        _listed = [.. _playlist.Items];
+        var walked = new HashSet<PlaylistItem>(_listed.Where(Walks), ReferenceEqualityComparer.Instance);
         var known = new HashSet<PlaylistItem>(_order, ReferenceEqualityComparer.Instance);
+        // A song playing outside the walk has been heard, though the walk now takes it.
+        if (_detached is not null) known.Add(_detached);
         PlaylistItem? on = Current;
         int split = Math.Clamp(_detached is not null ? _position : _position + 1, 0, _order.Length);
 
-        List<PlaylistItem> order = [.. _order.Take(split).Where(listed.Contains)];
+        List<PlaylistItem> order = [.. _order.Take(split).Where(walked.Contains)];
         bool kept = on is not null && order.Count > 0 && ReferenceEquals(order[^1], on);
         int coming = order.Count;
-        order.AddRange(_order.Skip(split).Where(listed.Contains));
-        foreach (PlaylistItem item in _playlist.Items)
-            if (!known.Contains(item)) order.Insert(_random.Next(coming, order.Count + 1), item);
+        order.AddRange(_order.Skip(split).Where(walked.Contains));
+        foreach (PlaylistItem item in _listed)
+            if (walked.Contains(item) && !known.Contains(item))
+                order.Insert(_random.Next(coming, order.Count + 1), item);
 
         _order = [.. order];
         _detached = null;

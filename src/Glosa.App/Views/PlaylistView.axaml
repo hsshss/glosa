@@ -44,6 +44,8 @@
                                       Click="OnSort" Tag="{x:Static vm:SongSort.Path}" />
                             <MenuItem Header="{x:Static l:Strings.SortModule}"
                                       Click="OnSort" Tag="{x:Static vm:SongSort.Module}" />
+                            <MenuItem Header="{x:Static l:Strings.SortRating}"
+                                      Click="OnSort" Tag="{x:Static vm:SongSort.Rating}" />
                             <MenuItem Header="{x:Static l:Strings.SortLength}"
                                       Click="OnSort" Tag="{x:Static vm:SongSort.Length}" />
                             <MenuItem Header="{x:Static l:Strings.SortLengthDescending}"
@@ -81,14 +83,25 @@
                           The mark column is a fixed width, not Auto, so every title
                           sits at the same indent whether its row has the mark or not.
                         -->
-                        <Grid ColumnDefinitions="13,*,96,Auto">
+                        <Grid ColumnDefinitions="13,Auto,*,96,Auto">
                             <!--
                               The row's foreground, not the accent, which would vanish
                               on a selected row.
                             -->
                             <TextBlock Grid.Column="0" Text="{Binding Marker}"
                                        FontSize="10" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding Display}"
+                            <!--
+                              Through the player, which tells the list being played. The
+                              code-behind keeps a press from starting a drag.
+                            -->
+                            <Button Grid.Column="1" Classes="rating" Margin="0,0,6,0"
+                                    Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).CycleRatingCommand}"
+                                    CommandParameter="{Binding}"
+                                    Classes.favorite="{Binding IsFavorite}"
+                                    Classes.disliked="{Binding IsDisliked}"
+                                    ToolTip.Tip="{Binding RatingText}"
+                                    AutomationProperties.Name="{Binding RatingText}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Display}"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center"
                                        ToolTip.Tip="{Binding Path}" />
@@ -96,12 +109,12 @@
                               Bracketed means the player worked it out and may yet
                               change its mind; bare means someone said so.
                             -->
-                            <TextBlock Grid.Column="2" Text="{Binding ModuleText}"
+                            <TextBlock Grid.Column="3" Text="{Binding ModuleText}"
                                        Opacity="0.65" Margin="20,0,0,0" FontSize="12"
                                        TextAlignment="Right"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="3" Text="{Binding Length}"
+                            <TextBlock Grid.Column="4" Text="{Binding Length}"
                                        Opacity="0.65" Margin="20,0,0,0"
                                        FontFamily="Consolas, monospace" FontSize="12"
                                        VerticalAlignment="Center" />

@@ -133,6 +133,8 @@ Which map is used is chosen in **Settings → Port Map**. "Auto" picks one for e
 
 - Several playlists can be open in tabs. Right-click a tab or a song for what can be done with it.
 - Playlist files kept elsewhere are opened with **File → Open Playlist...**.
+- Clicking the star to the left of a song cycles it through favorite (★), disliked (a star with a slash) and none (☆). **Sort → By Favorite** in the right-click menu puts favorites at the top and disliked songs at the bottom.
+- **Settings → Songs to Play** chooses which songs the player goes through: **All Songs**, **Favorites and Unrated Only** or **Favorites Only**. A song left out still plays when double-clicked, and the player then goes on to the songs it takes.
 
 ### Target modules
 

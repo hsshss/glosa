@@ -20,6 +20,9 @@ public sealed class PlaylistItem
     /// </remarks>
     public string Module { get; set; } = string.Empty;
 
+    /// <summary>How much this song is liked, set by hand; None when nobody has said.</summary>
+    public Rating Rating { get; set; }
+
     /// <summary>
     /// The module the song's own messages point to, found when the file was last read; empty
     /// when they were looked at and point to none, and null when they have not been looked at.
@@ -47,6 +50,9 @@ public sealed class PlaylistItem
         ? System.IO.Path.GetFileNameWithoutExtension(Path)
         : Title;
 }
+
+/// <summary>How much a song is liked, set by hand; None when nobody has said.</summary>
+public enum Rating { None, Favorite, Disliked }
 
 public sealed class Playlist
 {
