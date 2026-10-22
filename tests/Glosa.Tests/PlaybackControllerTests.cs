@@ -885,6 +885,26 @@ public class PlaybackControllerTests
         Done(player.Stop());
     }
 
+    [Theory]
+    [InlineData(PlayFilter.All)]
+    [InlineData(PlayFilter.FavoritesOnly)]
+    public void ASongPlayedFromAListHandedOverIsTheOnlyPlaceTheCursorIsSaidToBe(PlayFilter filter)
+    {
+        using var sequencer = new Sequencer(new NullSink(), Quiet());
+        using var player = new PlaybackController(sequencer, _ => Long());
+        player.Filter = filter;
+        player.SetPlaylist(Rated("NNNNF"));
+        Playlist other = Rated("NNNNF");
+        var said = new List<string?>();
+        player.CurrentChanged += item => { lock (said) said.Add(item?.Path); };
+
+        Done(player.Play(other, 2));
+
+        lock (said) Assert.Equal(["2.mid"], said.Distinct());
+        Assert.Same(other.Items[2], player.Current);
+        Done(player.Stop());
+    }
+
     [Fact]
     public void ARatingTakenBackInARandomPassDoesNotPlayTheSongPlayingAgain()
     {

@@ -46,6 +46,69 @@ public class MainViewModelTests : ConfigFolder
             "version: 1\nportMaps:\n- title: Default\nopenPlaylists:\n"
             + string.Concat(lists.Select(path => $"- path: '{path}'\n")));
 
+    /// <summary>Songs of a few seconds each, written to the settings folder.</summary>
+    private string[] Songs(int count)
+    {
+        string folder = Path.Combine(Folder, "songs");
+        Directory.CreateDirectory(folder);
+        byte[] song = new SmfBuilder(480)
+            .Track(t => t.Short(0, 0x90, 60, 100).Short(9600, 0x80, 60, 0).End(0)).Build();
+        string[] paths = [.. Enumerable.Range(0, count).Select(i => Path.Combine(folder, $"{i:D2}.mid"))];
+        foreach (string path in paths) File.WriteAllBytes(path, song);
+        return paths;
+    }
+
+    /// <summary>
+    /// The rows the list is asked to bring on screen, in turn, until <paramref name="row"/>
+    /// is among them.
+    /// </summary>
+    /// <remarks>The posted jobs run at once, before the transport has had time, as after a click.</remarks>
+    private static List<int> RevealedUntil(MainViewModel model, PlaylistTabViewModel tab, int row, Action act)
+    {
+        var revealed = new List<int>();
+        void Moved() => revealed.Add(tab.LastPlayed);
+        model.PlayingRowMoved += Moved;
+
+        act();
+        Dispatcher.UIThread.RunJobs();
+        var wait = System.Diagnostics.Stopwatch.StartNew();
+        while (!revealed.Contains(row) && wait.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            Thread.Sleep(1);
+            Dispatcher.UIThread.RunJobs();
+        }
+
+        model.PlayingRowMoved -= Moved;
+        return revealed;
+    }
+
+    [Fact]
+    public void PlayingASongFromAnotherListBringsOnlyThatSongOnScreen()
+    {
+        string[] songs = Songs(30);
+        WithPlayer(model =>
+        {
+            PlaylistTabViewModel first = model.SelectedPlaylist!;
+            model.AddFiles(songs);
+            model.NewPlaylistCommand.Execute(null);
+            PlaylistTabViewModel second = model.SelectedPlaylist!;
+            model.AddFiles(songs);
+            second.LastPlayed = 3;
+
+            model.SelectedPlaylist = first;
+            first.Selected = first.Items[10];
+            RevealedUntil(model, first, 10, () => model.PlaySelectedCommand.Execute(null));
+
+            // The second list is handed over on the double-click, its playing mark on row 3.
+            model.SelectedPlaylist = second;
+            second.Selected = second.Items[20];
+            Assert.Equal([20], RevealedUntil(model, second, 20, () => model.PlaySelectedCommand.Execute(null))
+                                   .Distinct());
+
+            model.StopCommand.Execute(null);
+        });
+    }
+
     [Fact]
     public void ARatingGoesToTheSameFileInEveryOpenList()
     {

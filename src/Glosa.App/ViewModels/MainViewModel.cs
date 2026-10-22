@@ -419,6 +419,18 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             _player.Controller.SetPlaylist(tab.List, tab.LastPlayedRow?.Item);
     }
 
+    /// <summary>Starts the song at <paramref name="index"/> in a tab's list.</summary>
+    /// <remarks>
+    /// A list the player does not have goes over with the song, so the cursor is not said to
+    /// be on another row first, which the list would scroll to.
+    /// </remarks>
+    private void PlayAt(PlaylistTabViewModel tab, int index)
+    {
+        foreach (PlaylistTabViewModel other in Playlists) other.IsPlaying = other == tab;
+        if (ReferenceEquals(_player.Controller.Playlist, tab.List)) _player.Controller.Play(index);
+        else _player.Controller.Play(tab.List, index);
+    }
+
     public AppSettings Settings => _settings;
 
     private AppSettings _settings = new();
@@ -916,8 +928,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     {
         if (SelectedPlaylist is not { Selected: { } row } tab) { Play(); return; }
 
-        StartPlaying(tab);
-        _player.Controller.Play(tab.Items.IndexOf(row));
+        PlayAt(tab, tab.Items.IndexOf(row));
     }
 
     [RelayCommand]
@@ -1235,10 +1246,14 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     {
         if (SelectedPlaylist is not { } tab) return;
 
-        StartPlaying(tab);
+        if (index >= 0)
+        {
+            PlayAt(tab, index);
+            return;
+        }
 
-        if (index >= 0) _player.Controller.Play(index);
-        else _player.Controller.Play();
+        StartPlaying(tab);
+        _player.Controller.Play();
     }
 
     /// <summary>Opens a playlist file in a tab of its own, or brings it forward if already open.</summary>

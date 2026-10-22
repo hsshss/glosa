@@ -351,6 +351,22 @@ public sealed class PlaybackController : IDisposable
         return Ask(new PlayItem(item));
     }
 
+    /// <summary>
+    /// Hands over another list and starts the song at <paramref name="itemIndex"/> in it.
+    /// </summary>
+    /// <remarks>The cursor is said to be on that song only, not anywhere on the way.</remarks>
+    public Task Play(Playlist playlist, int itemIndex)
+    {
+        PlaylistItem? item;
+        lock (_gate)
+        {
+            _playlist = playlist;
+            item = itemIndex >= 0 && itemIndex < playlist.Items.Count ? playlist.Items[itemIndex] : null;
+            BuildOrder(item);
+        }
+        return Ask(new PlayItem(item));
+    }
+
     /// <summary>Starts whatever the cursor is on, or lifts a pause.</summary>
     public Task Play() => Ask(new PlayCursor());
 
@@ -511,6 +527,7 @@ public sealed class PlaybackController : IDisposable
                 }
                 if (outside)
                 {
+                    Announce();
                     Start(request);
                     return;
                 }
@@ -528,6 +545,8 @@ public sealed class PlaybackController : IDisposable
                     _position = at;
                     _detached = null;
                 }
+                // Before the song is read: a list handed over with it has not said so.
+                Announce();
                 Start(request);
                 return;
             }
